@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
@@ -78,33 +79,21 @@ func router() *cli.Router {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-04-07 09:45:13.352215775 +0200 CEST\n")
+	fmt.Printf("Built at 2015-04-21 09:25:48.973559884 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
 type AuthorizationCreate struct {
 	phraseapp.AuthHandler
 
-	Note   string `cli:"opt --note"`
-	Scopes string `cli:"opt --scopes"`
+	Note   string   `cli:"opt --note"`
+	Scopes []string `cli:"opt --scopes"`
 }
 
 func (cmd *AuthorizationCreate) Run() error {
-
 	params := new(phraseapp.AuthorizationParams)
-
-	if cmd.Note != "" {
-		err := params.SetNote(cmd.Note)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Scopes != "" {
-		err := params.SetScopes(cmd.Scopes)
-		if err != nil {
-			return err
-		}
-	}
+	params.Note = cmd.Note
+	params.Scopes = cmd.Scopes
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -174,28 +163,16 @@ func (cmd *AuthorizationShow) Run() error {
 type AuthorizationUpdate struct {
 	phraseapp.AuthHandler
 
-	Note   string `cli:"opt --note"`
-	Scopes string `cli:"opt --scopes"`
+	Note   string   `cli:"opt --note"`
+	Scopes []string `cli:"opt --scopes"`
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationUpdate) Run() error {
-
 	params := new(phraseapp.AuthorizationParams)
-
-	if cmd.Note != "" {
-		err := params.SetNote(cmd.Note)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Scopes != "" {
-		err := params.SetScopes(cmd.Scopes)
-		if err != nil {
-			return err
-		}
-	}
+	params.Note = cmd.Note
+	params.Scopes = cmd.Scopes
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -216,15 +193,8 @@ type BlacklistKeyCreate struct {
 }
 
 func (cmd *BlacklistKeyCreate) Run() error {
-
 	params := new(phraseapp.BlacklistedKeyParams)
-
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
+	params.Name = cmd.Name
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -284,15 +254,8 @@ type BlacklistKeyUpdate struct {
 }
 
 func (cmd *BlacklistKeyUpdate) Run() error {
-
 	params := new(phraseapp.BlacklistedKeyParams)
-
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
+	params.Name = cmd.Name
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -335,15 +298,8 @@ type CommentCreate struct {
 }
 
 func (cmd *CommentCreate) Run() error {
-
 	params := new(phraseapp.CommentParams)
-
-	if cmd.Message != "" {
-		err := params.SetMessage(cmd.Message)
-		if err != nil {
-			return err
-		}
-	}
+	params.Message = cmd.Message
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -488,15 +444,8 @@ type CommentUpdate struct {
 }
 
 func (cmd *CommentUpdate) Run() error {
-
 	params := new(phraseapp.CommentParams)
-
-	if cmd.Message != "" {
-		err := params.SetMessage(cmd.Message)
-		if err != nil {
-			return err
-		}
-	}
+	params.Message = cmd.Message
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -511,105 +460,38 @@ func (cmd *CommentUpdate) Run() error {
 type KeyCreate struct {
 	phraseapp.AuthHandler
 
-	DataType             string `cli:"opt --data-type"`
-	Description          string `cli:"opt --description"`
-	FormatValueType      string `cli:"opt --format-value-type"`
-	MaxCharactersAllowed string `cli:"opt --max-characters-allowed"`
-	Name                 string `cli:"opt --name"`
-	NamePlural           string `cli:"opt --name-plural"`
-	OriginalFile         string `cli:"opt --original-file"`
-	Plural               string `cli:"opt --plural"`
-	RemoveScreenshot     string `cli:"opt --remove-screenshot"`
-	Screenshot           string `cli:"opt --screenshot"`
-	Tags                 string `cli:"opt --tags"`
-	Unformatted          string `cli:"opt --unformatted"`
-	XmlSpacePreserve     string `cli:"opt --xml-space-preserve"`
+	DataType             *string  `cli:"opt --data-type"`
+	Description          *string  `cli:"opt --description"`
+	FormatValueType      *string  `cli:"opt --format-value-type"`
+	MaxCharactersAllowed *int64   `cli:"opt --max-characters-allowed"`
+	Name                 string   `cli:"opt --name"`
+	NamePlural           *string  `cli:"opt --name-plural"`
+	OriginalFile         *string  `cli:"opt --original-file"`
+	Plural               *bool    `cli:"opt --plural"`
+	RemoveScreenshot     *bool    `cli:"opt --remove-screenshot"`
+	Screenshot           *string  `cli:"opt --screenshot"`
+	Tags                 []string `cli:"opt --tags"`
+	Unformatted          *bool    `cli:"opt --unformatted"`
+	XmlSpacePreserve     *bool    `cli:"opt --xml-space-preserve"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *KeyCreate) Run() error {
-
 	params := new(phraseapp.TranslationKeyParams)
-
-	if cmd.DataType != "" {
-		err := params.SetDataType(cmd.DataType)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Description != "" {
-		err := params.SetDescription(cmd.Description)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.FormatValueType != "" {
-		err := params.SetFormatValueType(cmd.FormatValueType)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.MaxCharactersAllowed != "" {
-		err := params.SetMaxCharactersAllowed(cmd.MaxCharactersAllowed)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.NamePlural != "" {
-		err := params.SetNamePlural(cmd.NamePlural)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.OriginalFile != "" {
-		err := params.SetOriginalFile(cmd.OriginalFile)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Plural != "" {
-		err := params.SetPlural(cmd.Plural)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.RemoveScreenshot != "" {
-		err := params.SetRemoveScreenshot(cmd.RemoveScreenshot)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Screenshot != "" {
-		err := params.SetScreenshot(cmd.Screenshot)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Tags != "" {
-		err := params.SetTags(cmd.Tags)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unformatted != "" {
-		err := params.SetUnformatted(cmd.Unformatted)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.XmlSpacePreserve != "" {
-		err := params.SetXmlSpacePreserve(cmd.XmlSpacePreserve)
-		if err != nil {
-			return err
-		}
-	}
+	params.DataType = cmd.DataType
+	params.Description = cmd.Description
+	params.FormatValueType = cmd.FormatValueType
+	params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
+	params.Name = cmd.Name
+	params.NamePlural = cmd.NamePlural
+	params.OriginalFile = cmd.OriginalFile
+	params.Plural = cmd.Plural
+	params.RemoveScreenshot = cmd.RemoveScreenshot
+	params.Screenshot = cmd.Screenshot
+	params.Tags = cmd.Tags
+	params.Unformatted = cmd.Unformatted
+	params.XmlSpacePreserve = cmd.XmlSpacePreserve
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -643,10 +525,10 @@ func (cmd *KeyDelete) Run() error {
 type KeyList struct {
 	phraseapp.AuthHandler
 
-	LocaleId   string `cli:"opt --locale-id"`
-	Order      string `cli:"opt --order"`
-	Sort       string `cli:"opt --sort"`
-	Translated string `cli:"opt --translated"`
+	LocaleId   *string `cli:"opt --locale-id"`
+	Order      *string `cli:"opt --order"`
+	Sort       *string `cli:"opt --sort"`
+	Translated *bool   `cli:"opt --translated"`
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -655,33 +537,11 @@ type KeyList struct {
 }
 
 func (cmd *KeyList) Run() error {
-
 	params := new(phraseapp.KeyListParams)
-
-	if cmd.LocaleId != "" {
-		err := params.SetLocaleId(cmd.LocaleId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Order != "" {
-		err := params.SetOrder(cmd.Order)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Sort != "" {
-		err := params.SetSort(cmd.Sort)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Translated != "" {
-		err := params.SetTranslated(cmd.Translated)
-		if err != nil {
-			return err
-		}
-	}
+	params.LocaleId = cmd.LocaleId
+	params.Order = cmd.Order
+	params.Sort = cmd.Sort
+	params.Translated = cmd.Translated
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -715,106 +575,39 @@ func (cmd *KeyShow) Run() error {
 type KeyUpdate struct {
 	phraseapp.AuthHandler
 
-	DataType             string `cli:"opt --data-type"`
-	Description          string `cli:"opt --description"`
-	FormatValueType      string `cli:"opt --format-value-type"`
-	MaxCharactersAllowed string `cli:"opt --max-characters-allowed"`
-	Name                 string `cli:"opt --name"`
-	NamePlural           string `cli:"opt --name-plural"`
-	OriginalFile         string `cli:"opt --original-file"`
-	Plural               string `cli:"opt --plural"`
-	RemoveScreenshot     string `cli:"opt --remove-screenshot"`
-	Screenshot           string `cli:"opt --screenshot"`
-	Tags                 string `cli:"opt --tags"`
-	Unformatted          string `cli:"opt --unformatted"`
-	XmlSpacePreserve     string `cli:"opt --xml-space-preserve"`
+	DataType             *string  `cli:"opt --data-type"`
+	Description          *string  `cli:"opt --description"`
+	FormatValueType      *string  `cli:"opt --format-value-type"`
+	MaxCharactersAllowed *int64   `cli:"opt --max-characters-allowed"`
+	Name                 string   `cli:"opt --name"`
+	NamePlural           *string  `cli:"opt --name-plural"`
+	OriginalFile         *string  `cli:"opt --original-file"`
+	Plural               *bool    `cli:"opt --plural"`
+	RemoveScreenshot     *bool    `cli:"opt --remove-screenshot"`
+	Screenshot           *string  `cli:"opt --screenshot"`
+	Tags                 []string `cli:"opt --tags"`
+	Unformatted          *bool    `cli:"opt --unformatted"`
+	XmlSpacePreserve     *bool    `cli:"opt --xml-space-preserve"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
 }
 
 func (cmd *KeyUpdate) Run() error {
-
 	params := new(phraseapp.TranslationKeyParams)
-
-	if cmd.DataType != "" {
-		err := params.SetDataType(cmd.DataType)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Description != "" {
-		err := params.SetDescription(cmd.Description)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.FormatValueType != "" {
-		err := params.SetFormatValueType(cmd.FormatValueType)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.MaxCharactersAllowed != "" {
-		err := params.SetMaxCharactersAllowed(cmd.MaxCharactersAllowed)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.NamePlural != "" {
-		err := params.SetNamePlural(cmd.NamePlural)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.OriginalFile != "" {
-		err := params.SetOriginalFile(cmd.OriginalFile)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Plural != "" {
-		err := params.SetPlural(cmd.Plural)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.RemoveScreenshot != "" {
-		err := params.SetRemoveScreenshot(cmd.RemoveScreenshot)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Screenshot != "" {
-		err := params.SetScreenshot(cmd.Screenshot)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Tags != "" {
-		err := params.SetTags(cmd.Tags)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unformatted != "" {
-		err := params.SetUnformatted(cmd.Unformatted)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.XmlSpacePreserve != "" {
-		err := params.SetXmlSpacePreserve(cmd.XmlSpacePreserve)
-		if err != nil {
-			return err
-		}
-	}
+	params.DataType = cmd.DataType
+	params.Description = cmd.Description
+	params.FormatValueType = cmd.FormatValueType
+	params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
+	params.Name = cmd.Name
+	params.NamePlural = cmd.NamePlural
+	params.OriginalFile = cmd.OriginalFile
+	params.Plural = cmd.Plural
+	params.RemoveScreenshot = cmd.RemoveScreenshot
+	params.Screenshot = cmd.Screenshot
+	params.Tags = cmd.Tags
+	params.Unformatted = cmd.Unformatted
+	params.XmlSpacePreserve = cmd.XmlSpacePreserve
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -829,56 +622,24 @@ func (cmd *KeyUpdate) Run() error {
 type LocaleCreate struct {
 	phraseapp.AuthHandler
 
-	Code           string `cli:"opt --code"`
-	Default        string `cli:"opt --default"`
-	Main           string `cli:"opt --main"`
-	Name           string `cli:"opt --name"`
-	Rtl            string `cli:"opt --rtl"`
-	SourceLocaleId string `cli:"opt --source-locale-id"`
+	Code           string  `cli:"opt --code"`
+	Default        *bool   `cli:"opt --default"`
+	Main           *bool   `cli:"opt --main"`
+	Name           string  `cli:"opt --name"`
+	Rtl            *bool   `cli:"opt --rtl"`
+	SourceLocaleId *string `cli:"opt --source-locale-id"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *LocaleCreate) Run() error {
-
 	params := new(phraseapp.LocaleParams)
-
-	if cmd.Code != "" {
-		err := params.SetCode(cmd.Code)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Default != "" {
-		err := params.SetDefault(cmd.Default)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Main != "" {
-		err := params.SetMain(cmd.Main)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Rtl != "" {
-		err := params.SetRtl(cmd.Rtl)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SourceLocaleId != "" {
-		err := params.SetSourceLocaleId(cmd.SourceLocaleId)
-		if err != nil {
-			return err
-		}
-	}
+	params.Code = cmd.Code
+	params.Default = cmd.Default
+	params.Main = cmd.Main
+	params.Name = cmd.Name
+	params.Rtl = cmd.Rtl
+	params.SourceLocaleId = cmd.SourceLocaleId
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -912,58 +673,34 @@ func (cmd *LocaleDelete) Run() error {
 type LocaleDownload struct {
 	phraseapp.AuthHandler
 
-	ConvertEmoji             string `cli:"opt --convert-emoji"`
-	Format                   string `cli:"opt --format"`
-	IncludeEmptyTranslations string `cli:"opt --include-empty-translations"`
-	KeepNotranslateTags      string `cli:"opt --keep-notranslate-tags"`
-	TagId                    string `cli:"opt --tag-id"`
+	ConvertEmoji             *bool                   `cli:"opt --convert-emoji"`
+	Format                   string                  `cli:"opt --format"`
+	FormatOptions            *map[string]interface{} `cli:"opt --format-options"`
+	IncludeEmptyTranslations *bool                   `cli:"opt --include-empty-translations"`
+	KeepNotranslateTags      *bool                   `cli:"opt --keep-notranslate-tags"`
+	TagId                    *string                 `cli:"opt --tag-id"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
 }
 
 func (cmd *LocaleDownload) Run() error {
-
 	params := new(phraseapp.LocaleDownloadParams)
-
-	if cmd.ConvertEmoji != "" {
-		err := params.SetConvertEmoji(cmd.ConvertEmoji)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Format != "" {
-		err := params.SetFormat(cmd.Format)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.IncludeEmptyTranslations != "" {
-		err := params.SetIncludeEmptyTranslations(cmd.IncludeEmptyTranslations)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.KeepNotranslateTags != "" {
-		err := params.SetKeepNotranslateTags(cmd.KeepNotranslateTags)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.TagId != "" {
-		err := params.SetTagId(cmd.TagId)
-		if err != nil {
-			return err
-		}
-	}
+	params.ConvertEmoji = cmd.ConvertEmoji
+	params.Format = cmd.Format
+	params.FormatOptions = cmd.FormatOptions
+	params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
+	params.KeepNotranslateTags = cmd.KeepNotranslateTags
+	params.TagId = cmd.TagId
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
-	err := phraseapp.LocaleDownload(cmd.ProjectId, cmd.Id, params)
+	res, err := phraseapp.LocaleDownload(cmd.ProjectId, cmd.Id, params)
 	if err != nil {
 		return err
 	}
 
+	fmt.Println(string(res))
 	return nil
 }
 
@@ -1010,57 +747,25 @@ func (cmd *LocaleShow) Run() error {
 type LocaleUpdate struct {
 	phraseapp.AuthHandler
 
-	Code           string `cli:"opt --code"`
-	Default        string `cli:"opt --default"`
-	Main           string `cli:"opt --main"`
-	Name           string `cli:"opt --name"`
-	Rtl            string `cli:"opt --rtl"`
-	SourceLocaleId string `cli:"opt --source-locale-id"`
+	Code           string  `cli:"opt --code"`
+	Default        *bool   `cli:"opt --default"`
+	Main           *bool   `cli:"opt --main"`
+	Name           string  `cli:"opt --name"`
+	Rtl            *bool   `cli:"opt --rtl"`
+	SourceLocaleId *string `cli:"opt --source-locale-id"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
 }
 
 func (cmd *LocaleUpdate) Run() error {
-
 	params := new(phraseapp.LocaleParams)
-
-	if cmd.Code != "" {
-		err := params.SetCode(cmd.Code)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Default != "" {
-		err := params.SetDefault(cmd.Default)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Main != "" {
-		err := params.SetMain(cmd.Main)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Rtl != "" {
-		err := params.SetRtl(cmd.Rtl)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SourceLocaleId != "" {
-		err := params.SetSourceLocaleId(cmd.SourceLocaleId)
-		if err != nil {
-			return err
-		}
-	}
+	params.Code = cmd.Code
+	params.Default = cmd.Default
+	params.Main = cmd.Main
+	params.Name = cmd.Name
+	params.Rtl = cmd.Rtl
+	params.SourceLocaleId = cmd.SourceLocaleId
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1094,105 +799,38 @@ func (cmd *OrderConfirm) Run() error {
 type OrderCreate struct {
 	phraseapp.AuthHandler
 
-	Category                         string `cli:"opt --category"`
-	IncludeUntranslatedKeys          string `cli:"opt --include-untranslated-keys"`
-	IncludeUnverifiedTranslations    string `cli:"opt --include-unverified-translations"`
-	Lsp                              string `cli:"opt --lsp"`
-	Message                          string `cli:"opt --message"`
-	Priority                         string `cli:"opt --priority"`
-	Quality                          string `cli:"opt --quality"`
-	SourceLocaleId                   string `cli:"opt --source-locale-id"`
-	StyleguideId                     string `cli:"opt --styleguide-id"`
-	Tag                              string `cli:"opt --tag"`
-	TargetLocaleIds                  string `cli:"opt --target-locale-ids"`
-	TranslationType                  string `cli:"opt --translation-type"`
-	UnverifyTranslationsUponDelivery string `cli:"opt --unverify-translations-upon-delivery"`
+	Category                         string   `cli:"opt --category"`
+	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
+	IncludeUnverifiedTranslations    *bool    `cli:"opt --include-unverified-translations"`
+	Lsp                              string   `cli:"opt --lsp"`
+	Message                          *string  `cli:"opt --message"`
+	Priority                         *bool    `cli:"opt --priority"`
+	Quality                          *bool    `cli:"opt --quality"`
+	SourceLocaleId                   string   `cli:"opt --source-locale-id"`
+	StyleguideId                     *string  `cli:"opt --styleguide-id"`
+	Tag                              *string  `cli:"opt --tag"`
+	TargetLocaleIds                  []string `cli:"opt --target-locale-ids"`
+	TranslationType                  string   `cli:"opt --translation-type"`
+	UnverifyTranslationsUponDelivery *bool    `cli:"opt --unverify-translations-upon-delivery"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *OrderCreate) Run() error {
-
 	params := new(phraseapp.TranslationOrderParams)
-
-	if cmd.Category != "" {
-		err := params.SetCategory(cmd.Category)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.IncludeUntranslatedKeys != "" {
-		err := params.SetIncludeUntranslatedKeys(cmd.IncludeUntranslatedKeys)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.IncludeUnverifiedTranslations != "" {
-		err := params.SetIncludeUnverifiedTranslations(cmd.IncludeUnverifiedTranslations)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Lsp != "" {
-		err := params.SetLsp(cmd.Lsp)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Message != "" {
-		err := params.SetMessage(cmd.Message)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Priority != "" {
-		err := params.SetPriority(cmd.Priority)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Quality != "" {
-		err := params.SetQuality(cmd.Quality)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SourceLocaleId != "" {
-		err := params.SetSourceLocaleId(cmd.SourceLocaleId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.StyleguideId != "" {
-		err := params.SetStyleguideId(cmd.StyleguideId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Tag != "" {
-		err := params.SetTag(cmd.Tag)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.TargetLocaleIds != "" {
-		err := params.SetTargetLocaleIds(cmd.TargetLocaleIds)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.TranslationType != "" {
-		err := params.SetTranslationType(cmd.TranslationType)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.UnverifyTranslationsUponDelivery != "" {
-		err := params.SetUnverifyTranslationsUponDelivery(cmd.UnverifyTranslationsUponDelivery)
-		if err != nil {
-			return err
-		}
-	}
+	params.Category = cmd.Category
+	params.IncludeUntranslatedKeys = cmd.IncludeUntranslatedKeys
+	params.IncludeUnverifiedTranslations = cmd.IncludeUnverifiedTranslations
+	params.Lsp = cmd.Lsp
+	params.Message = cmd.Message
+	params.Priority = cmd.Priority
+	params.Quality = cmd.Quality
+	params.SourceLocaleId = cmd.SourceLocaleId
+	params.StyleguideId = cmd.StyleguideId
+	params.Tag = cmd.Tag
+	params.TargetLocaleIds = cmd.TargetLocaleIds
+	params.TranslationType = cmd.TranslationType
+	params.UnverifyTranslationsUponDelivery = cmd.UnverifyTranslationsUponDelivery
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1267,25 +905,13 @@ type ProjectCreate struct {
 	phraseapp.AuthHandler
 
 	Name                    string `cli:"opt --name"`
-	SharesTranslationMemory string `cli:"opt --shares-translation-memory"`
+	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
 }
 
 func (cmd *ProjectCreate) Run() error {
-
 	params := new(phraseapp.ProjectParams)
-
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SharesTranslationMemory != "" {
-		err := params.SetSharesTranslationMemory(cmd.SharesTranslationMemory)
-		if err != nil {
-			return err
-		}
-	}
+	params.Name = cmd.Name
+	params.SharesTranslationMemory = cmd.SharesTranslationMemory
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1356,27 +982,15 @@ type ProjectUpdate struct {
 	phraseapp.AuthHandler
 
 	Name                    string `cli:"opt --name"`
-	SharesTranslationMemory string `cli:"opt --shares-translation-memory"`
+	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *ProjectUpdate) Run() error {
-
 	params := new(phraseapp.ProjectParams)
-
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SharesTranslationMemory != "" {
-		err := params.SetSharesTranslationMemory(cmd.SharesTranslationMemory)
-		if err != nil {
-			return err
-		}
-	}
+	params.Name = cmd.Name
+	params.SharesTranslationMemory = cmd.SharesTranslationMemory
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1407,105 +1021,38 @@ func (cmd *ShowUser) Run() error {
 type StyleguideCreate struct {
 	phraseapp.AuthHandler
 
-	Audience           string `cli:"opt --audience"`
-	Business           string `cli:"opt --business"`
-	CompanyBranding    string `cli:"opt --company-branding"`
-	Formatting         string `cli:"opt --formatting"`
-	GlossaryTerms      string `cli:"opt --glossary-terms"`
-	GrammarConsistency string `cli:"opt --grammar-consistency"`
-	GrammaticalPerson  string `cli:"opt --grammatical-person"`
-	LiteralTranslation string `cli:"opt --literal-translation"`
-	OverallTone        string `cli:"opt --overall-tone"`
-	Samples            string `cli:"opt --samples"`
-	TargetAudience     string `cli:"opt --target-audience"`
-	Title              string `cli:"opt --title"`
-	VocabularyType     string `cli:"opt --vocabulary-type"`
+	Audience           *string `cli:"opt --audience"`
+	Business           *string `cli:"opt --business"`
+	CompanyBranding    *string `cli:"opt --company-branding"`
+	Formatting         *string `cli:"opt --formatting"`
+	GlossaryTerms      *string `cli:"opt --glossary-terms"`
+	GrammarConsistency *string `cli:"opt --grammar-consistency"`
+	GrammaticalPerson  *string `cli:"opt --grammatical-person"`
+	LiteralTranslation *string `cli:"opt --literal-translation"`
+	OverallTone        *string `cli:"opt --overall-tone"`
+	Samples            *string `cli:"opt --samples"`
+	TargetAudience     *string `cli:"opt --target-audience"`
+	Title              string  `cli:"opt --title"`
+	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *StyleguideCreate) Run() error {
-
 	params := new(phraseapp.StyleguideParams)
-
-	if cmd.Audience != "" {
-		err := params.SetAudience(cmd.Audience)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Business != "" {
-		err := params.SetBusiness(cmd.Business)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.CompanyBranding != "" {
-		err := params.SetCompanyBranding(cmd.CompanyBranding)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Formatting != "" {
-		err := params.SetFormatting(cmd.Formatting)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GlossaryTerms != "" {
-		err := params.SetGlossaryTerms(cmd.GlossaryTerms)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GrammarConsistency != "" {
-		err := params.SetGrammarConsistency(cmd.GrammarConsistency)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GrammaticalPerson != "" {
-		err := params.SetGrammaticalPerson(cmd.GrammaticalPerson)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.LiteralTranslation != "" {
-		err := params.SetLiteralTranslation(cmd.LiteralTranslation)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.OverallTone != "" {
-		err := params.SetOverallTone(cmd.OverallTone)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Samples != "" {
-		err := params.SetSamples(cmd.Samples)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.TargetAudience != "" {
-		err := params.SetTargetAudience(cmd.TargetAudience)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Title != "" {
-		err := params.SetTitle(cmd.Title)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.VocabularyType != "" {
-		err := params.SetVocabularyType(cmd.VocabularyType)
-		if err != nil {
-			return err
-		}
-	}
+	params.Audience = cmd.Audience
+	params.Business = cmd.Business
+	params.CompanyBranding = cmd.CompanyBranding
+	params.Formatting = cmd.Formatting
+	params.GlossaryTerms = cmd.GlossaryTerms
+	params.GrammarConsistency = cmd.GrammarConsistency
+	params.GrammaticalPerson = cmd.GrammaticalPerson
+	params.LiteralTranslation = cmd.LiteralTranslation
+	params.OverallTone = cmd.OverallTone
+	params.Samples = cmd.Samples
+	params.TargetAudience = cmd.TargetAudience
+	params.Title = cmd.Title
+	params.VocabularyType = cmd.VocabularyType
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1579,106 +1126,39 @@ func (cmd *StyleguideShow) Run() error {
 type StyleguideUpdate struct {
 	phraseapp.AuthHandler
 
-	Audience           string `cli:"opt --audience"`
-	Business           string `cli:"opt --business"`
-	CompanyBranding    string `cli:"opt --company-branding"`
-	Formatting         string `cli:"opt --formatting"`
-	GlossaryTerms      string `cli:"opt --glossary-terms"`
-	GrammarConsistency string `cli:"opt --grammar-consistency"`
-	GrammaticalPerson  string `cli:"opt --grammatical-person"`
-	LiteralTranslation string `cli:"opt --literal-translation"`
-	OverallTone        string `cli:"opt --overall-tone"`
-	Samples            string `cli:"opt --samples"`
-	TargetAudience     string `cli:"opt --target-audience"`
-	Title              string `cli:"opt --title"`
-	VocabularyType     string `cli:"opt --vocabulary-type"`
+	Audience           *string `cli:"opt --audience"`
+	Business           *string `cli:"opt --business"`
+	CompanyBranding    *string `cli:"opt --company-branding"`
+	Formatting         *string `cli:"opt --formatting"`
+	GlossaryTerms      *string `cli:"opt --glossary-terms"`
+	GrammarConsistency *string `cli:"opt --grammar-consistency"`
+	GrammaticalPerson  *string `cli:"opt --grammatical-person"`
+	LiteralTranslation *string `cli:"opt --literal-translation"`
+	OverallTone        *string `cli:"opt --overall-tone"`
+	Samples            *string `cli:"opt --samples"`
+	TargetAudience     *string `cli:"opt --target-audience"`
+	Title              string  `cli:"opt --title"`
+	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
 }
 
 func (cmd *StyleguideUpdate) Run() error {
-
 	params := new(phraseapp.StyleguideParams)
-
-	if cmd.Audience != "" {
-		err := params.SetAudience(cmd.Audience)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Business != "" {
-		err := params.SetBusiness(cmd.Business)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.CompanyBranding != "" {
-		err := params.SetCompanyBranding(cmd.CompanyBranding)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Formatting != "" {
-		err := params.SetFormatting(cmd.Formatting)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GlossaryTerms != "" {
-		err := params.SetGlossaryTerms(cmd.GlossaryTerms)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GrammarConsistency != "" {
-		err := params.SetGrammarConsistency(cmd.GrammarConsistency)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.GrammaticalPerson != "" {
-		err := params.SetGrammaticalPerson(cmd.GrammaticalPerson)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.LiteralTranslation != "" {
-		err := params.SetLiteralTranslation(cmd.LiteralTranslation)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.OverallTone != "" {
-		err := params.SetOverallTone(cmd.OverallTone)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Samples != "" {
-		err := params.SetSamples(cmd.Samples)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.TargetAudience != "" {
-		err := params.SetTargetAudience(cmd.TargetAudience)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Title != "" {
-		err := params.SetTitle(cmd.Title)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.VocabularyType != "" {
-		err := params.SetVocabularyType(cmd.VocabularyType)
-		if err != nil {
-			return err
-		}
-	}
+	params.Audience = cmd.Audience
+	params.Business = cmd.Business
+	params.CompanyBranding = cmd.CompanyBranding
+	params.Formatting = cmd.Formatting
+	params.GlossaryTerms = cmd.GlossaryTerms
+	params.GrammarConsistency = cmd.GrammarConsistency
+	params.GrammaticalPerson = cmd.GrammaticalPerson
+	params.LiteralTranslation = cmd.LiteralTranslation
+	params.OverallTone = cmd.OverallTone
+	params.Samples = cmd.Samples
+	params.TargetAudience = cmd.TargetAudience
+	params.Title = cmd.Title
+	params.VocabularyType = cmd.VocabularyType
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1699,15 +1179,8 @@ type TagCreate struct {
 }
 
 func (cmd *TagCreate) Run() error {
-
 	params := new(phraseapp.TagParams)
-
-	if cmd.Name != "" {
-		err := params.SetName(cmd.Name)
-		if err != nil {
-			return err
-		}
-	}
+	params.Name = cmd.Name
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1781,56 +1254,24 @@ func (cmd *TagShow) Run() error {
 type TranslationCreate struct {
 	phraseapp.AuthHandler
 
-	Content      string `cli:"opt --content"`
-	Excluded     string `cli:"opt --excluded"`
-	KeyId        string `cli:"opt --key-id"`
-	LocaleId     string `cli:"opt --locale-id"`
-	PluralSuffix string `cli:"opt --plural-suffix"`
-	Unverified   string `cli:"opt --unverified"`
+	Content      string  `cli:"opt --content"`
+	Excluded     *bool   `cli:"opt --excluded"`
+	KeyId        string  `cli:"opt --key-id"`
+	LocaleId     string  `cli:"opt --locale-id"`
+	PluralSuffix *string `cli:"opt --plural-suffix"`
+	Unverified   *bool   `cli:"opt --unverified"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *TranslationCreate) Run() error {
-
 	params := new(phraseapp.TranslationParams)
-
-	if cmd.Content != "" {
-		err := params.SetContent(cmd.Content)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Excluded != "" {
-		err := params.SetExcluded(cmd.Excluded)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.KeyId != "" {
-		err := params.SetKeyId(cmd.KeyId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.LocaleId != "" {
-		err := params.SetLocaleId(cmd.LocaleId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.PluralSuffix != "" {
-		err := params.SetPluralSuffix(cmd.PluralSuffix)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unverified != "" {
-		err := params.SetUnverified(cmd.Unverified)
-		if err != nil {
-			return err
-		}
-	}
+	params.Content = cmd.Content
+	params.Excluded = cmd.Excluded
+	params.KeyId = cmd.KeyId
+	params.LocaleId = cmd.LocaleId
+	params.PluralSuffix = cmd.PluralSuffix
+	params.Unverified = cmd.Unverified
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1845,10 +1286,10 @@ func (cmd *TranslationCreate) Run() error {
 type TranslationListAll struct {
 	phraseapp.AuthHandler
 
-	Order      string `cli:"opt --order"`
-	Since      string `cli:"opt --since"`
-	Sort       string `cli:"opt --sort"`
-	Unverified string `cli:"opt --unverified"`
+	Order      *string    `cli:"opt --order"`
+	Since      *time.Time `cli:"opt --since"`
+	Sort       *string    `cli:"opt --sort"`
+	Unverified *bool      `cli:"opt --unverified"`
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1857,33 +1298,11 @@ type TranslationListAll struct {
 }
 
 func (cmd *TranslationListAll) Run() error {
-
 	params := new(phraseapp.TranslationListAllParams)
-
-	if cmd.Order != "" {
-		err := params.SetOrder(cmd.Order)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Since != "" {
-		err := params.SetSince(cmd.Since)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Sort != "" {
-		err := params.SetSort(cmd.Sort)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unverified != "" {
-		err := params.SetUnverified(cmd.Unverified)
-		if err != nil {
-			return err
-		}
-	}
+	params.Order = cmd.Order
+	params.Since = cmd.Since
+	params.Sort = cmd.Sort
+	params.Unverified = cmd.Unverified
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1898,10 +1317,10 @@ func (cmd *TranslationListAll) Run() error {
 type TranslationListKey struct {
 	phraseapp.AuthHandler
 
-	Order      string `cli:"opt --order"`
-	Since      string `cli:"opt --since"`
-	Sort       string `cli:"opt --sort"`
-	Unverified string `cli:"opt --unverified"`
+	Order      *string    `cli:"opt --order"`
+	Since      *time.Time `cli:"opt --since"`
+	Sort       *string    `cli:"opt --sort"`
+	Unverified *bool      `cli:"opt --unverified"`
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1911,33 +1330,11 @@ type TranslationListKey struct {
 }
 
 func (cmd *TranslationListKey) Run() error {
-
 	params := new(phraseapp.TranslationListKeyParams)
-
-	if cmd.Order != "" {
-		err := params.SetOrder(cmd.Order)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Since != "" {
-		err := params.SetSince(cmd.Since)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Sort != "" {
-		err := params.SetSort(cmd.Sort)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unverified != "" {
-		err := params.SetUnverified(cmd.Unverified)
-		if err != nil {
-			return err
-		}
-	}
+	params.Order = cmd.Order
+	params.Since = cmd.Since
+	params.Sort = cmd.Sort
+	params.Unverified = cmd.Unverified
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -1952,10 +1349,10 @@ func (cmd *TranslationListKey) Run() error {
 type TranslationListLocale struct {
 	phraseapp.AuthHandler
 
-	Order      string `cli:"opt --order"`
-	Since      string `cli:"opt --since"`
-	Sort       string `cli:"opt --sort"`
-	Unverified string `cli:"opt --unverified"`
+	Order      *string    `cli:"opt --order"`
+	Since      *time.Time `cli:"opt --since"`
+	Sort       *string    `cli:"opt --sort"`
+	Unverified *bool      `cli:"opt --unverified"`
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1965,33 +1362,11 @@ type TranslationListLocale struct {
 }
 
 func (cmd *TranslationListLocale) Run() error {
-
 	params := new(phraseapp.TranslationListLocaleParams)
-
-	if cmd.Order != "" {
-		err := params.SetOrder(cmd.Order)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Since != "" {
-		err := params.SetSince(cmd.Since)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Sort != "" {
-		err := params.SetSort(cmd.Sort)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unverified != "" {
-		err := params.SetUnverified(cmd.Unverified)
-		if err != nil {
-			return err
-		}
-	}
+	params.Order = cmd.Order
+	params.Since = cmd.Since
+	params.Sort = cmd.Sort
+	params.Unverified = cmd.Unverified
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -2025,43 +1400,21 @@ func (cmd *TranslationShow) Run() error {
 type TranslationUpdate struct {
 	phraseapp.AuthHandler
 
-	Content      string `cli:"opt --content"`
-	Excluded     string `cli:"opt --excluded"`
-	PluralSuffix string `cli:"opt --plural-suffix"`
-	Unverified   string `cli:"opt --unverified"`
+	Content      string  `cli:"opt --content"`
+	Excluded     *bool   `cli:"opt --excluded"`
+	PluralSuffix *string `cli:"opt --plural-suffix"`
+	Unverified   *bool   `cli:"opt --unverified"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
 }
 
 func (cmd *TranslationUpdate) Run() error {
-
 	params := new(phraseapp.TranslationUpdateParams)
-
-	if cmd.Content != "" {
-		err := params.SetContent(cmd.Content)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Excluded != "" {
-		err := params.SetExcluded(cmd.Excluded)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.PluralSuffix != "" {
-		err := params.SetPluralSuffix(cmd.PluralSuffix)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Unverified != "" {
-		err := params.SetUnverified(cmd.Unverified)
-		if err != nil {
-			return err
-		}
-	}
+	params.Content = cmd.Content
+	params.Excluded = cmd.Excluded
+	params.PluralSuffix = cmd.PluralSuffix
+	params.Unverified = cmd.Unverified
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
@@ -2076,77 +1429,30 @@ func (cmd *TranslationUpdate) Run() error {
 type UploadCreate struct {
 	phraseapp.AuthHandler
 
-	ConvertEmoji       string `cli:"opt --convert-emoji"`
-	File               string `cli:"opt --file"`
-	Format             string `cli:"opt --format"`
-	FormatOptions      string `cli:"opt --format-options"`
-	LocaleId           string `cli:"opt --locale-id"`
-	SkipUnverification string `cli:"opt --skip-unverification"`
-	SkipUploadTags     string `cli:"opt --skip-upload-tags"`
-	Tags               string `cli:"opt --tags"`
-	UpdateTranslations string `cli:"opt --update-translations"`
+	ConvertEmoji       *bool                   `cli:"opt --convert-emoji"`
+	File               string                  `cli:"opt --file"`
+	Format             *string                 `cli:"opt --format"`
+	FormatOptions      *map[string]interface{} `cli:"opt --format-options"`
+	LocaleId           *string                 `cli:"opt --locale-id"`
+	SkipUnverification *bool                   `cli:"opt --skip-unverification"`
+	SkipUploadTags     *bool                   `cli:"opt --skip-upload-tags"`
+	Tags               []string                `cli:"opt --tags"`
+	UpdateTranslations *bool                   `cli:"opt --update-translations"`
 
 	ProjectId string `cli:"arg required"`
 }
 
 func (cmd *UploadCreate) Run() error {
-
 	params := new(phraseapp.LocaleFileImportParams)
-
-	if cmd.ConvertEmoji != "" {
-		err := params.SetConvertEmoji(cmd.ConvertEmoji)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.File != "" {
-		err := params.SetFile(cmd.File)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Format != "" {
-		err := params.SetFormat(cmd.Format)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.FormatOptions != "" {
-		err := params.SetFormatOptions(cmd.FormatOptions)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.LocaleId != "" {
-		err := params.SetLocaleId(cmd.LocaleId)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SkipUnverification != "" {
-		err := params.SetSkipUnverification(cmd.SkipUnverification)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.SkipUploadTags != "" {
-		err := params.SetSkipUploadTags(cmd.SkipUploadTags)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.Tags != "" {
-		err := params.SetTags(cmd.Tags)
-		if err != nil {
-			return err
-		}
-	}
-	if cmd.UpdateTranslations != "" {
-		err := params.SetUpdateTranslations(cmd.UpdateTranslations)
-		if err != nil {
-			return err
-		}
-	}
+	params.ConvertEmoji = cmd.ConvertEmoji
+	params.File = cmd.File
+	params.Format = cmd.Format
+	params.FormatOptions = cmd.FormatOptions
+	params.LocaleId = cmd.LocaleId
+	params.SkipUnverification = cmd.SkipUnverification
+	params.SkipUploadTags = cmd.SkipUploadTags
+	params.Tags = cmd.Tags
+	params.UpdateTranslations = cmd.UpdateTranslations
 
 	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
 
