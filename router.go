@@ -10,8 +10,10 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-func router() *cli.Router {
+func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
+	// TODO: Generator has to do this...
+	projectId, _ := defaults["ProjectId"]
 
 	r.Register("authorization/create", &AuthorizationCreate{}, "Create a new authorization.")
 	r.Register("authorization/delete", &AuthorizationDelete{}, "Delete an existing authorization. API calls using that token will stop working.")
@@ -37,7 +39,7 @@ func router() *cli.Router {
 	r.Register("key/show", &KeyShow{}, "Get details on a single key for a given project.")
 	r.Register("key/update", &KeyUpdate{}, "Update an existing key.")
 	r.Register("keys/delete", &KeysDelete{}, "Delete all keys matching query. Same constraints as list.")
-	r.Register("keys/list", &KeysList{}, "List all keys for the given project. Alternatively you can POST requests to /search.")
+	r.Register("keys/list", &KeysList{ProjectId: projectId}, "List all keys for the given project. Alternatively you can POST requests to /search.")
 	r.Register("keys/search", &KeysSearch{}, "List all keys for the given project matching query.")
 	r.Register("keys/tag", &KeysTag{}, "Tags all keys matching query. Same constraints as list.")
 	r.Register("keys/untag", &KeysUntag{}, "Removes specified tags from keys matching query.")

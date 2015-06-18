@@ -30,7 +30,7 @@ func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 	return parseDefaults(content)
 }
 
-func ConfigCallArgs() (*CallArgs, error) {
+func ConfigCallArgs() (map[string]string, error) {
 	content, err := configContent()
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ type CallArgs struct {
 	}
 }
 
-func parseCallArgs(yml string) (*CallArgs, error) {
+func parseCallArgs(yml string) (map[string]string, error) {
 	var callArgs *CallArgs
 
 	err := yaml.Unmarshal([]byte(yml), &callArgs)
@@ -150,7 +150,11 @@ func parseCallArgs(yml string) (*CallArgs, error) {
 		return nil, err
 	}
 
-	return callArgs, nil
+	m := make(map[string]string)
+	m["ProjectId"] = callArgs.Phraseapp.ProjectId
+	m["AccessToken"] = callArgs.Phraseapp.AccessToken
+
+	return m, nil
 }
 
 type Params struct {
