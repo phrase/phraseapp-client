@@ -97,9 +97,9 @@ func defaultConfigDir() (string, error) {
 // Parsing
 type credentialConf struct {
 	Phraseapp struct {
-		Token    string
-		Username string
-		TFA      bool
+		AccessToken string `yaml:"access_token"`
+		Username    string
+		TFA         bool
 	}
 }
 
@@ -111,7 +111,7 @@ func parseCredentials(yml string) (*phraseapp.AuthCredentials, error) {
 	}
 
 	phrase := conf.Phraseapp
-	credentials := &phraseapp.AuthCredentials{Token: phrase.Token, Username: phrase.Username, TFA: phrase.TFA}
+	credentials := &phraseapp.AuthCredentials{Token: phrase.AccessToken, Username: phrase.Username, TFA: phrase.TFA}
 
 	return credentials, nil
 }
