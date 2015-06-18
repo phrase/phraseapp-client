@@ -13,12 +13,7 @@ const configName = ".phraseapp.yml"
 const defaultDir = ".config/phraseapp"
 
 func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
-	path, err := phraseConfigPath()
-	if err != nil {
-		return nil, err
-	}
-
-	content, err := contentAtPath(path)
+	content, err := configContent()
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +22,7 @@ func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
 }
 
 func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
-	path, err := phraseConfigPath()
-	if err != nil {
-		return nil, err
-	}
-
-	content, err := contentAtPath(path)
+	content, err := configContent()
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +31,7 @@ func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 }
 
 func ConfigCallArgs() (*CallArgs, error) {
-	path, err := phraseConfigPath()
-	if err != nil {
-		return nil, err
-	}
-
-	content, err := contentAtPath(path)
+	content, err := configContent()
 	if err != nil {
 		return nil, err
 	}
@@ -54,34 +39,51 @@ func ConfigCallArgs() (*CallArgs, error) {
 	return parseCallArgs(content)
 }
 
-// Path utils
-func contentAtPath(path string) (string, error) {
-	f, err := os.Open(path)
+func ConfigPushPull() (*PushPullConfig, error) {
+	content, err := configContent()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	defer f.Close()
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+
+	return parsePushPullArgs(content)
 }
 
+// Paths and content
 func phraseConfigPath() (string, error) {
 	callerPath, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	files, _ := ioutil.ReadDir(callerPath)
-	for _, f := range files {
-		if f.Name() == configName {
-			return callerPath + configName, nil
-		}
+	possiblePath := path.Join(callerPath, configName)
+	if _, err := os.Stat(possiblePath); err == nil {
+		return possiblePath, nil
 	}
 
 	return defaultConfigDir()
+}
+
+func configContent() (string, error) {
+	path, err := phraseConfigPath()
+	if err != nil {
+		return "", err
+	}
+
+	b, err := bytesAtPath(path)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func bytesAtPath(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return ioutil.ReadAll(f)
 }
 
 func defaultConfigDir() (string, error) {
@@ -133,9 +135,10 @@ func parseDefaults(yml string) (phraseapp.DefaultParams, error) {
 
 type CallArgs struct {
 	Phraseapp struct {
-		ProjectId string
-		Page      int
-		PerPage   int
+		AccessToken string `yaml:"access_token"`
+		ProjectId   string `yaml:"project_id"`
+		Page        int
+		PerPage     int
 	}
 }
 
@@ -148,4 +151,35 @@ func parseCallArgs(yml string) (*CallArgs, error) {
 	}
 
 	return callArgs, nil
+}
+
+type Params struct {
+	File        string
+	AccessToken string `yaml:"access_token"`
+	ProjectId   string `yaml:"project_id"`
+	Format      string
+}
+
+type PushPullConfig struct {
+	Phraseapp struct {
+		AccessToken string `yaml:"access_token"`
+		ProjectId   string `yaml:"project_id"`
+		Push        struct {
+			Sources []Params
+		}
+		Pull struct {
+			Targets []Params
+		}
+	}
+}
+
+func parsePushPullArgs(yml string) (*PushPullConfig, error) {
+	var pushPullConfig *PushPullConfig
+
+	err := yaml.Unmarshal([]byte(yml), &pushPullConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return pushPullConfig, nil
 }
