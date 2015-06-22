@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func ConfigPushPull() (*PushPullConfig, error) {
@@ -175,6 +176,8 @@ func fileExists(absPath string) error {
 	return nil
 }
 
+// @TODO: This is not exactly the specified format. Params only contains params to upload/download. AccessToken, File, ProjectId in top-level struct.
+// @TODO: Because of this the naming is bad, see wizard.go for almost desired syntax.
 // Parsing
 type Params struct {
 	File        string
