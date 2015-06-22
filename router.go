@@ -172,7 +172,7 @@ func pushCommand() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-22 13:11:29.832927646 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-22 13:13:07.307041984 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
