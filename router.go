@@ -12,78 +12,146 @@ import (
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
-	// TODO: Generator has to do this...
+
 	projectId, _ := defaults["ProjectId"]
 
 	r.Register("authorization/create", &AuthorizationCreate{}, "Create a new authorization.")
+
 	r.Register("authorization/delete", &AuthorizationDelete{}, "Delete an existing authorization. API calls using that token will stop working.")
+
 	r.Register("authorization/show", &AuthorizationShow{}, "Get details on a single authorization.")
+
 	r.Register("authorization/update", &AuthorizationUpdate{}, "Update an existing authorization.")
+
 	r.Register("authorizations/list", &AuthorizationsList{}, "List all your authorizations.")
-	r.Register("comment/create", &CommentCreate{}, "Create a new comment for a key.")
-	r.Register("comment/delete", &CommentDelete{}, "Delete an existing comment.")
-	r.Register("comment/mark/check", &CommentMarkCheck{}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
-	r.Register("comment/mark/read", &CommentMarkRead{}, "Mark a comment as read")
-	r.Register("comment/mark/unread", &CommentMarkUnread{}, "Mark a comment as unread")
-	r.Register("comment/show", &CommentShow{}, "Get details on a single comment.")
-	r.Register("comment/update", &CommentUpdate{}, "Update an existing comment.")
-	r.Register("comments/list", &CommentsList{}, "List all comments for a key.")
-	r.Register("exclude_rule/create", &ExcludeRuleCreate{}, "Create a new blacklisted key.")
-	r.Register("exclude_rule/delete", &ExcludeRuleDelete{}, "Delete an existing blacklisted key.")
-	r.Register("exclude_rule/show", &ExcludeRuleShow{}, "Get details on a single blacklisted key for a given project.")
-	r.Register("exclude_rule/update", &ExcludeRuleUpdate{}, "Update an existing blacklisted key.")
-	r.Register("exclude_rules/index", &ExcludeRulesIndex{}, "List all blacklisted keys for the given project.")
+
+	r.Register("comment/create", &CommentCreate{ProjectId: projectId}, "Create a new comment for a key.")
+
+	r.Register("comment/delete", &CommentDelete{ProjectId: projectId}, "Delete an existing comment.")
+
+	r.Register("comment/mark/check", &CommentMarkCheck{ProjectId: projectId}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+
+	r.Register("comment/mark/read", &CommentMarkRead{ProjectId: projectId}, "Mark a comment as read")
+
+	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectId: projectId}, "Mark a comment as unread")
+
+	r.Register("comment/show", &CommentShow{ProjectId: projectId}, "Get details on a single comment.")
+
+	r.Register("comment/update", &CommentUpdate{ProjectId: projectId}, "Update an existing comment.")
+
+	r.Register("comments/list", &CommentsList{ProjectId: projectId}, "List all comments for a key.")
+
+	r.Register("exclude_rule/create", &ExcludeRuleCreate{ProjectId: projectId}, "Create a new blacklisted key.")
+
+	r.Register("exclude_rule/delete", &ExcludeRuleDelete{ProjectId: projectId}, "Delete an existing blacklisted key.")
+
+	r.Register("exclude_rule/show", &ExcludeRuleShow{ProjectId: projectId}, "Get details on a single blacklisted key for a given project.")
+
+	r.Register("exclude_rule/update", &ExcludeRuleUpdate{ProjectId: projectId}, "Update an existing blacklisted key.")
+
+	r.Register("exclude_rules/index", &ExcludeRulesIndex{ProjectId: projectId}, "List all blacklisted keys for the given project.")
+
 	r.Register("formats/list", &FormatsList{}, "Get a handy list of all localization file formats supported in PhraseApp.")
-	r.Register("key/create", &KeyCreate{}, "Create a new key.")
-	r.Register("key/delete", &KeyDelete{}, "Delete an existing key.")
-	r.Register("key/show", &KeyShow{}, "Get details on a single key for a given project.")
-	r.Register("key/update", &KeyUpdate{}, "Update an existing key.")
-	r.Register("keys/delete", &KeysDelete{}, "Delete all keys matching query. Same constraints as list.")
+
+	r.Register("key/create", &KeyCreate{ProjectId: projectId}, "Create a new key.")
+
+	r.Register("key/delete", &KeyDelete{ProjectId: projectId}, "Delete an existing key.")
+
+	r.Register("key/show", &KeyShow{ProjectId: projectId}, "Get details on a single key for a given project.")
+
+	r.Register("key/update", &KeyUpdate{ProjectId: projectId}, "Update an existing key.")
+
+	r.Register("keys/delete", &KeysDelete{ProjectId: projectId}, "Delete all keys matching query. Same constraints as list.")
+
 	r.Register("keys/list", &KeysList{ProjectId: projectId}, "List all keys for the given project. Alternatively you can POST requests to /search.")
-	r.Register("keys/search", &KeysSearch{}, "List all keys for the given project matching query.")
-	r.Register("keys/tag", &KeysTag{}, "Tags all keys matching query. Same constraints as list.")
-	r.Register("keys/untag", &KeysUntag{}, "Removes specified tags from keys matching query.")
-	r.Register("locale/create", &LocaleCreate{}, "Create a new locale.")
-	r.Register("locale/delete", &LocaleDelete{}, "Delete an existing locale.")
-	r.Register("locale/download", &LocaleDownload{}, "Download a locale in a specific file format.")
-	r.Register("locale/show", &LocaleShow{}, "Get details on a single locale for a given project.")
-	r.Register("locale/update", &LocaleUpdate{}, "Update an existing locale.")
-	r.Register("locales/list", &LocalesList{}, "List all locales for the given project.")
-	r.Register("order/confirm", &OrderConfirm{}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
-	r.Register("order/create", &OrderCreate{}, "Create a new order. Access token scope must include <code>orders.create</code>.")
-	r.Register("order/delete", &OrderDelete{}, "Cancel an existing order. Must not yet be confirmed.")
-	r.Register("order/show", &OrderShow{}, "Get details on a single order.")
-	r.Register("orders/list", &OrdersList{}, "List all orders for the given project.")
+
+	r.Register("keys/search", &KeysSearch{ProjectId: projectId}, "List all keys for the given project matching query.")
+
+	r.Register("keys/tag", &KeysTag{ProjectId: projectId}, "Tags all keys matching query. Same constraints as list.")
+
+	r.Register("keys/untag", &KeysUntag{ProjectId: projectId}, "Removes specified tags from keys matching query.")
+
+	r.Register("locale/create", &LocaleCreate{ProjectId: projectId}, "Create a new locale.")
+
+	r.Register("locale/delete", &LocaleDelete{ProjectId: projectId}, "Delete an existing locale.")
+
+	r.Register("locale/download", &LocaleDownload{ProjectId: projectId}, "Download a locale in a specific file format.")
+
+	r.Register("locale/show", &LocaleShow{ProjectId: projectId}, "Get details on a single locale for a given project.")
+
+	r.Register("locale/update", &LocaleUpdate{ProjectId: projectId}, "Update an existing locale.")
+
+	r.Register("locales/list", &LocalesList{ProjectId: projectId}, "List all locales for the given project.")
+
+	r.Register("order/confirm", &OrderConfirm{ProjectId: projectId}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+
+	r.Register("order/create", &OrderCreate{ProjectId: projectId}, "Create a new order. Access token scope must include <code>orders.create</code>.")
+
+	r.Register("order/delete", &OrderDelete{ProjectId: projectId}, "Cancel an existing order. Must not yet be confirmed.")
+
+	r.Register("order/show", &OrderShow{ProjectId: projectId}, "Get details on a single order.")
+
+	r.Register("orders/list", &OrdersList{ProjectId: projectId}, "List all orders for the given project.")
+
 	r.Register("project/create", &ProjectCreate{}, "Create a new project.")
+
 	r.Register("project/delete", &ProjectDelete{}, "Delete an existing project.")
+
 	r.Register("project/show", &ProjectShow{}, "Get details on a single project.")
+
 	r.Register("project/update", &ProjectUpdate{}, "Update an existing project.")
+
 	r.Register("projects/list", &ProjectsList{}, "List all projects the current user has access to.")
+
 	r.Register("show/user", &ShowUser{}, "Show details for current User.")
-	r.Register("styleguide/create", &StyleguideCreate{}, "Create a new style guide.")
-	r.Register("styleguide/delete", &StyleguideDelete{}, "Delete an existing style guide.")
-	r.Register("styleguide/show", &StyleguideShow{}, "Get details on a single style guide.")
-	r.Register("styleguide/update", &StyleguideUpdate{}, "Update an existing style guide.")
-	r.Register("styleguides/list", &StyleguidesList{}, "List all styleguides for the given project.")
-	r.Register("tag/create", &TagCreate{}, "Create a new tag.")
-	r.Register("tag/delete", &TagDelete{}, "Delete an existing tag.")
-	r.Register("tag/show", &TagShow{}, "Get details and progress information on a single tag for a given project.")
-	r.Register("tags/list", &TagsList{}, "List all tags for the given project.")
-	r.Register("translation/create", &TranslationCreate{}, "Create a translation.")
-	r.Register("translation/show", &TranslationShow{}, "Get details on a single translation.")
-	r.Register("translation/update", &TranslationUpdate{}, "Update an existing translation.")
-	r.Register("translations/by_key", &TranslationsByKey{}, "List translations for a specific key.")
-	r.Register("translations/by_locale", &TranslationsByLocale{}, "List translations for a specific locale.")
-	r.Register("translations/exclude", &TranslationsExclude{}, "Exclude translations matching query from locale export.")
-	r.Register("translations/include", &TranslationsInclude{}, "Include translations matching query in locale export")
-	r.Register("translations/list", &TranslationsList{}, "List translations for the given project. Alternatively, POST request to /search")
-	r.Register("translations/search", &TranslationsSearch{}, "List translations for the given project if you exceed GET request limitations on translations list.")
-	r.Register("translations/unverify", &TranslationsUnverify{}, "Mark translations matching query as unverified")
-	r.Register("translations/verify", &TranslationsVerify{}, "Verify translations matching query.")
-	r.Register("upload/create", &UploadCreate{}, "Upload a new language file. Creates necessary resources in your project.")
-	r.Register("upload/show", &UploadShow{}, "View details and summary for a single upload.")
-	r.Register("version/show", &VersionShow{}, "Get details on a single version.")
-	r.Register("versions/list", &VersionsList{}, "List all versions for the given translation.")
+
+	r.Register("styleguide/create", &StyleguideCreate{ProjectId: projectId}, "Create a new style guide.")
+
+	r.Register("styleguide/delete", &StyleguideDelete{ProjectId: projectId}, "Delete an existing style guide.")
+
+	r.Register("styleguide/show", &StyleguideShow{ProjectId: projectId}, "Get details on a single style guide.")
+
+	r.Register("styleguide/update", &StyleguideUpdate{ProjectId: projectId}, "Update an existing style guide.")
+
+	r.Register("styleguides/list", &StyleguidesList{ProjectId: projectId}, "List all styleguides for the given project.")
+
+	r.Register("tag/create", &TagCreate{ProjectId: projectId}, "Create a new tag.")
+
+	r.Register("tag/delete", &TagDelete{ProjectId: projectId}, "Delete an existing tag.")
+
+	r.Register("tag/show", &TagShow{ProjectId: projectId}, "Get details and progress information on a single tag for a given project.")
+
+	r.Register("tags/list", &TagsList{ProjectId: projectId}, "List all tags for the given project.")
+
+	r.Register("translation/create", &TranslationCreate{ProjectId: projectId}, "Create a translation.")
+
+	r.Register("translation/show", &TranslationShow{ProjectId: projectId}, "Get details on a single translation.")
+
+	r.Register("translation/update", &TranslationUpdate{ProjectId: projectId}, "Update an existing translation.")
+
+	r.Register("translations/by_key", &TranslationsByKey{ProjectId: projectId}, "List translations for a specific key.")
+
+	r.Register("translations/by_locale", &TranslationsByLocale{ProjectId: projectId}, "List translations for a specific locale.")
+
+	r.Register("translations/exclude", &TranslationsExclude{ProjectId: projectId}, "Exclude translations matching query from locale export.")
+
+	r.Register("translations/include", &TranslationsInclude{ProjectId: projectId}, "Include translations matching query in locale export")
+
+	r.Register("translations/list", &TranslationsList{ProjectId: projectId}, "List translations for the given project. Alternatively, POST request to /search")
+
+	r.Register("translations/search", &TranslationsSearch{ProjectId: projectId}, "List translations for the given project if you exceed GET request limitations on translations list.")
+
+	r.Register("translations/unverify", &TranslationsUnverify{ProjectId: projectId}, "Mark translations matching query as unverified")
+
+	r.Register("translations/verify", &TranslationsVerify{ProjectId: projectId}, "Verify translations matching query.")
+
+	r.Register("upload/create", &UploadCreate{ProjectId: projectId}, "Upload a new language file. Creates necessary resources in your project.")
+
+	r.Register("upload/show", &UploadShow{ProjectId: projectId}, "View details and summary for a single upload.")
+
+	r.Register("version/show", &VersionShow{ProjectId: projectId}, "Get details on a single version.")
+
+	r.Register("versions/list", &VersionsList{ProjectId: projectId}, "List all versions for the given translation.")
 
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
@@ -91,7 +159,7 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-16 17:26:43.384499 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-22 09:34:51.396454689 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

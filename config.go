@@ -66,12 +66,12 @@ func phraseConfigPath() (string, error) {
 func configContent() (string, error) {
 	path, err := phraseConfigPath()
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	b, err := bytesAtPath(path)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 	return string(b), nil
 }
@@ -151,8 +151,10 @@ func parseCallArgs(yml string) (map[string]string, error) {
 	}
 
 	m := make(map[string]string)
-	m["ProjectId"] = callArgs.Phraseapp.ProjectId
-	m["AccessToken"] = callArgs.Phraseapp.AccessToken
+	if callArgs != nil {
+		m["ProjectId"] = callArgs.Phraseapp.ProjectId
+		m["AccessToken"] = callArgs.Phraseapp.AccessToken
+	}
 
 	return m, nil
 }

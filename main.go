@@ -11,11 +11,8 @@ func main() {
 }
 
 func Run(args ...string) {
-	callArgs, err := ConfigCallArgs()
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = router(callArgs).RunWithArgs()
+	callArgs, _ := ConfigCallArgs()
+	err := router(callArgs).RunWithArgs()
 	switch err {
 	case cli.ErrorHelpRequested, cli.ErrorNoRoute:
 		os.Exit(1)
