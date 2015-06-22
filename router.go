@@ -153,13 +153,26 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("versions/list", &VersionsList{ProjectId: projectId}, "List all versions for the given translation.")
 
+	r.RegisterFunc("pull", pullCommand, "Pull locales from your PhraseApp project.")
+	r.RegisterFunc("pull", pushCommand, "Push locales to your PhraseApp project.")
+
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
 	return r
 }
 
+func pullCommand() error {
+
+	return nil
+}
+
+func pushCommand() error {
+
+	return nil
+}
+
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-22 09:34:51.396454689 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-22 13:11:29.832927646 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	Run(os.Args[1:]...)
+	PPRun()
+	// Run(os.Args[1:]...)
 }
 
 func Run(args ...string) {
@@ -24,17 +25,23 @@ func Run(args ...string) {
 	}
 }
 
-func PushPullRun() {
-	args, err := ConfigPushPull()
-	if err != nil {
-		fmt.Println(err)
+func PPRun() {
+	p1 := "/Users/sacry1/dev/phrase/**/*"
+	p2 := "/Users/sacry1/dev/phrase/phrase/locales/translation_center/*"
+	p3 := "/Users/sacry1/dev/phrase/phrase/locales/translation_center/phrase.de.yml"
+	ps1, _ := FileStrategy(p1)
+	ps2, _ := FileStrategy(p2)
+	ps3, _ := FileStrategy(p3)
+	fmt.Println("ps1:")
+	for _, item := range ps1 {
+		fmt.Println("  ", item)
 	}
-	fmt.Println("ProjectId:", args.Phraseapp.ProjectId)
-	fmt.Println("AccessToken:", args.Phraseapp.AccessToken)
-	for _, item := range args.Phraseapp.Push.Sources {
-		fmt.Println(item)
+	fmt.Println("ps2:")
+	for _, item := range ps2 {
+		fmt.Println("  ", item)
 	}
-	for _, item := range args.Phraseapp.Pull.Targets {
-		fmt.Println(item)
+	fmt.Println("ps3:")
+	for _, item := range ps3 {
+		fmt.Println("  ", item)
 	}
 }

@@ -13,7 +13,7 @@ const configName = ".phraseapp.yml"
 const defaultDir = ".config/phraseapp"
 
 func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
-	content, err := configContent()
+	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
 }
 
 func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
-	content, err := configContent()
+	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 }
 
 func ConfigCallArgs() (map[string]string, error) {
-	content, err := configContent()
+	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
 	}
@@ -39,16 +39,20 @@ func ConfigCallArgs() (map[string]string, error) {
 	return parseCallArgs(content)
 }
 
-func ConfigPushPull() (*PushPullConfig, error) {
-	content, err := configContent()
+// Paths and content
+func ConfigContent() (string, error) {
+	path, err := phraseConfigPath()
 	if err != nil {
-		return nil, err
+		return "", nil
 	}
 
-	return parsePushPullArgs(content)
+	b, err := bytesAtPath(path)
+	if err != nil {
+		return "", nil
+	}
+	return string(b), nil
 }
 
-// Paths and content
 func phraseConfigPath() (string, error) {
 	callerPath, err := os.Getwd()
 	if err != nil {
@@ -61,19 +65,6 @@ func phraseConfigPath() (string, error) {
 	}
 
 	return defaultConfigDir()
-}
-
-func configContent() (string, error) {
-	path, err := phraseConfigPath()
-	if err != nil {
-		return "", nil
-	}
-
-	b, err := bytesAtPath(path)
-	if err != nil {
-		return "", nil
-	}
-	return string(b), nil
 }
 
 func bytesAtPath(path string) ([]byte, error) {
@@ -151,41 +142,11 @@ func parseCallArgs(yml string) (map[string]string, error) {
 	}
 
 	m := make(map[string]string)
+
 	if callArgs != nil {
 		m["ProjectId"] = callArgs.Phraseapp.ProjectId
 		m["AccessToken"] = callArgs.Phraseapp.AccessToken
 	}
 
 	return m, nil
-}
-
-type Params struct {
-	File        string
-	AccessToken string `yaml:"access_token"`
-	ProjectId   string `yaml:"project_id"`
-	Format      string
-}
-
-type PushPullConfig struct {
-	Phraseapp struct {
-		AccessToken string `yaml:"access_token"`
-		ProjectId   string `yaml:"project_id"`
-		Push        struct {
-			Sources []Params
-		}
-		Pull struct {
-			Targets []Params
-		}
-	}
-}
-
-func parsePushPullArgs(yml string) (*PushPullConfig, error) {
-	var pushPullConfig *PushPullConfig
-
-	err := yaml.Unmarshal([]byte(yml), &pushPullConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return pushPullConfig, nil
 }
