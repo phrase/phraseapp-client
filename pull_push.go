@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-go/phraseapp"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,43 +19,89 @@ func ConfigPushPull() (*PushPullConfig, error) {
 	return parsePushPullArgs(content)
 }
 
-func FileStrategy(file string, fileFormat string) ([]string, error) {
+type Path struct {
+	UserPath        string
+	Separator       string
+	AbsPath         string
+	Components      []string
+	Mode            string
+	LocaleSpecified bool
+	FormatSpecified bool
+}
 
-	absPath, err := filepath.Abs(file)
+func (p *Path) RealPath() string {
+	return path.Join(p.Separator, p.UserPath, p.Separator)
+}
 
-	if err != nil {
-		return nil, err
+func (p *Path) SubPath(toReplace, replacement string) string {
+	return path.Join(p.Separator, strings.Replace(p.UserPath, toReplace, replacement, 0), p.Separator)
+}
+
+func PathComponents(userPath string) *Path {
+	p := &Path{UserPath: userPath, Separator: string(os.PathSeparator)}
+
+	if strings.HasSuffix(p.UserPath, path.Join("**", "*")) {
+		p.Mode = "**/*"
+	} else if strings.HasSuffix(p.UserPath, "*") {
+		p.Mode = "*"
+	} else {
+		p.Mode = ""
 	}
 
-	recursive := path.Join("**", "*")
+	p.UserPath = strings.TrimSpace(trimSuffix(p.UserPath, p.Mode))
 
-	switch {
-	case strings.HasSuffix(absPath, recursive):
-		root := trimSuffix(absPath, recursive)
-		return recursiveStrategy(root, fileFormat)
-
-	case strings.HasSuffix(absPath, "*"):
-		return singleDirectoryStrategy(absPath, fileFormat)
-
+	split := strings.Split(p.UserPath, p.Separator)
+	for _, part := range split {
+		if part != p.Separator {
+			if !p.LocaleSpecified {
+				p.LocaleSpecified = strings.Contains(part, "<locale_name>")
+			}
+			if !p.FormatSpecified {
+				p.FormatSpecified = strings.Contains(part, "<format_name>")
+			}
+			p.Components = append(p.Components, part)
+		}
 	}
 
-	err = fileExists(absPath)
-	if err != nil {
-		return nil, err
+	return p
+}
+
+func PullStrategy(p *Path, params *Params) ([]string, error) {
+	files := []string{}
+	if p.LocaleSpecified {
+		locales, err := phraseapp.LocalesList(params.ProjectId, 1, 25)
+		if err != nil {
+			return nil, err
+		}
+		for _, locale := range locales {
+			absPath, err := NewLocaleFile(p, locale.Name)
+			if err != nil {
+				return nil, err
+			}
+			files = append(files, absPath)
+		}
+	} else {
+		absPath, err := filepath.Abs(p.UserPath)
+		if err != nil {
+			return nil, err
+		}
+		switch {
+		case p.Mode == "":
+			return []string{absPath}, nil
+
+		case p.Mode == "*":
+			return singleDirectoryStrategy(absPath, "")
+
+		}
 	}
 
-	return []string{absPath}, nil
+	return files, nil
 }
 
 // File handling
 func recursiveStrategy(root, fileFormat string) ([]string, error) {
-	err := fileExists(root)
-	if err != nil {
-		return nil, err
-	}
-
 	fileList := []string{}
-	err = filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
 		if isLocaleFile(f.Name(), fileFormat) {
 			fileList = append(fileList, path)
 		}
@@ -68,20 +115,45 @@ func recursiveStrategy(root, fileFormat string) ([]string, error) {
 	return fileList, nil
 }
 
-func singleDirectoryStrategy(file, fileFormat string) ([]string, error) {
-	files, err := filepath.Glob(file)
+func singleDirectoryStrategy(root, fileFormat string) ([]string, error) {
+	files, err := filepath.Glob(root)
 	if err != nil {
 		return nil, err
 	}
 	localeFiles := []string{}
 	for _, f := range files {
-		if isLocaleFile(f, fileFormat) {
-			localeFiles = append(localeFiles, f)
+		if fileFormat != "" {
+			if isLocaleFile(f, fileFormat) {
+				localeFiles = append(localeFiles, f)
+			}
 		} else {
 			localeFiles = append(localeFiles, f)
 		}
 	}
 	return localeFiles, nil
+}
+
+func NewLocaleFile(p *Path, localeName string) (string, error) {
+	newPath := p.SubPath("<locale_name>", localeName)
+
+	absPath, err := filepath.Abs(newPath)
+	if err != nil {
+		return "", err
+	}
+
+	err = fileExists(absPath)
+	if err != nil {
+		absDir := filepath.Dir(absPath)
+		os.MkdirAll(absDir, 0644)
+
+		f, err := os.Create(absPath)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+	}
+
+	return absPath, nil
 }
 
 func isLocaleFile(file, extension string) bool {
@@ -109,7 +181,9 @@ type Params struct {
 	AccessToken string `yaml:"access_token"`
 	ProjectId   string `yaml:"project_id"`
 	Format      string
+	FormatName  string `yaml:"format_name"`
 	LocaleId    string `yaml:"locale_id"`
+	Emoji       bool   `yaml:"emoji"`
 }
 
 type PushPullConfig struct {
@@ -117,10 +191,10 @@ type PushPullConfig struct {
 		AccessToken string `yaml:"access_token"`
 		ProjectId   string `yaml:"project_id"`
 		Push        struct {
-			Sources []Params
+			Sources []*Params
 		}
 		Pull struct {
-			Targets []Params
+			Targets []*Params
 		}
 	}
 }
@@ -134,32 +208,4 @@ func parsePushPullArgs(yml string) (*PushPullConfig, error) {
 	}
 
 	return pushPullConfig, nil
-}
-
-// debugging
-func PrettyPrint(projectId, accessToken string, sources []Params, targets []Params) {
-	fmt.Println("Phraseapp:")
-	fmt.Println("  ProjectId:", projectId)
-	fmt.Println("  AccessToken:", accessToken)
-
-	fmt.Println("  Push:")
-	for i, params := range sources {
-		fmt.Println("    Source", i+1)
-		fmt.Println("      token:", params.AccessToken)
-		fmt.Println("      pid:", params.ProjectId)
-		fmt.Println("      file:", params.File)
-		fmt.Println("      format:", params.Format)
-		fmt.Println("      lid:", params.LocaleId)
-
-	}
-
-	fmt.Println("  Pull:")
-	for i, params := range targets {
-		fmt.Println("    Targets", i+1)
-		fmt.Println("      token:", params.AccessToken)
-		fmt.Println("      pid:", params.ProjectId)
-		fmt.Println("      file:", params.File)
-		fmt.Println("      format:", params.Format)
-		fmt.Println("      lid:", params.LocaleId)
-	}
 }

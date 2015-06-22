@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
-	err := PushPullRun()
+	err := PullRun()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 	}
+
 	// Run(os.Args[1:]...)
 }
 
@@ -28,30 +29,32 @@ func Run(args ...string) {
 	}
 }
 
-func PushPullRun() error {
+func PullRun() error {
 	config, err := ConfigPushPull()
 	if err != nil {
 		return err
 	}
-	projectId := config.Phraseapp.ProjectId
-	accessToken := config.Phraseapp.AccessToken
-	sources := config.Phraseapp.Push.Sources
 	targets := config.Phraseapp.Pull.Targets
 
-	PrettyPrint(projectId, accessToken, sources, targets)
-
-	for _, source := range sources {
-		_, err := FileStrategy(source.File, source.Format)
-		if err != nil {
-			return err
-		}
+	for _, target := range targets {
+		p := PathComponents(target.File)
+		paths, err := PullStrategy(p, target)
+		fmt.Println("Error", err)
+		fmt.Println("Paths", paths)
 	}
 
-	for _, target := range targets {
-		_, err := FileStrategy(target.File, target.Format)
-		if err != nil {
-			return err
-		}
+	return nil
+}
+
+func PushRun() error {
+	config, err := ConfigPushPull()
+	if err != nil {
+		return err
+	}
+	sources := config.Phraseapp.Push.Sources
+	for _, source := range sources {
+		p := PathComponents(source.File)
+		fmt.Println(p)
 	}
 
 	return nil
