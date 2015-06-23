@@ -160,7 +160,7 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) {
 		pullConfig(data)
 		return
 	case step == "finish":
-		writeConfig(data, ".phraseapp.yaml")
+		writeConfig(data, ".phraseapp.yml")
 		return
 	}
 
