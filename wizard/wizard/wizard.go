@@ -22,6 +22,7 @@ type WizardData struct {
 	AccessToken string        `yaml:"access_token"`
 	ProjectId   string        `yaml:"project_id"`
 	Format      string        `yaml:"file_format"`
+	MainFormat  string        `yaml:"-"`
 	Step        string        `yaml:"-"`
 	Pull        []*PullConfig `yaml:"pull,omitempty"`
 	Push        []*PushConfig `yaml:"push,omitempty"`
@@ -83,7 +84,7 @@ func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.Wait
 	}
 
 	wg.Add(1)
-	chars := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+	chars := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
 	if position > len(chars)-1 {
 		position = 0
 	}
@@ -237,8 +238,17 @@ func selectFormat(data *WizardData) {
 	}
 
 	var id string
-	fmt.Printf("Select the format you want to use for language files you download from PhraseApp (e.g. enter 1 for %s): ", formats[0].Name)
+	mainFormatDefault := ""
+	if data.MainFormat != "" {
+		mainFormatDefault = fmt.Sprintf(" [default: %s]", data.MainFormat)
+	}
+	fmt.Printf("Select the format you want to use for language files you download from PhraseApp%s: ", mainFormatDefault)
 	fmt.Scanln(&id)
+	if id == "" && data.MainFormat != "" {
+		data.Format = data.MainFormat
+		DisplayWizard(data, next(data), "")
+		return
+	}
 	number, err := strconv.Atoi(id)
 	if err != nil || number < 1 || number > len(formats)+1 {
 		DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
@@ -396,6 +406,7 @@ func selectProjectStep(data *WizardData) {
 
 	if len(projects) == 1 {
 		data.ProjectId = projects[0].Id
+		data.MainFormat = projects[0].MainFormat
 		fmt.Printf("You've got one project, %s. Answer \"y\" to select this or \"n\" to create a new project: ")
 		var answer string
 		fmt.Scanln(&answer)
@@ -404,6 +415,7 @@ func selectProjectStep(data *WizardData) {
 			return
 		} else {
 			data.ProjectId = ""
+			data.MainFormat = ""
 			DisplayWizard(data, "newProject", "")
 			return
 		}
@@ -428,5 +440,6 @@ func selectProjectStep(data *WizardData) {
 
 	selectedProject := projects[number-1]
 	data.ProjectId = selectedProject.Id
+	data.MainFormat = selectedProject.MainFormat
 	DisplayWizard(data, next(data), "")
 }
