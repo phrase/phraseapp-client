@@ -2,6 +2,7 @@ package wizard
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -240,7 +241,7 @@ func selectFormat(data *WizardData) {
 	var id string
 	mainFormatDefault := ""
 	if data.MainFormat != "" {
-		mainFormatDefault = fmt.Sprintf(" [default: %s]", data.MainFormat)
+		mainFormatDefault = fmt.Sprintf(" [Press enter for default: %s]", data.MainFormat)
 	}
 	fmt.Printf("Select the format you want to use for language files you download from PhraseApp%s: ", mainFormatDefault)
 	fmt.Scanln(&id)
@@ -261,6 +262,10 @@ func selectFormat(data *WizardData) {
 func writeConfig(data *WizardData, filename string) {
 	wrapper := WizardWrapper{Data: data}
 	bytes, err := yaml.Marshal(wrapper)
+	if err != nil {
+		panic(err.Error())
+	}
+	err = ioutil.WriteFile(filename, bytes, 0655)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -368,7 +373,7 @@ func selectProjectStep(data *WizardData) {
 	channelEnd := ChannelEnd{}
 	getProjects := func(channelEnd *ChannelEnd) {
 		var projects []*phraseapp.Project
-		time.Sleep(2000 * time.Millisecond)
+		// time.Sleep(500 * time.Millisecond)
 		projects, err = phraseapp.ProjectsList(1, 25)
 		var array []phraseapp.Project
 		for _, res := range projects {
