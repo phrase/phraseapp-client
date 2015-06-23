@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"gopkg.in/yaml.v1"
 
@@ -74,11 +76,46 @@ func clean() {
 	}
 }
 
+func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.WaitGroup) {
+	if channelEnd.closed {
+		wg.Done()
+		return
+	}
+
+	wg.Add(1)
+	chars := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+	if position > len(chars)-1 {
+		position = 0
+	}
+	postfix := ""
+	prefix := ""
+	for counter, str := range chars {
+		if counter < position {
+			postfix = fmt.Sprint(postfix, str)
+		} else {
+			prefix = fmt.Sprint(prefix, str)
+		}
+	}
+	clean()
+	printWait(fmt.Sprintf("%s %s%s", waitMsg, prefix, postfix))
+
+	time.Sleep(100 * time.Millisecond)
+
+	spinner(waitMsg, position+1, channelEnd, wg)
+	wg.Done()
+}
+
 func printError(errorMsg string) {
 	red := ansi.ColorCode("red+b:black")
 	reset := ansi.ColorCode("reset")
 
 	fmt.Println(red, errorMsg, reset)
+}
+
+func printWait(msg string) {
+	yellow := ansi.ColorCode("yellow+b:black")
+	reset := ansi.ColorCode("reset")
+	fmt.Print(yellow, msg, reset)
 }
 
 func printSuccess(msg string) {
@@ -306,11 +343,42 @@ func newProjectStep(data *WizardData) {
 	}
 }
 
+type ChannelEnd struct {
+	closed bool
+}
+
 func selectProjectStep(data *WizardData) {
 	auth := phraseapp.AuthCredentials{Token: data.AccessToken}
 	fmt.Println("Please select your project:")
 	phraseapp.RegisterAuthCredentials(&auth, nil)
-	projects, err := phraseapp.ProjectsList(1, 25)
+	var wg sync.WaitGroup
+	out := make(chan []phraseapp.Project, 1)
+	wg.Add(1)
+	var err error
+	channelEnd := ChannelEnd{}
+	getProjects := func(channelEnd *ChannelEnd) {
+		var projects []*phraseapp.Project
+		time.Sleep(2000 * time.Millisecond)
+		projects, err = phraseapp.ProjectsList(1, 25)
+		var array []phraseapp.Project
+		for _, res := range projects {
+			array = append(array, *res)
+		}
+		out <- array
+		channelEnd.closed = true
+		return
+	}
+	go getProjects(&channelEnd)
+	go func(channelEnd *ChannelEnd, wg *sync.WaitGroup) {
+		spinner("Loading projects... ", 0, channelEnd, wg)
+	}(&channelEnd, &wg)
+	var projects []phraseapp.Project
+
+	projects = <-out
+	clean()
+	wg.Wait()
+	close(out)
+
 	if err != nil {
 		success, match_err := regexp.MatchString("401", err.Error())
 		if match_err != nil {
