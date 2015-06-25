@@ -9,7 +9,7 @@ import (
 func main() {
 	err := PullRun()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		fmt.Println(err)
 	}
 
 	// Run(os.Args[1:]...)
@@ -30,32 +30,38 @@ func Run(args ...string) {
 }
 
 func PullRun() error {
-	config, err := ConfigPushPull()
+	targets, err := PullTargetsFromConfig()
 	if err != nil {
 		return err
 	}
-	targets := config.Phraseapp.Pull.Targets
 
 	for _, target := range targets {
 		p := PathComponents(target.File)
-		paths, err := PullStrategy(p, target)
-		fmt.Println("Error", err)
-		fmt.Println("Paths", paths)
+		err := Pull(p, target)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+/*
 func PushRun() error {
-	config, err := ConfigPushPull()
+	sources, err := PushSourcesFromConfig()
 	if err != nil {
 		return err
 	}
-	sources := config.Phraseapp.Push.Sources
+
 	for _, source := range sources {
 		p := PathComponents(source.File)
-		fmt.Println(p)
+		_, err := Push(p, source)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// fmt.Println(paths)
 	}
 
 	return nil
 }
+*/
