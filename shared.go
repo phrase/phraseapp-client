@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"bytes"
+	"github.com/mgutz/ansi"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -48,7 +50,7 @@ func PathComponents(userPath string) *PhrasePath {
 	p.UserPath = cleanUserPath(userPath, p.Mode)
 	p.Components = splitToParts(p.UserPath, p.Separator)
 	p.LocaleTagInPath = componentContains(p.Components, "<locale_name>")
-	p.LocaleTagInPath = componentContains(p.Components, "<format_name>")
+	p.FormatTagInPath = componentContains(p.Components, "<format_name>")
 
 	return p
 }
@@ -119,22 +121,23 @@ func LocaleFileGlob(p *PhrasePath, fileFormat string, paths LocalePaths) (Locale
 }
 
 func expandSingleDirectory(p *PhrasePath, paths LocalePaths, fileFormat string) (LocalePaths, error) {
-	extendedPaths := []*LocalePath{}
+	expandedPaths := []*LocalePath{}
 	for _, localePath := range paths {
 
-		pathsPerDirectory, err := glob(localePath.Path+"/", fileFormat)
+		asDirectory := fmt.Sprintf("%s/", localePath.Path)
+		pathsPerDirectory, err := glob(asDirectory, fileFormat)
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, aPath := range pathsPerDirectory {
-			newLocalePath := CopyLocalePath(aPath, localePath)
-			extendedPaths = append(extendedPaths, newLocalePath)
+		for _, absPath := range pathsPerDirectory {
+			localeToPathMapping := CopyLocalePath(absPath, localePath)
+			expandedPaths = append(expandedPaths, localeToPathMapping)
 		}
 
 	}
-	return extendedPaths, nil
+	return expandedPaths, nil
 }
 
 func recurseDirectory(fileFormat string, paths LocalePaths) (LocalePaths, error) {
@@ -145,8 +148,8 @@ func recurseDirectory(fileFormat string, paths LocalePaths) (LocalePaths, error)
 			return nil, err
 		}
 		for _, newPath := range newPaths {
-			newLocalePath := &LocalePath{Path: newPath, LocaleId: localePath.LocaleId}
-			expandedPaths = append(expandedPaths, newLocalePath)
+			localeToPathMapping := &LocalePath{Path: newPath, LocaleId: localePath.LocaleId}
+			expandedPaths = append(expandedPaths, localeToPathMapping)
 		}
 	}
 	return expandedPaths, nil
@@ -277,9 +280,9 @@ func trimSuffix(s, suffix string) string {
 }
 
 // File creation
-func CreateFiles(p *PhrasePath, virtualPaths LocalePaths) error {
+func CreateFiles(p *PhrasePath, virtualPaths LocalePaths, fileFormat string) error {
 	for _, localePath := range virtualPaths {
-		defaultName := defaultFileName(p.Mode, localePath.Path)
+		defaultName := defaultFileName(p.Mode, localePath.Path, fileFormat)
 		if defaultName != "" {
 			localePath.Path = path.Join(localePath.Path, p.Separator, defaultName)
 		}
@@ -291,10 +294,10 @@ func CreateFiles(p *PhrasePath, virtualPaths LocalePaths) error {
 	return nil
 }
 
-func defaultFileName(mode, localePath string) string {
+func defaultFileName(mode, localePath, fileFormat string) string {
 	if mode != "" {
 		if isDir(localePath) {
-			return "phrase.yml"
+			return fmt.Sprintf("phrase.%s", fileFormat)
 		}
 	}
 	return ""
@@ -349,4 +352,56 @@ func Authenticate() error {
 	phraseapp.RegisterAuthCredentials(defaultCredentials, defaultCredentials)
 
 	return nil
+}
+
+func printError(err error, msg string) {
+	red := ansi.ColorCode("red+b:black")
+	reset := ansi.ColorCode("reset")
+	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", red, err, msg, reset)
+}
+
+func sharedMessage(method string, localePath *LocalePath) {
+	yellow := ansi.ColorCode("yellow+b:black")
+	reset := ansi.ColorCode("reset")
+
+	localPath := localePath.Path
+	localeName := localePath.LocaleName
+	localeCode := localePath.LocaleCode
+
+	fmt1 := []string{}
+
+	fmt1 = append(fmt1, yellow)
+	if localeName != "" {
+		fmt1 = append(fmt1, localeName)
+	}
+	if localeCode != "" {
+		fmt1 = append(fmt1, fmt.Sprintf(" (%s)", localeCode))
+	}
+	fmt1 = append(fmt1, reset)
+
+	if len(fmt1) <= 2 {
+		fmt1 = []string{yellow, "?", reset}
+	}
+
+	fmt2 := []string{}
+	fmt2 = append(fmt2, yellow)
+	fmt2 = append(fmt2, localPath)
+	fmt2 = append(fmt2, reset)
+
+	remote := strings.Join(fmt1, "")
+	local := strings.Join(fmt2, "")
+
+	from, to := "", ""
+	if method == "pull" {
+		from, to = remote, local
+	} else {
+		from, to = local, remote
+	}
+
+	var buffer bytes.Buffer
+	buffer.WriteString("From: ")
+	buffer.WriteString(from)
+	buffer.WriteString(" To: ")
+	buffer.WriteString(to)
+	fmt.Println(buffer.String())
 }

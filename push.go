@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
+	"github.com/mgutz/ansi"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"os"
+	"strings"
 )
 
 type Sources []*Source
@@ -64,11 +64,11 @@ func (source *Source) Push() error {
 
 	for _, localeToPath := range virtualPaths {
 
-		uploadMessaging(localeToPath)
+		sharedMessage("push", localeToPath)
 
 		err = uploadFile(source, localeToPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			printError(err, "")
 		}
 	}
 
@@ -95,15 +95,8 @@ func uploadFile(source *Source, localePath *LocalePath) error {
 		return err
 	}
 
-	localesCreated := aUpload.Summary.LocalesCreated
-	translationKeysCreated := aUpload.Summary.TranslationKeysCreated
-	translationsCreated := aUpload.Summary.TranslationsCreated
-	translationsUpdated := aUpload.Summary.TranslationsUpdated
+	printSummary(&aUpload.Summary)
 
-	fmt.Println("Locales Created:", localesCreated,
-		"Keys Created:", translationKeysCreated,
-		"Translations Created:", translationsCreated,
-		"Translations Updated:", translationsUpdated)
 	return nil
 }
 
@@ -200,16 +193,17 @@ func parsePush(yml string) (Sources, error) {
 	return sources, nil
 }
 
-func uploadMessaging(localeToPath *LocalePath) {
-	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("Pushing: %s ", localeToPath.Path))
-	if localeToPath.LocaleName != "" {
-		buffer.WriteString(fmt.Sprintf("To: %s", localeToPath.LocaleName))
-		if localeToPath.LocaleCode != "" {
-			buffer.WriteString(fmt.Sprintf(" (%s)", localeToPath.LocaleCode))
-		}
-	} else if localeToPath.LocaleId != "" {
-		buffer.WriteString(fmt.Sprintf("To: %s", localeToPath.LocaleId))
-	}
-	fmt.Println(buffer.String())
+func printSummary(summary *phraseapp.SummaryType) {
+	localesCreated := joinMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
+	keysCreated := joinMessage("Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+	translationsCreated := joinMessage("Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+	translationsUpdated := joinMessage("Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+	formatted := fmt.Sprintf("%s - %s - %s - %s", localesCreated, keysCreated, translationsCreated, translationsUpdated)
+	fmt.Println(formatted)
+}
+
+func joinMessage(msg, stat string) string {
+	green := ansi.ColorCode("green+b:black")
+	reset := ansi.ColorCode("reset")
+	return strings.Join([]string{msg, green, stat, reset}, "")
 }

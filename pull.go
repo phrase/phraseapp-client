@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
@@ -61,22 +60,26 @@ func (target *Target) Pull() error {
 		return err
 	}
 
-	err = CreateFiles(p, virtualPaths)
+	err = CreateFiles(p, virtualPaths, target.GetFormat())
 	if err != nil {
 		return err
 	}
 
-	for _, localePath := range virtualPaths {
+	for _, localeToPath := range virtualPaths {
 
-		downloadMessaging(localePath)
+		sharedMessage("pull", localeToPath)
 
-		err := downloadAndWriteToFile(target, localePath)
+		err := downloadAndWriteToFile(target, localeToPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			printError(err, fmt.Sprint(" for %s", localeToPath.Path))
 		}
 	}
 
 	return nil
+}
+
+func pullMsg(a, b string) (string, string) {
+	return b, a
 }
 
 func TargetsFromConfig() (Targets, error) {
@@ -194,20 +197,4 @@ func parsePull(yml string) (Targets, error) {
 	}
 
 	return targets, nil
-}
-
-func downloadMessaging(localeToPath *LocalePath) {
-	var buffer bytes.Buffer
-	buffer.WriteString("Pulling: ")
-	if localeToPath.LocaleName != "" {
-		buffer.WriteString(localeToPath.LocaleName)
-		if localeToPath.LocaleCode != "" {
-			buffer.WriteString(fmt.Sprintf(" (%s)", localeToPath.LocaleCode))
-		}
-	} else if localeToPath.LocaleId != "" {
-		buffer.WriteString(localeToPath.LocaleId)
-	}
-
-	buffer.WriteString(fmt.Sprintf(" To: %s", localeToPath.Path))
-	fmt.Println(buffer.String())
 }

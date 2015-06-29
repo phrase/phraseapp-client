@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	Run(os.Args[1:]...)
+	Run()
 }
 
-func Run(args ...string) {
+func Run() {
 	callArgs, _ := ConfigCallArgs()
 	err := router(callArgs).RunWithArgs()
 	switch err {

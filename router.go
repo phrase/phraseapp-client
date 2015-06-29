@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/wizard/wizard"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -157,6 +158,8 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.RegisterFunc("push", pushCommand, "Push locales to your PhraseApp project.")
 
+	r.RegisterFunc("wizard", wizardCommand, "Push locales to your PhraseApp project.")
+
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
 	return r
@@ -190,8 +193,14 @@ func pushCommand() error {
 	return nil
 }
 
+func wizardCommand() error {
+	data := wizard.WizardData{}
+	wizard.DisplayWizard(&data, "", "")
+	return nil
+}
+
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-29 15:15:15.805582094 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-29 17:09:19.846429218 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
