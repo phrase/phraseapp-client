@@ -1,19 +1,16 @@
 package main
 
 import (
-	"path/filepath"
-
+	"bytes"
 	"fmt"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"os"
-	"path"
 )
 
-type Target *PullArgs
-type Targets []Target
+type Targets []*Target
 
-type PullArgs struct {
+type Target struct {
 	File        string      `yaml:"file,omitempty"`
 	ProjectId   string      `yaml:"project_id,omitempty"`
 	AccessToken string      `yaml:"access_token,omitempty"`
@@ -21,34 +18,57 @@ type PullArgs struct {
 }
 
 type PullParams struct {
-	FileFormat string `yaml:"file_format,omitempty"`
-	LocaleId   string `yaml:"locale_id,omitempty"`
+	FileFormat               string                  `yaml:"file_format,omitempty"`
+	LocaleId                 string                  `yaml:"locale_id,omitempty"`
+	ConvertEmoji             *bool                   `yaml:"convert_emoji,omitempty"`
+	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
+	IncludeEmptyTranslations *bool                   `yaml:"include_empty_translations,omitempty"`
+	KeepNotranslateTags      *bool                   `yaml:"keep_notranslate_tags,omitempty"`
+	TagId                    *string                 `yaml:"tag_id,omitempty"`
 }
 
-func Pull(p *PhrasePath, target Target) error {
-	authenticate()
+func (t *Target) GetFormat() string {
+	if t.Params != nil {
+		return t.Params.FileFormat
+	}
+	return ""
+}
+
+func (t *Target) GetLocaleId() string {
+	if t.Params != nil {
+		return t.Params.LocaleId
+	}
+	return ""
+}
+
+func (target *Target) Pull() error {
+	Authenticate()
+
+	p := PathComponents(target.File)
 
 	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
 	if err != nil {
 		return err
 	}
 
-	paths, err := expandPathsWithLocale(p, target, locales)
+	localeToPathMapping, err := ExpandPathsWithLocale(p, target.GetLocaleId(), locales)
 	if err != nil {
 		return err
 	}
 
-	virtualPaths, err := fileGlobbingPull(p, paths)
+	virtualPaths, err := LocaleFileGlob(p, target.GetFormat(), localeToPathMapping)
 	if err != nil {
 		return err
 	}
 
-	err = createFiles(p, virtualPaths)
+	err = CreateFiles(p, virtualPaths)
 	if err != nil {
 		return err
 	}
 
 	for _, localePath := range virtualPaths {
+
+		downloadMessaging(localePath)
 
 		err := downloadAndWriteToFile(target, localePath)
 		if err != nil {
@@ -59,7 +79,7 @@ func Pull(p *PhrasePath, target Target) error {
 	return nil
 }
 
-func PullTargetsFromConfig() (Targets, error) {
+func TargetsFromConfig() (Targets, error) {
 	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
@@ -68,14 +88,22 @@ func PullTargetsFromConfig() (Targets, error) {
 	return parsePull(content)
 }
 
-func downloadAndWriteToFile(target Target, localePath *LocalePath) error {
-	downloadParams := new(phraseapp.LocaleDownloadParams)
-	downloadParams.FileFormat = target.Params.FileFormat
-
-	fmt.Println("Downloading: ", localePath.LocaleId)
-	res, err := phraseapp.LocaleDownload(target.ProjectId, localePath.LocaleId, downloadParams)
+func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
+	downloadParams, err := setDownloadParams(target, localePath)
 	if err != nil {
-		fmt.Println("1", err)
+		return err
+	}
+
+	params := target.Params
+	localeId := ""
+	if params != nil && params.LocaleId != "" {
+		localeId = params.LocaleId
+	} else {
+		localeId = localePath.LocaleId
+	}
+
+	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
+	if err != nil {
 		return err
 	}
 	fh, err := os.OpenFile(localePath.Path, os.O_WRONLY, 0700)
@@ -84,109 +112,53 @@ func downloadAndWriteToFile(target Target, localePath *LocalePath) error {
 	}
 	defer fh.Close()
 
-	fmt.Println(string(res))
 	_, err = fh.Write(res)
 	if err != nil {
-		fmt.Println("3", err)
 		return err
 	}
 	return nil
 }
 
-// locale File handling
-func createFiles(p *PhrasePath, virtualPaths LocalePaths) error {
-	for _, localePath := range virtualPaths {
-		defaultName := DefaultFileName(p.Mode, localePath.Path)
-		if defaultName != "" {
-			localePath.Path = path.Join(localePath.Path, p.Separator, defaultName)
-		}
-		fmt.Println("Creating: ", localePath.Path)
-		err := CreateFile(localePath.Path)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func setDownloadParams(target *Target, localePath *LocalePath) (*phraseapp.LocaleDownloadParams, error) {
+	downloadParams := new(phraseapp.LocaleDownloadParams)
 
-func expandPathsWithLocale(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
-	switch {
-	case p.LocaleTagInPath:
-		newFiles, err := FilePathsWithLocales(p, locales)
-		if err != nil {
-			return nil, err
-		}
-		return newFiles, nil
-
-	default:
-		return expandPathWithLocale(p, target, locales)
+	if target.Params == nil {
+		return downloadParams, nil
 	}
 
-}
+	params := target.Params
 
-func expandPathWithLocale(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
-	absPath, err := filepath.Abs(p.UserPath)
-	if err != nil {
-		return nil, err
+	format := params.FileFormat
+	if format != "" {
+		downloadParams.FileFormat = format
 	}
 
-	if target.Params != nil {
-		localeId := localeIdForPath(target.Params.LocaleId, locales)
-		if localeId == "" {
-			return nil, fmt.Errorf("locale specified in your path did not match any remote locales")
-		}
-
-		localePath := []*LocalePath{&LocalePath{Path: absPath, LocaleId: localeId}}
-		return localePath, nil
+	convertEmoji := params.ConvertEmoji
+	if convertEmoji != nil {
+		downloadParams.ConvertEmoji = convertEmoji
 	}
 
-	return nil, fmt.Errorf("no target locale id specified")
-}
-
-func localeIdForPath(localeId string, locales []*phraseapp.Locale) string {
-	for _, locale := range locales {
-		if localeId == locale.Id {
-			return locale.Id
-		}
+	formatOptions := params.FormatOptions
+	if formatOptions != nil {
+		downloadParams.FormatOptions = formatOptions
 	}
-	return ""
-}
 
-// File handling
-func fileGlobbingPull(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
-	switch {
-	case p.Mode == "":
-		return paths, nil
-
-	case p.Mode == "*":
-		if p.LocaleTagInFile() {
-			return singleDirectoryPull(p, paths)
-		} else {
-			return paths, nil
-		}
-
-	default:
-		return paths, nil
+	includeEmptyTranslations := params.IncludeEmptyTranslations
+	if includeEmptyTranslations != nil {
+		downloadParams.IncludeEmptyTranslations = includeEmptyTranslations
 	}
-}
 
-func singleDirectoryPull(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
-	extendedPaths := []*LocalePath{}
-	for _, localePath := range paths {
-
-		pathsPerDirectory, err := SingleDirectoryStrategy(localePath.Path+"/", "")
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, aPath := range pathsPerDirectory {
-			localePath := &LocalePath{Path: aPath, LocaleId: localePath.LocaleId}
-			extendedPaths = append(extendedPaths, localePath)
-		}
-
+	keepNotranslateTags := params.KeepNotranslateTags
+	if keepNotranslateTags != nil {
+		downloadParams.KeepNotranslateTags = keepNotranslateTags
 	}
-	return extendedPaths, nil
+
+	tagId := params.TagId
+	if tagId != nil {
+		downloadParams.TagId = tagId
+	}
+
+	return downloadParams, nil
 }
 
 // Parsing
@@ -222,4 +194,20 @@ func parsePull(yml string) (Targets, error) {
 	}
 
 	return targets, nil
+}
+
+func downloadMessaging(localeToPath *LocalePath) {
+	var buffer bytes.Buffer
+	buffer.WriteString("Pulling: ")
+	if localeToPath.LocaleName != "" {
+		buffer.WriteString(localeToPath.LocaleName)
+		if localeToPath.LocaleCode != "" {
+			buffer.WriteString(fmt.Sprintf(" (%s)", localeToPath.LocaleCode))
+		}
+	} else if localeToPath.LocaleId != "" {
+		buffer.WriteString(localeToPath.LocaleId)
+	}
+
+	buffer.WriteString(fmt.Sprintf(" To: %s", localeToPath.Path))
+	fmt.Println(buffer.String())
 }
