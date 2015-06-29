@@ -13,6 +13,7 @@ type Target struct {
 	File        string      `yaml:"file,omitempty"`
 	ProjectId   string      `yaml:"project_id,omitempty"`
 	AccessToken string      `yaml:"access_token,omitempty"`
+	FileFormat  string      `yaml:"file_format,omitempty"`
 	Params      *PullParams `yaml:"params,omitempty"`
 }
 
@@ -27,8 +28,11 @@ type PullParams struct {
 }
 
 func (t *Target) GetFormat() string {
-	if t.Params != nil {
+	if t.Params != nil && t.Params.FileFormat != "" {
 		return t.Params.FileFormat
+	}
+	if t.FileFormat != "" {
+		return t.FileFormat
 	}
 	return ""
 }
@@ -55,7 +59,7 @@ func (target *Target) Pull() error {
 		return err
 	}
 
-	virtualPaths, err := LocaleFileGlob(p, target.GetFormat(), localeToPathMapping)
+	virtualPaths, err := LocaleFileGlobPull(p, target.GetFormat(), localeToPathMapping, locales)
 	if err != nil {
 		return err
 	}
@@ -78,8 +82,21 @@ func (target *Target) Pull() error {
 	return nil
 }
 
-func pullMsg(a, b string) (string, string) {
-	return b, a
+func LocaleFileGlobPull(p *PhrasePath, fileFormat string, paths LocalePaths, locales []*phraseapp.Locale) (LocalePaths, error) {
+	switch {
+	case p.Mode == "":
+		return paths, nil
+
+	case p.Mode == "*":
+		if p.LocaleTagInPath {
+			return expandSingleDirectory(p, paths, fileFormat)
+		} else {
+			return buildLocaleNamesForFile(p, fileFormat, paths, locales)
+		}
+
+	default:
+		return paths, nil
+	}
 }
 
 func TargetsFromConfig() (Targets, error) {
@@ -89,6 +106,17 @@ func TargetsFromConfig() (Targets, error) {
 	}
 
 	return parsePull(content)
+}
+
+func buildLocaleNamesForFile(p *PhrasePath, fileFormat string, paths LocalePaths, locales []*phraseapp.Locale) (LocalePaths, error) {
+	newPaths := []*LocalePath{}
+	singleDir := paths[0]
+	for _, locale := range locales {
+		newPath := singleDir.Path + p.Separator + locale.Name + "." + fileFormat
+		localeToPathMapping := &LocalePath{Path: newPath, LocaleId: locale.Id, LocaleName: locale.Name, LocaleCode: locale.Code}
+		newPaths = append(newPaths, localeToPathMapping)
+	}
+	return newPaths, nil
 }
 
 func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
@@ -124,12 +152,13 @@ func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
 
 func setDownloadParams(target *Target, localePath *LocalePath) (*phraseapp.LocaleDownloadParams, error) {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
+	downloadParams.FileFormat = target.FileFormat
+
+	params := target.Params
 
 	if target.Params == nil {
 		return downloadParams, nil
 	}
-
-	params := target.Params
 
 	format := params.FileFormat
 	if format != "" {
@@ -169,6 +198,7 @@ type PullConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
 		ProjectId   string `yaml:"project_id"`
+		FileFormat  string `yaml:"file_format,omitempty"`
 		Pull        struct {
 			Targets Targets
 		}
@@ -185,6 +215,7 @@ func parsePull(yml string) (Targets, error) {
 
 	token := config.Phraseapp.AccessToken
 	projectId := config.Phraseapp.ProjectId
+	fileFormat := config.Phraseapp.FileFormat
 	targets := config.Phraseapp.Pull.Targets
 
 	for _, target := range targets {
@@ -193,6 +224,9 @@ func parsePull(yml string) (Targets, error) {
 		}
 		if target.AccessToken == "" {
 			target.AccessToken = token
+		}
+		if target.FileFormat == "" {
+			target.FileFormat = fileFormat
 		}
 	}
 

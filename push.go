@@ -14,6 +14,7 @@ type Source struct {
 	File        string      `yaml:"file,omitempty"`
 	ProjectId   string      `yaml:"project_id,omitempty"`
 	AccessToken string      `yaml:"access_token,omitempty"`
+	FileFormat  string      `yaml:"file_format,omitempty"`
 	Params      *PushParams `yaml:"params,omitempty"`
 }
 
@@ -29,8 +30,11 @@ type PushParams struct {
 }
 
 func (s *Source) GetFormat() string {
-	if s.Params != nil {
+	if s.Params != nil && s.Params.FileFormat != "" {
 		return s.Params.FileFormat
+	}
+	if s.FileFormat != "" {
+		return s.FileFormat
 	}
 	return ""
 }
@@ -57,7 +61,7 @@ func (source *Source) Push() error {
 		return err
 	}
 
-	virtualPaths, err := LocaleFileGlob(p, source.GetFormat(), localeToPathMapping)
+	virtualPaths, err := LocaleFileGlobPush(p, source.GetFormat(), localeToPathMapping)
 	if err != nil {
 		return err
 	}
@@ -73,6 +77,22 @@ func (source *Source) Push() error {
 	}
 
 	return nil
+}
+
+func LocaleFileGlobPush(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
+	switch {
+	case p.Mode == "":
+		return paths, nil
+
+	case p.Mode == "*":
+		return expandSingleDirectory(p, paths, fileFormat)
+
+	case p.Mode == "**/*":
+		return recurseDirectory(fileFormat, paths)
+
+	default:
+		return paths, nil
+	}
 }
 
 func SourcesFromConfig() (Sources, error) {
@@ -103,6 +123,7 @@ func uploadFile(source *Source, localePath *LocalePath) error {
 func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleFileImportParams, error) {
 	uploadParams := new(phraseapp.LocaleFileImportParams)
 	uploadParams.File = localePath.Path
+	uploadParams.FileFormat = &source.FileFormat
 
 	if source.Params == nil {
 		return uploadParams, nil
@@ -163,6 +184,7 @@ type PushConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
 		ProjectId   string `yaml:"project_id"`
+		FileFormat  string `yaml:"file_format,omitempty"`
 		Push        struct {
 			Sources Sources
 		}
@@ -179,6 +201,7 @@ func parsePush(yml string) (Sources, error) {
 
 	token := config.Phraseapp.AccessToken
 	projectId := config.Phraseapp.ProjectId
+	fileFormat := config.Phraseapp.FileFormat
 	sources := config.Phraseapp.Push.Sources
 
 	for _, source := range sources {
@@ -187,6 +210,9 @@ func parsePush(yml string) (Sources, error) {
 		}
 		if source.AccessToken == "" {
 			source.AccessToken = token
+		}
+		if source.FileFormat == "" {
+			source.FileFormat = fileFormat
 		}
 	}
 

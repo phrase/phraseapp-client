@@ -20,18 +20,25 @@ import (
 )
 
 type WizardData struct {
-	AccessToken string        `yaml:"access_token"`
-	ProjectId   string        `yaml:"project_id"`
-	Format      string        `yaml:"file_format"`
-	MainFormat  string        `yaml:"-"`
-	Step        string        `yaml:"-"`
-	Pull        []*PullConfig `yaml:"pull,omitempty"`
-	Push        []*PushConfig `yaml:"push,omitempty"`
+	AccessToken string `yaml:"access_token"`
+	ProjectId   string `yaml:"project_id"`
+	Format      string `yaml:"file_format"`
+	MainFormat  string `yaml:"-"`
+	Step        string `yaml:"-"`
+	Push        struct {
+		Sources Sources
+	}
+	Pull struct {
+		Targets Targets
+	}
 }
 
 type WizardWrapper struct {
 	Data *WizardData `yaml:"phraseapp"`
 }
+
+type Sources []*PushConfig
+type Targets []*PullConfig
 
 type PushConfig struct {
 	Dir         string      `yaml:"dir,omitempty"`
@@ -179,11 +186,11 @@ func defaultPushPath(data *WizardData) string {
 
 func defaultPullPath(data *WizardData) string {
 	defaultPath := ""
-	if data.Push[0] != nil {
-		if data.Push[0].File != "" {
-			defaultPath = filepath.Dir(data.Push[0].File)
+	if data.Push.Sources[0] != nil {
+		if data.Push.Sources[0].File != "" {
+			defaultPath = filepath.Dir(data.Push.Sources[0].File) + "/*"
 		} else {
-			defaultPath = data.Push[0].Dir
+			defaultPath = data.Push.Sources[0].Dir
 		}
 	}
 	return defaultPath
@@ -198,11 +205,11 @@ func pushConfig(data *WizardData) {
 		pushPath = defaultPath
 	}
 
-	data.Push = make([]*PushConfig, 1)
+	data.Push.Sources = make(Sources, 1)
 	if strings.HasSuffix(pushPath, "/") || strings.HasSuffix(pushPath, ".") {
-		data.Push[0] = &PushConfig{Dir: pushPath}
+		data.Push.Sources[0] = &PushConfig{Dir: pushPath}
 	} else {
-		data.Push[0] = &PushConfig{File: pushPath}
+		data.Push.Sources[0] = &PushConfig{File: pushPath}
 	}
 	DisplayWizard(data, next(data), "")
 }
@@ -217,11 +224,11 @@ func pullConfig(data *WizardData) {
 		pullPath = defaultPath
 	}
 
-	data.Pull = make([]*PullConfig, 1)
+	data.Pull.Targets = make([]*PullConfig, 1)
 	if strings.HasSuffix(pullPath, "/") || strings.HasSuffix(pullPath, ".") {
-		data.Pull[0] = &PullConfig{Dir: pullPath}
+		data.Pull.Targets[0] = &PullConfig{Dir: pullPath}
 	} else {
-		data.Pull[0] = &PullConfig{File: pullPath}
+		data.Pull.Targets[0] = &PullConfig{File: pullPath}
 	}
 	DisplayWizard(data, next(data), "")
 }

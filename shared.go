@@ -104,22 +104,6 @@ type LocalePath struct {
 }
 
 // File expansion for * and **/* and ""
-func LocaleFileGlob(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
-	switch {
-	case p.Mode == "":
-		return paths, nil
-
-	case p.Mode == "*":
-		return expandSingleDirectory(p, paths, fileFormat)
-
-	case p.Mode == "**/*":
-		return recurseDirectory(fileFormat, paths)
-
-	default:
-		return paths, nil
-	}
-}
-
 func expandSingleDirectory(p *PhrasePath, paths LocalePaths, fileFormat string) (LocalePaths, error) {
 	expandedPaths := []*LocalePath{}
 	for _, localePath := range paths {
@@ -307,7 +291,10 @@ func createFile(realPath string) error {
 	err := fileExists(realPath)
 	if err != nil {
 		absDir := filepath.Dir(realPath)
-		os.MkdirAll(absDir, 0700)
+		err := fileExists(absDir)
+		if err != nil {
+			os.MkdirAll(absDir, 0700)
+		}
 
 		f, err := os.Create(realPath)
 		if err != nil {
@@ -348,9 +335,7 @@ func Authenticate() error {
 	if err != nil {
 		return err
 	}
-
 	phraseapp.RegisterAuthCredentials(defaultCredentials, defaultCredentials)
-
 	return nil
 }
 
