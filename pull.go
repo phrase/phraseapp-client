@@ -25,6 +25,40 @@ type PullParams struct {
 	LocaleId   string `yaml:"locale_id,omitempty"`
 }
 
+func Pull(p *PhrasePath, target Target) error {
+	authenticate()
+
+	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
+	if err != nil {
+		return err
+	}
+
+	paths, err := expandPathsWithLocale(p, target, locales)
+	if err != nil {
+		return err
+	}
+
+	virtualPaths, err := fileGlobbingPull(p, paths)
+	if err != nil {
+		return err
+	}
+
+	err = createFiles(p, virtualPaths)
+	if err != nil {
+		return err
+	}
+
+	for _, localePath := range virtualPaths {
+
+		err := downloadAndWriteToFile(target, localePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		}
+	}
+
+	return nil
+}
+
 func PullTargetsFromConfig() (Targets, error) {
 	content, err := ConfigContent()
 	if err != nil {
@@ -34,51 +68,11 @@ func PullTargetsFromConfig() (Targets, error) {
 	return parsePull(content)
 }
 
-func Pull(p *PhrasePath, target Target) error {
-	authenticate()
-
-	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
-	if err != nil {
-		return err
-	}
-
-	paths, err := virtualFilesForPull(p, target, locales)
-	if err != nil {
-		return err
-	}
-
-	localePaths, err := pullFileStrategy(p, paths)
-	if err != nil {
-		return err
-	}
-
-	for _, localePath := range localePaths {
-		defaultName := DefaultFileName(p.Mode, localePath.Path)
-		if defaultName != "" {
-			localePath.Path = path.Join(localePath.Path, p.Separator, defaultName)
-		}
-		fmt.Println("Create(", localePath.Path, ")")
-		err := CreateFile(localePath.Path)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, localePath := range localePaths {
-
-		err := downloadAndWriteToFile(target, localePath)
-		if err != nil {
-			// fmt.Println(err)
-		}
-	}
-
-	return nil
-}
-
 func downloadAndWriteToFile(target Target, localePath *LocalePath) error {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
 	downloadParams.FileFormat = target.Params.FileFormat
 
+	fmt.Println("Downloading: ", localePath.LocaleId)
 	res, err := phraseapp.LocaleDownload(target.ProjectId, localePath.LocaleId, downloadParams)
 	if err != nil {
 		fmt.Println("1", err)
@@ -100,7 +94,22 @@ func downloadAndWriteToFile(target Target, localePath *LocalePath) error {
 }
 
 // locale File handling
-func virtualFilesForPull(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
+func createFiles(p *PhrasePath, virtualPaths LocalePaths) error {
+	for _, localePath := range virtualPaths {
+		defaultName := DefaultFileName(p.Mode, localePath.Path)
+		if defaultName != "" {
+			localePath.Path = path.Join(localePath.Path, p.Separator, defaultName)
+		}
+		fmt.Println("Creating: ", localePath.Path)
+		err := CreateFile(localePath.Path)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func expandPathsWithLocale(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
 	switch {
 	case p.LocaleTagInPath:
 		newFiles, err := FilePathsWithLocales(p, locales)
@@ -110,12 +119,12 @@ func virtualFilesForPull(p *PhrasePath, target Target, locales []*phraseapp.Loca
 		return newFiles, nil
 
 	default:
-		return expandPathsForSinglePath(p, target, locales)
+		return expandPathWithLocale(p, target, locales)
 	}
 
 }
 
-func expandPathsForSinglePath(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
+func expandPathWithLocale(p *PhrasePath, target Target, locales []*phraseapp.Locale) (LocalePaths, error) {
 	absPath, err := filepath.Abs(p.UserPath)
 	if err != nil {
 		return nil, err
@@ -144,14 +153,14 @@ func localeIdForPath(localeId string, locales []*phraseapp.Locale) string {
 }
 
 // File handling
-func pullFileStrategy(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
+func fileGlobbingPull(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
 	switch {
 	case p.Mode == "":
 		return paths, nil
 
 	case p.Mode == "*":
 		if p.LocaleTagInFile() {
-			return singleDirectoryPullStrategy(p, paths)
+			return singleDirectoryPull(p, paths)
 		} else {
 			return paths, nil
 		}
@@ -161,7 +170,7 @@ func pullFileStrategy(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
 	}
 }
 
-func singleDirectoryPullStrategy(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
+func singleDirectoryPull(p *PhrasePath, paths LocalePaths) (LocalePaths, error) {
 	extendedPaths := []*LocalePath{}
 	for _, localePath := range paths {
 
