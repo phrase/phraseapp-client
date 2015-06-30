@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dynport/dgtk/cli"
-	"github.com/phrase/phraseapp-client/wizard/wizard"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -182,13 +181,13 @@ func pushCommand() error {
 }
 
 func wizardCommand() error {
-	data := wizard.WizardData{}
-	wizard.DisplayWizard(&data, "", "")
+	data := WizardData{}
+	DisplayWizard(&data, "", "")
 	return nil
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-30 12:05:45.998793182 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-30 15:26:49.093151695 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

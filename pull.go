@@ -87,7 +87,7 @@ func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 
 		err = downloadAndWriteToFile(target, localeToPath)
 		if err != nil {
-			printError(err, fmt.Sprint(" for %s", localeToPath.Path))
+			printErr(err, fmt.Sprint(" for %s", localeToPath.Path))
 		}
 	}
 

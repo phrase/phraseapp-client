@@ -91,7 +91,7 @@ func (source *Source) Push(alreadySeen []string) ([]string, error) {
 
 		err = uploadFile(source, localeToPath)
 		if err != nil {
-			printError(err, "")
+			printErr(err, "")
 		}
 	}
 

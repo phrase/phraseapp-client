@@ -1,11 +1,10 @@
-package wizard
+package main
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -26,10 +25,10 @@ type WizardData struct {
 	MainFormat  string `yaml:"-"`
 	Step        string `yaml:"-"`
 	Push        struct {
-		Sources Sources
+		Sources WizardSources
 	}
 	Pull struct {
-		Targets Targets
+		Targets WizardTargets
 	}
 }
 
@@ -37,30 +36,30 @@ type WizardWrapper struct {
 	Data *WizardData `yaml:"phraseapp"`
 }
 
-type Sources []*PushConfig
-type Targets []*PullConfig
+type WizardSources []*WizardPushConfig
+type WizardTargets []*WizardPullConfig
 
-type PushConfig struct {
-	Dir         string      `yaml:"dir,omitempty"`
-	File        string      `yaml:"file,omitempty"`
-	ProjectId   string      `yaml:"project_id,omitempty"`
-	AccessToken string      `yaml:"access_token,omitempty"`
-	Params      *PushParams `yaml:"params,omitempty"`
+type WizardPushConfig struct {
+	Dir         string            `yaml:"dir,omitempty"`
+	File        string            `yaml:"file,omitempty"`
+	ProjectId   string            `yaml:"project_id,omitempty"`
+	AccessToken string            `yaml:"access_token,omitempty"`
+	Params      *WizardPushParams `yaml:"params,omitempty"`
 }
 
-type PullConfig struct {
-	Dir         string      `yaml:"dir,omitempty"`
-	File        string      `yaml:"file,omitempty"`
-	ProjectId   string      `yaml:"project_id,omitempty"`
-	AccessToken string      `yaml:"access_token,omitempty"`
-	Params      *PullParams `yaml:"params,omitempty"`
+type WizardPullConfig struct {
+	Dir         string            `yaml:"dir,omitempty"`
+	File        string            `yaml:"file,omitempty"`
+	ProjectId   string            `yaml:"project_id,omitempty"`
+	AccessToken string            `yaml:"access_token,omitempty"`
+	Params      *WizardPullParams `yaml:"params,omitempty"`
 }
 
-type PullParams struct {
+type WizardPullParams struct {
 	FileFormat string `yaml:"file_format,omitempty"`
 	LocaleId   string `yaml:"locale_id,omitempty"`
 }
-type PushParams struct {
+type WizardPushParams struct {
 	FileFormat string `yaml:"file_format,omitempty"`
 	LocaleId   string `yaml:"locale_id,omitempty"`
 }
@@ -173,31 +172,25 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) {
 
 }
 
-func defaultPushPath(data *WizardData) string {
-	switch data.Format {
-	case "yml":
-		return "config/locales/<locale_name>.yml"
-	case "strings":
-		return "<locale_name>.lproj/Localizable.strings"
-	default:
-		return "./"
+func defaultFilePath(fileFormat string) (string, error) {
+	formats, err := phraseapp.FormatsList(1, 30)
+	if err != nil {
+		return "", err
 	}
-}
-
-func defaultPullPath(data *WizardData) string {
-	defaultPath := ""
-	if data.Push.Sources[0] != nil {
-		if data.Push.Sources[0].File != "" {
-			defaultPath = filepath.Dir(data.Push.Sources[0].File) + "/*"
-		} else {
-			defaultPath = data.Push.Sources[0].Dir
+	for _, format := range formats {
+		if format.ApiName == fileFormat {
+			return format.DefaultFile, nil
 		}
 	}
-	return defaultPath
+	return "", nil
 }
 
 func pushConfig(data *WizardData) {
-	defaultPath := defaultPushPath(data)
+	defaultPath, err := defaultFilePath(data.Format)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	fmt.Printf("Enter the path to your language files [Press enter to use default: %s]: ", defaultPath)
 	var pushPath string
 	fmt.Scanln(&pushPath)
@@ -205,17 +198,20 @@ func pushConfig(data *WizardData) {
 		pushPath = defaultPath
 	}
 
-	data.Push.Sources = make(Sources, 1)
+	data.Push.Sources = make(WizardSources, 1)
 	if strings.HasSuffix(pushPath, "/") || strings.HasSuffix(pushPath, ".") {
-		data.Push.Sources[0] = &PushConfig{Dir: pushPath}
+		data.Push.Sources[0] = &WizardPushConfig{Dir: pushPath}
 	} else {
-		data.Push.Sources[0] = &PushConfig{File: pushPath}
+		data.Push.Sources[0] = &WizardPushConfig{File: pushPath}
 	}
 	DisplayWizard(data, next(data), "")
 }
 
 func pullConfig(data *WizardData) {
-	defaultPath := defaultPullPath(data)
+	defaultPath, err := defaultFilePath(data.Format)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	fmt.Printf("Enter the path you want to put the downlaaded language file from Phrase [Press enter to use default: %s]: ", defaultPath)
 	var pullPath string
@@ -224,11 +220,11 @@ func pullConfig(data *WizardData) {
 		pullPath = defaultPath
 	}
 
-	data.Pull.Targets = make([]*PullConfig, 1)
+	data.Pull.Targets = make([]*WizardPullConfig, 1)
 	if strings.HasSuffix(pullPath, "/") || strings.HasSuffix(pullPath, ".") {
-		data.Pull.Targets[0] = &PullConfig{Dir: pullPath}
+		data.Pull.Targets[0] = &WizardPullConfig{Dir: pullPath}
 	} else {
-		data.Pull.Targets[0] = &PullConfig{File: pullPath}
+		data.Pull.Targets[0] = &WizardPullConfig{File: pullPath}
 	}
 	DisplayWizard(data, next(data), "")
 }
@@ -288,12 +284,24 @@ func writeConfig(data *WizardData, filename string) {
 	fmt.Println("$ phraseapp pull")
 	fmt.Println("")
 	var initialPush string
-	fmt.Print("Enter yes to push your locales now for the first time: ")
+	fmt.Print("Enter 'push' to upload your locales now for the first time: ")
 	fmt.Scanln(&initialPush)
-	if initialPush == "y" {
+	if initialPush == "push" {
+		err = firstPush()
+		if err != nil {
+			panic(err.Error())
+		}
 		fmt.Println("Pushing....")
 	}
 	fmt.Println("Setup completed!")
+}
+
+func firstPush() error {
+	sources, err := SourcesFromConfig()
+	if err != nil {
+		return err
+	}
+	return PushAll(sources)
 }
 
 func next(data *WizardData) string {

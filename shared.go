@@ -48,6 +48,10 @@ func (p *PhrasePath) isFormatTagInPath() bool {
 	return componentContains(p.Components, "<format_name>")
 }
 
+func (p *PhrasePath) isTagNameInPath() bool {
+	return componentContains(p.Components, "<tag_name>")
+}
+
 func (p *PhrasePath) isValidLocalePath(locale *phraseapp.Locale) bool {
 	return locale != nil && (p.isLocaleCodeTagInPath() && locale.Code != "") || (p.isLocaleNameTagInPath() && locale.Name != "")
 }
@@ -122,40 +126,37 @@ type LocalePath struct {
 func ExpandPathsWithLocale(p *PhrasePath, localeId string, locales []*phraseapp.Locale) (LocalePaths, error) {
 	switch {
 	case p.isLocalePatternUsed() && localeId != "":
-		newPaths := []*LocalePath{}
-		locale := localeForLocaleId(localeId, locales)
-		if !p.isValidLocalePath(locale) {
-			return nil, fmt.Errorf("Could not find remote locale with Id:", localeId)
-		}
-		absPath, err := newLocaleFile(p, locale.Name, locale.Code)
-		if err != nil {
-			return nil, err
-		}
-		newPaths = append(newPaths, InitLocalePathWithLocale(absPath, locale))
-		return newPaths, nil
+		return singlePathWithLocale(p, localeId, locales)
 
 	case p.isLocalePatternUsed() && localeId == "":
-		newFiles, err := filePathsWithLocales(p, locales)
-		if err != nil {
-			return nil, err
-		}
-		return newFiles, nil
+		return multiplePathsWithLocales(p, locales)
 
 	case !p.isLocalePatternUsed():
-		absPath, err := filepath.Abs(p.UserPath)
-		if err != nil {
-			return nil, err
-		}
-
-		localePath := []*LocalePath{InitLocalePathWithLocaleId(absPath, localeId)}
-		return localePath, nil
+		return singlePathWithoutLocale(p, localeId)
 
 	default:
+		if localeId == "" {
+			return nil, fmt.Errorf("no target locale id specified")
+		}
 		return defaultPathWithLocale(p, localeId, locales)
 	}
 }
 
-func filePathsWithLocales(p *PhrasePath, locales []*phraseapp.Locale) (LocalePaths, error) {
+func singlePathWithLocale(p *PhrasePath, localeId string, locales []*phraseapp.Locale) (LocalePaths, error) {
+	newPaths := []*LocalePath{}
+	locale := localeForLocaleId(localeId, locales)
+	if !p.isValidLocalePath(locale) {
+		return nil, fmt.Errorf("Could not find remote locale with Id:", localeId)
+	}
+	absPath, err := newLocaleFile(p, locale.Name, locale.Code)
+	if err != nil {
+		return nil, err
+	}
+	newPaths = append(newPaths, InitLocalePathWithLocale(absPath, locale))
+	return newPaths, nil
+}
+
+func multiplePathsWithLocales(p *PhrasePath, locales []*phraseapp.Locale) (LocalePaths, error) {
 	files := []*LocalePath{}
 	for _, locale := range locales {
 		if !p.isValidLocalePath(locale) {
@@ -171,11 +172,17 @@ func filePathsWithLocales(p *PhrasePath, locales []*phraseapp.Locale) (LocalePat
 	return files, nil
 }
 
-func defaultPathWithLocale(p *PhrasePath, localeId string, locales []*phraseapp.Locale) (LocalePaths, error) {
-	if localeId == "" {
-		return nil, fmt.Errorf("no target locale id specified")
+func singlePathWithoutLocale(p *PhrasePath, localeId string) (LocalePaths, error) {
+	absPath, err := filepath.Abs(p.UserPath)
+	if err != nil {
+		return nil, err
 	}
 
+	localePath := []*LocalePath{InitLocalePathWithLocaleId(absPath, localeId)}
+	return localePath, nil
+}
+
+func defaultPathWithLocale(p *PhrasePath, localeId string, locales []*phraseapp.Locale) (LocalePaths, error) {
 	absPath, err := filepath.Abs(p.UserPath)
 	if err != nil {
 		return nil, err
@@ -268,7 +275,7 @@ func Authenticate() error {
 	return nil
 }
 
-func printError(err error, msg string) {
+func printErr(err error, msg string) {
 	red := ansi.ColorCode("red+b:black")
 	reset := ansi.ColorCode("reset")
 	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", red, err, msg, reset)
