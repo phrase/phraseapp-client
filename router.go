@@ -170,13 +170,7 @@ func pullCommand() error {
 	if err != nil {
 		return err
 	}
-	for _, target := range targets {
-		err := target.Pull()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		}
-	}
-	return nil
+	return PullAll(targets)
 }
 
 func pushCommand() error {
@@ -184,13 +178,7 @@ func pushCommand() error {
 	if err != nil {
 		return err
 	}
-	for _, source := range sources {
-		err := source.Push()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		}
-	}
-	return nil
+	return PushAll(sources)
 }
 
 func wizardCommand() error {
@@ -200,7 +188,7 @@ func wizardCommand() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-29 17:09:19.846429218 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-30 12:05:45.998793182 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

@@ -44,59 +44,54 @@ func (t *Target) GetLocaleId() string {
 	return ""
 }
 
-func (target *Target) Pull() error {
+func PullAll(targets Targets) error {
+	alreadySeen := []string{}
+	for _, target := range targets {
+		newSeen, err := target.Pull(alreadySeen)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		}
+		alreadySeen = newSeen
+	}
+	return nil
+}
+
+func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 	Authenticate()
 
 	p := PathComponents(target.File)
 
 	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	localeToPathMapping, err := ExpandPathsWithLocale(p, target.GetLocaleId(), locales)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	virtualPaths, err := LocaleFileGlobPull(p, target.GetFormat(), localeToPathMapping, locales)
-	if err != nil {
-		return err
-	}
+	for _, localeToPath := range localeToPathMapping {
 
-	err = CreateFiles(p, virtualPaths, target.GetFormat())
-	if err != nil {
-		return err
-	}
+		if wasAlreadySeen(alreadySeen, localeToPath.Path) {
+			continue
+		}
+		alreadySeen = append(alreadySeen, localeToPath.Path)
 
-	for _, localeToPath := range virtualPaths {
+		err := createFile(localeToPath.Path)
+		if err != nil {
+			return nil, err
+		}
 
 		sharedMessage("pull", localeToPath)
 
-		err := downloadAndWriteToFile(target, localeToPath)
+		err = downloadAndWriteToFile(target, localeToPath)
 		if err != nil {
 			printError(err, fmt.Sprint(" for %s", localeToPath.Path))
 		}
 	}
 
-	return nil
-}
-
-func LocaleFileGlobPull(p *PhrasePath, fileFormat string, paths LocalePaths, locales []*phraseapp.Locale) (LocalePaths, error) {
-	switch {
-	case p.Mode == "":
-		return paths, nil
-
-	case p.Mode == "*":
-		if p.LocaleTagInPath {
-			return expandSingleDirectory(p, paths, fileFormat)
-		} else {
-			return buildLocaleNamesForFile(p, fileFormat, paths, locales)
-		}
-
-	default:
-		return paths, nil
-	}
+	return alreadySeen, nil
 }
 
 func TargetsFromConfig() (Targets, error) {
@@ -106,17 +101,6 @@ func TargetsFromConfig() (Targets, error) {
 	}
 
 	return parsePull(content)
-}
-
-func buildLocaleNamesForFile(p *PhrasePath, fileFormat string, paths LocalePaths, locales []*phraseapp.Locale) (LocalePaths, error) {
-	newPaths := []*LocalePath{}
-	singleDir := paths[0]
-	for _, locale := range locales {
-		newPath := singleDir.Path + p.Separator + locale.Name + "." + fileFormat
-		localeToPathMapping := &LocalePath{Path: newPath, LocaleId: locale.Id, LocaleName: locale.Name, LocaleCode: locale.Code}
-		newPaths = append(newPaths, localeToPathMapping)
-	}
-	return newPaths, nil
 }
 
 func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {

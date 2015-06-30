@@ -5,6 +5,8 @@ import (
 	"github.com/mgutz/ansi"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -46,27 +48,44 @@ func (s *Source) GetLocaleId() string {
 	return ""
 }
 
-func (source *Source) Push() error {
+func PushAll(sources Sources) error {
+	alreadySeen := []string{}
+	for _, source := range sources {
+		newSeen, err := source.Push(alreadySeen)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		}
+		alreadySeen = newSeen
+	}
+	return nil
+}
+
+func (source *Source) Push(alreadySeen []string) ([]string, error) {
 	Authenticate()
 
 	p := PathComponents(source.File)
 
 	locales, err := phraseapp.LocalesList(source.ProjectId, 1, 25)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	localeToPathMapping, err := ExpandPathsWithLocale(p, source.GetLocaleId(), locales)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	virtualPaths, err := LocaleFileGlobPush(p, source.GetFormat(), localeToPathMapping)
+	virtualPaths, err := LocaleFileGlob(p, source.GetFormat(), localeToPathMapping)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, localeToPath := range virtualPaths {
+
+		if wasAlreadySeen(alreadySeen, localeToPath.Path) {
+			continue
+		}
+		alreadySeen = append(alreadySeen, localeToPath.Path)
 
 		sharedMessage("push", localeToPath)
 
@@ -76,10 +95,10 @@ func (source *Source) Push() error {
 		}
 	}
 
-	return nil
+	return alreadySeen, nil
 }
 
-func LocaleFileGlobPush(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
+func LocaleFileGlob(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
 	switch {
 	case p.Mode == "":
 		return paths, nil
@@ -124,6 +143,11 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	uploadParams := new(phraseapp.LocaleFileImportParams)
 	uploadParams.File = localePath.Path
 	uploadParams.FileFormat = &source.FileFormat
+	remoteLocaleId := localePath.LocaleId
+
+	if remoteLocaleId != "" {
+		uploadParams.LocaleId = &remoteLocaleId
+	}
 
 	if source.Params == nil {
 		return uploadParams, nil
@@ -134,11 +158,6 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	localeId := params.LocaleId
 	if localeId != "" {
 		uploadParams.LocaleId = &localeId
-	} else {
-		remoteLocaleId := localePath.LocaleId
-		if remoteLocaleId != "" {
-			uploadParams.LocaleId = &remoteLocaleId
-		}
 	}
 
 	format := params.FileFormat
@@ -177,6 +196,77 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	}
 
 	return uploadParams, nil
+}
+
+// File expansion for * and **/* and ""
+func expandSingleDirectory(p *PhrasePath, paths LocalePaths, fileFormat string) (LocalePaths, error) {
+	expandedPaths := []*LocalePath{}
+	for _, localePath := range paths {
+
+		asDirectory := fmt.Sprintf("%s/", localePath.Path)
+		pathsPerDirectory, err := glob(asDirectory, fileFormat)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, absPath := range pathsPerDirectory {
+			localeToPathMapping := CopyLocalePath(absPath, localePath)
+			expandedPaths = append(expandedPaths, localeToPathMapping)
+		}
+
+	}
+	return expandedPaths, nil
+}
+
+func recurseDirectory(fileFormat string, paths LocalePaths) (LocalePaths, error) {
+	expandedPaths := []*LocalePath{}
+	for _, localePath := range paths {
+		newPaths, err := walk(localePath.Path, fileFormat)
+		if err != nil {
+			return nil, err
+		}
+		for _, newPath := range newPaths {
+			localeToPathMapping := CopyLocalePath(newPath, localePath)
+			expandedPaths = append(expandedPaths, localeToPathMapping)
+		}
+	}
+	return expandedPaths, nil
+}
+
+func walk(root, fileFormat string) ([]string, error) {
+	fileList := []string{}
+	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+		if isLocaleFile(f.Name(), fileFormat) {
+			fileList = append(fileList, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return fileList, nil
+}
+
+func glob(root, fileFormat string) ([]string, error) {
+	files, err := filepath.Glob(root + "*")
+
+	if err != nil {
+		return nil, err
+	}
+	localeFiles := []string{}
+	for _, f := range files {
+		if fileFormat != "" {
+			if isLocaleFile(f, fileFormat) {
+				localeFiles = append(localeFiles, f)
+			}
+		} else {
+			localeFiles = append(localeFiles, f)
+		}
+	}
+	return localeFiles, nil
 }
 
 // Parsing
