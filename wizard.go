@@ -113,6 +113,16 @@ func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.Wait
 	wg.Done()
 }
 
+func printParrot() {
+	cyan := ansi.ColorCode("cyan+b:black")
+	reset := ansi.ColorCode("reset")
+
+	parrotLines := strings.Split(parrot, "\n")
+	for _, line := range parrotLines {
+		fmt.Println(cyan, line, reset)
+	}
+}
+
 func printError(errorMsg string) {
 	red := ansi.ColorCode("red+b:black")
 	reset := ansi.ColorCode("reset")
@@ -323,6 +333,9 @@ func next(data *WizardData) string {
 }
 
 func tokenStep(data *WizardData) {
+	printParrot()
+	fmt.Println("PhraseApp.com presents API Client v2:")
+	fmt.Println("")
 	fmt.Print("Please enter you API Access Token (Generate one in your profile at phraseapp.com): ")
 	fmt.Scanln(&data.AccessToken)
 	data.AccessToken = strings.ToLower(data.AccessToken)
@@ -463,3 +476,44 @@ func selectProjectStep(data *WizardData) {
 	data.MainFormat = selectedProject.MainFormat
 	DisplayWizard(data, next(data), "")
 }
+
+const parrot = `
+
+                                  ,,;g#QQQQQQQQQQQgg,,                              
+                            ,gQQQQQQQQQQQQQQQQQQQQQQQQQQQQy,                        
+                        ,QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQy                    
+                    ,@QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ,                
+                ,#QQQQQQQQQQQQQQQQ##ER"''''...'''""YE#QQQQQQQQQQQQQQQQ              
+      ,,,,,y#QQQQQQQQQQQQQQ#ET^'.                       'PW@QQQQQQQQQQQQQ           
+       YQQQQQQQQQQQQWET^'.                                  '"@QQQQQQQQQQQ,         
+          ''^^^''                          ,gQQQQQQQQQQQQggQQQR "@QQQQQQQQQQ        
+                                        ;QQQQQQQ#WWWQQQQQQQQQR    '@QQQQQQQQQy      
+         ,Q,                          #QQQQQQQL   #QQ^@QQQQQE   ,,  HQQQQQQQQQQ     
+        ;QQQQ                       ;QQQQQQQQ>   "@Q#''QQQQO    @QQ, 'QQQQQQQQQQ    
+       ,QQQQQQQy                   @QQQQQQQQQQ        jQQQM      5QQ  |QQQQQQQQQQ   
+       QQQQQQQQL                  @QQQQQQQQQQQQ      ,QQQG        7QQ  @QQQQQQQQQQ  
+      @QQQQQQQM                  ]QQQQQQQQQQQQQQQQQQQQQQ#          "Qp  QQQQQQQQQQ  
+     .QQQQQQQQ                   ]QQQQQQQQQQQQQQQQQQQQQT            @Q  QQQQQQQQQQQ 
+     @QQQQQQQQ                   ]QQQQQQQQQQQQQQQ#E"'                E  QQQQQQQQQQQ 
+     @QQQQQQQ>                   ]QQQQQQQQQQQQQQM                      {QQQQQQQQQQQ>
+     @QQQQQQQ>                    @QQQQQQQQQQQQQ                       @QQQQQQQQQQQ>
+     @QQQQQQQ>                     @QQQQQQQQQQQQ                      @QQQQQQQQQQQQ>
+     @QQQQQQQ>                     '@QQQQQQQQQQQQQ                   @QQQQQQQQQQQQQ>
+     @QQQQQQQQ                       "@QQQQQQQQQQQQQ               ,QQQQQQQQQQQQQQQ 
+     'QQQQQQQQQ                        'W@QQQQQQQQQQQQ           ,QQQQQQQQQQQQQQQQQ 
+      @QQQQQQQQ,                           '"KSSQQQQQQQ       ,#QQQQQQQQQQQQQQQQQQ~ 
+       @QQQQQQQQ                                 ;QQQQQ>  ,gQQQQQQQQQQQQQQQQQQQQQC  
+       "QQQQQQQQQQ                            ]QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ#   
+        7QQQQQQQQQQ                            QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQM    
+         7QQQQQQQQQQQ                          @QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQM     
+           @QQQQQQQQQQQ                         @QQQQQQQQQQQQQQQQQQQQQQQQQQQQT      
+            @QQQQQQQQQQQy,                       @QQQQQQQQQQQQQQQQQQQQQQQQQE~       
+              YQQQQQQQQQQQQg,                     7QQQQQQQQQQQQQQQQQQQQQQ#'         
+               '@QQQQQQQQQQQQQQQ,                   "QQQQQQQQQQQQQQQQQQQ^           
+                  "@QQQQQQQQQQQQQQQQg,,,              ]@QQQQQQQQQQQQQE              
+                     F@QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQE^                
+                        ?WQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ#R                    
+                            "RSQQQQQQQQQQQQQQQQQQQQQQQQQQSRT^.                      
+                                  'QQQQQQQQQQQQQQQQQQQ'                             
+    
+`
