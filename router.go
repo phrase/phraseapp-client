@@ -10,91 +10,189 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-func router() *cli.Router {
+func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
 
+	projectId, _ := defaults["ProjectId"]
+
 	r.Register("authorization/create", &AuthorizationCreate{}, "Create a new authorization.")
+
 	r.Register("authorization/delete", &AuthorizationDelete{}, "Delete an existing authorization. API calls using that token will stop working.")
+
 	r.Register("authorization/show", &AuthorizationShow{}, "Get details on a single authorization.")
+
 	r.Register("authorization/update", &AuthorizationUpdate{}, "Update an existing authorization.")
+
 	r.Register("authorizations/list", &AuthorizationsList{}, "List all your authorizations.")
-	r.Register("comment/create", &CommentCreate{}, "Create a new comment for a key.")
-	r.Register("comment/delete", &CommentDelete{}, "Delete an existing comment.")
-	r.Register("comment/mark/check", &CommentMarkCheck{}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
-	r.Register("comment/mark/read", &CommentMarkRead{}, "Mark a comment as read")
-	r.Register("comment/mark/unread", &CommentMarkUnread{}, "Mark a comment as unread")
-	r.Register("comment/show", &CommentShow{}, "Get details on a single comment.")
-	r.Register("comment/update", &CommentUpdate{}, "Update an existing comment.")
-	r.Register("comments/list", &CommentsList{}, "List all comments for a key.")
-	r.Register("exclude_rule/create", &ExcludeRuleCreate{}, "Create a new blacklisted key.")
-	r.Register("exclude_rule/delete", &ExcludeRuleDelete{}, "Delete an existing blacklisted key.")
-	r.Register("exclude_rule/show", &ExcludeRuleShow{}, "Get details on a single blacklisted key for a given project.")
-	r.Register("exclude_rule/update", &ExcludeRuleUpdate{}, "Update an existing blacklisted key.")
-	r.Register("exclude_rules/index", &ExcludeRulesIndex{}, "List all blacklisted keys for the given project.")
+
+	r.Register("comment/create", &CommentCreate{ProjectId: projectId}, "Create a new comment for a key.")
+
+	r.Register("comment/delete", &CommentDelete{ProjectId: projectId}, "Delete an existing comment.")
+
+	r.Register("comment/mark/check", &CommentMarkCheck{ProjectId: projectId}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+
+	r.Register("comment/mark/read", &CommentMarkRead{ProjectId: projectId}, "Mark a comment as read")
+
+	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectId: projectId}, "Mark a comment as unread")
+
+	r.Register("comment/show", &CommentShow{ProjectId: projectId}, "Get details on a single comment.")
+
+	r.Register("comment/update", &CommentUpdate{ProjectId: projectId}, "Update an existing comment.")
+
+	r.Register("comments/list", &CommentsList{ProjectId: projectId}, "List all comments for a key.")
+
+	r.Register("exclude_rule/create", &ExcludeRuleCreate{ProjectId: projectId}, "Create a new blacklisted key.")
+
+	r.Register("exclude_rule/delete", &ExcludeRuleDelete{ProjectId: projectId}, "Delete an existing blacklisted key.")
+
+	r.Register("exclude_rule/show", &ExcludeRuleShow{ProjectId: projectId}, "Get details on a single blacklisted key for a given project.")
+
+	r.Register("exclude_rule/update", &ExcludeRuleUpdate{ProjectId: projectId}, "Update an existing blacklisted key.")
+
+	r.Register("exclude_rules/index", &ExcludeRulesIndex{ProjectId: projectId}, "List all blacklisted keys for the given project.")
+
 	r.Register("formats/list", &FormatsList{}, "Get a handy list of all localization file formats supported in PhraseApp.")
-	r.Register("key/create", &KeyCreate{}, "Create a new key.")
-	r.Register("key/delete", &KeyDelete{}, "Delete an existing key.")
-	r.Register("key/show", &KeyShow{}, "Get details on a single key for a given project.")
-	r.Register("key/update", &KeyUpdate{}, "Update an existing key.")
-	r.Register("keys/delete", &KeysDelete{}, "Delete all keys matching query. Same constraints as list.")
-	r.Register("keys/list", &KeysList{}, "List all keys for the given project. Alternatively you can POST requests to /search.")
-	r.Register("keys/search", &KeysSearch{}, "List all keys for the given project matching query.")
-	r.Register("keys/tag", &KeysTag{}, "Tags all keys matching query. Same constraints as list.")
-	r.Register("keys/untag", &KeysUntag{}, "Removes specified tags from keys matching query.")
-	r.Register("locale/create", &LocaleCreate{}, "Create a new locale.")
-	r.Register("locale/delete", &LocaleDelete{}, "Delete an existing locale.")
-	r.Register("locale/download", &LocaleDownload{}, "Download a locale in a specific file format.")
-	r.Register("locale/show", &LocaleShow{}, "Get details on a single locale for a given project.")
-	r.Register("locale/update", &LocaleUpdate{}, "Update an existing locale.")
-	r.Register("locales/list", &LocalesList{}, "List all locales for the given project.")
-	r.Register("order/confirm", &OrderConfirm{}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
-	r.Register("order/create", &OrderCreate{}, "Create a new order. Access token scope must include <code>orders.create</code>.")
-	r.Register("order/delete", &OrderDelete{}, "Cancel an existing order. Must not yet be confirmed.")
-	r.Register("order/show", &OrderShow{}, "Get details on a single order.")
-	r.Register("orders/list", &OrdersList{}, "List all orders for the given project.")
+
+	r.Register("key/create", &KeyCreate{ProjectId: projectId}, "Create a new key.")
+
+	r.Register("key/delete", &KeyDelete{ProjectId: projectId}, "Delete an existing key.")
+
+	r.Register("key/show", &KeyShow{ProjectId: projectId}, "Get details on a single key for a given project.")
+
+	r.Register("key/update", &KeyUpdate{ProjectId: projectId}, "Update an existing key.")
+
+	r.Register("keys/delete", &KeysDelete{ProjectId: projectId}, "Delete all keys matching query. Same constraints as list.")
+
+	r.Register("keys/list", &KeysList{ProjectId: projectId}, "List all keys for the given project. Alternatively you can POST requests to /search.")
+
+	r.Register("keys/search", &KeysSearch{ProjectId: projectId}, "List all keys for the given project matching query.")
+
+	r.Register("keys/tag", &KeysTag{ProjectId: projectId}, "Tags all keys matching query. Same constraints as list.")
+
+	r.Register("keys/untag", &KeysUntag{ProjectId: projectId}, "Removes specified tags from keys matching query.")
+
+	r.Register("locale/create", &LocaleCreate{ProjectId: projectId}, "Create a new locale.")
+
+	r.Register("locale/delete", &LocaleDelete{ProjectId: projectId}, "Delete an existing locale.")
+
+	r.Register("locale/download", &LocaleDownload{ProjectId: projectId}, "Download a locale in a specific file format.")
+
+	r.Register("locale/show", &LocaleShow{ProjectId: projectId}, "Get details on a single locale for a given project.")
+
+	r.Register("locale/update", &LocaleUpdate{ProjectId: projectId}, "Update an existing locale.")
+
+	r.Register("locales/list", &LocalesList{ProjectId: projectId}, "List all locales for the given project.")
+
+	r.Register("order/confirm", &OrderConfirm{ProjectId: projectId}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+
+	r.Register("order/create", &OrderCreate{ProjectId: projectId}, "Create a new order. Access token scope must include <code>orders.create</code>.")
+
+	r.Register("order/delete", &OrderDelete{ProjectId: projectId}, "Cancel an existing order. Must not yet be confirmed.")
+
+	r.Register("order/show", &OrderShow{ProjectId: projectId}, "Get details on a single order.")
+
+	r.Register("orders/list", &OrdersList{ProjectId: projectId}, "List all orders for the given project.")
+
 	r.Register("project/create", &ProjectCreate{}, "Create a new project.")
+
 	r.Register("project/delete", &ProjectDelete{}, "Delete an existing project.")
+
 	r.Register("project/show", &ProjectShow{}, "Get details on a single project.")
+
 	r.Register("project/update", &ProjectUpdate{}, "Update an existing project.")
+
 	r.Register("projects/list", &ProjectsList{}, "List all projects the current user has access to.")
+
 	r.Register("show/user", &ShowUser{}, "Show details for current User.")
-	r.Register("styleguide/create", &StyleguideCreate{}, "Create a new style guide.")
-	r.Register("styleguide/delete", &StyleguideDelete{}, "Delete an existing style guide.")
-	r.Register("styleguide/show", &StyleguideShow{}, "Get details on a single style guide.")
-	r.Register("styleguide/update", &StyleguideUpdate{}, "Update an existing style guide.")
-	r.Register("styleguides/list", &StyleguidesList{}, "List all styleguides for the given project.")
-	r.Register("tag/create", &TagCreate{}, "Create a new tag.")
-	r.Register("tag/delete", &TagDelete{}, "Delete an existing tag.")
-	r.Register("tag/show", &TagShow{}, "Get details and progress information on a single tag for a given project.")
-	r.Register("tags/list", &TagsList{}, "List all tags for the given project.")
-	r.Register("translation/create", &TranslationCreate{}, "Create a translation.")
-	r.Register("translation/show", &TranslationShow{}, "Get details on a single translation.")
-	r.Register("translation/update", &TranslationUpdate{}, "Update an existing translation.")
-	r.Register("translations/by_key", &TranslationsByKey{}, "List translations for a specific key.")
-	r.Register("translations/by_locale", &TranslationsByLocale{}, "List translations for a specific locale.")
-	r.Register("translations/exclude", &TranslationsExclude{}, "Exclude translations matching query from locale export.")
-	r.Register("translations/include", &TranslationsInclude{}, "Include translations matching query in locale export")
-	r.Register("translations/list", &TranslationsList{}, "List translations for the given project. Alternatively, POST request to /search")
-	r.Register("translations/search", &TranslationsSearch{}, "List translations for the given project if you exceed GET request limitations on translations list.")
-	r.Register("translations/unverify", &TranslationsUnverify{}, "Mark translations matching query as unverified")
-	r.Register("translations/verify", &TranslationsVerify{}, "Verify translations matching query.")
-	r.Register("upload/create", &UploadCreate{}, "Upload a new language file. Creates necessary resources in your project.")
-	r.Register("upload/show", &UploadShow{}, "View details and summary for a single upload.")
-	r.Register("version/show", &VersionShow{}, "Get details on a single version.")
-	r.Register("versions/list", &VersionsList{}, "List all versions for the given translation.")
+
+	r.Register("styleguide/create", &StyleguideCreate{ProjectId: projectId}, "Create a new style guide.")
+
+	r.Register("styleguide/delete", &StyleguideDelete{ProjectId: projectId}, "Delete an existing style guide.")
+
+	r.Register("styleguide/show", &StyleguideShow{ProjectId: projectId}, "Get details on a single style guide.")
+
+	r.Register("styleguide/update", &StyleguideUpdate{ProjectId: projectId}, "Update an existing style guide.")
+
+	r.Register("styleguides/list", &StyleguidesList{ProjectId: projectId}, "List all styleguides for the given project.")
+
+	r.Register("tag/create", &TagCreate{ProjectId: projectId}, "Create a new tag.")
+
+	r.Register("tag/delete", &TagDelete{ProjectId: projectId}, "Delete an existing tag.")
+
+	r.Register("tag/show", &TagShow{ProjectId: projectId}, "Get details and progress information on a single tag for a given project.")
+
+	r.Register("tags/list", &TagsList{ProjectId: projectId}, "List all tags for the given project.")
+
+	r.Register("translation/create", &TranslationCreate{ProjectId: projectId}, "Create a translation.")
+
+	r.Register("translation/show", &TranslationShow{ProjectId: projectId}, "Get details on a single translation.")
+
+	r.Register("translation/update", &TranslationUpdate{ProjectId: projectId}, "Update an existing translation.")
+
+	r.Register("translations/by_key", &TranslationsByKey{ProjectId: projectId}, "List translations for a specific key.")
+
+	r.Register("translations/by_locale", &TranslationsByLocale{ProjectId: projectId}, "List translations for a specific locale.")
+
+	r.Register("translations/exclude", &TranslationsExclude{ProjectId: projectId}, "Exclude translations matching query from locale export.")
+
+	r.Register("translations/include", &TranslationsInclude{ProjectId: projectId}, "Include translations matching query in locale export")
+
+	r.Register("translations/list", &TranslationsList{ProjectId: projectId}, "List translations for the given project. Alternatively, POST request to /search")
+
+	r.Register("translations/search", &TranslationsSearch{ProjectId: projectId}, "List translations for the given project if you exceed GET request limitations on translations list.")
+
+	r.Register("translations/unverify", &TranslationsUnverify{ProjectId: projectId}, "Mark translations matching query as unverified")
+
+	r.Register("translations/verify", &TranslationsVerify{ProjectId: projectId}, "Verify translations matching query.")
+
+	r.Register("upload/create", &UploadCreate{ProjectId: projectId}, "Upload a new language file. Creates necessary resources in your project.")
+
+	r.Register("upload/show", &UploadShow{ProjectId: projectId}, "View details and summary for a single upload.")
+
+	r.Register("version/show", &VersionShow{ProjectId: projectId}, "Get details on a single version.")
+
+	r.Register("versions/list", &VersionsList{ProjectId: projectId}, "List all versions for the given translation.")
+
+	r.RegisterFunc("pull", pullCommand, "Pull locales from your PhraseApp project.")
+
+	r.RegisterFunc("push", pushCommand, "Push locales to your PhraseApp project.")
+
+	r.RegisterFunc("wizard", wizardCommand, "Push locales to your PhraseApp project.")
 
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
 	return r
 }
 
+func pullCommand() error {
+	targets, err := TargetsFromConfig()
+	if err != nil {
+		return err
+	}
+	return PullAll(targets)
+}
+
+func pushCommand() error {
+	sources, err := SourcesFromConfig()
+	if err != nil {
+		return err
+	}
+	return PushAll(sources)
+}
+
+func wizardCommand() error {
+	data := WizardData{}
+	DisplayWizard(&data, "", "")
+	return nil
+}
+
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-15 16:42:17.296446581 +0200 CEST\n")
+	fmt.Printf("Built at 2015-06-30 15:26:49.093151695 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
 type AuthorizationCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
 	Note      string     `cli:"opt --note"`
@@ -102,14 +200,44 @@ type AuthorizationCreate struct {
 }
 
 func (cmd *AuthorizationCreate) Run() error {
-	params := new(phraseapp.AuthorizationParams)
-	params.ExpiresAt = cmd.ExpiresAt
-	params.Note = cmd.Note
-	params.Scopes = cmd.Scopes
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.AuthorizationParams)
+
+	val, defaultsPresent := defaults["authorization/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.ExpiresAt != nil {
+		params.ExpiresAt = cmd.ExpiresAt
+	}
+
+	if cmd.Note != "" {
+		params.Note = cmd.Note
+	}
+
+	if cmd.Scopes != nil {
+		params.Scopes = cmd.Scopes
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.AuthorizationCreate(params)
+
 	if err != nil {
 		return err
 	}
@@ -118,16 +246,28 @@ func (cmd *AuthorizationCreate) Run() error {
 }
 
 type AuthorizationDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.AuthorizationDelete(cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -136,16 +276,28 @@ func (cmd *AuthorizationDelete) Run() error {
 }
 
 type AuthorizationShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.AuthorizationShow(cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -154,7 +306,7 @@ func (cmd *AuthorizationShow) Run() error {
 }
 
 type AuthorizationUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
 	Note      string     `cli:"opt --note"`
@@ -164,14 +316,44 @@ type AuthorizationUpdate struct {
 }
 
 func (cmd *AuthorizationUpdate) Run() error {
-	params := new(phraseapp.AuthorizationParams)
-	params.ExpiresAt = cmd.ExpiresAt
-	params.Note = cmd.Note
-	params.Scopes = cmd.Scopes
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.AuthorizationParams)
+
+	val, defaultsPresent := defaults["authorization/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.ExpiresAt != nil {
+		params.ExpiresAt = cmd.ExpiresAt
+	}
+
+	if cmd.Note != "" {
+		params.Note = cmd.Note
+	}
+
+	if cmd.Scopes != nil {
+		params.Scopes = cmd.Scopes
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.AuthorizationUpdate(cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -180,7 +362,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 }
 
 type AuthorizationsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -188,9 +370,21 @@ type AuthorizationsList struct {
 
 func (cmd *AuthorizationsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.AuthorizationsList(cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -199,7 +393,7 @@ func (cmd *AuthorizationsList) Run() error {
 }
 
 type CommentCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Message string `cli:"opt --message"`
 
@@ -208,12 +402,36 @@ type CommentCreate struct {
 }
 
 func (cmd *CommentCreate) Run() error {
-	params := new(phraseapp.CommentParams)
-	params.Message = cmd.Message
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.CommentParams)
+
+	val, defaultsPresent := defaults["comment/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Message != "" {
+		params.Message = cmd.Message
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.CommentCreate(cmd.ProjectId, cmd.KeyId, params)
+
 	if err != nil {
 		return err
 	}
@@ -222,7 +440,7 @@ func (cmd *CommentCreate) Run() error {
 }
 
 type CommentDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -231,9 +449,21 @@ type CommentDelete struct {
 
 func (cmd *CommentDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.CommentDelete(cmd.ProjectId, cmd.KeyId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -242,7 +472,7 @@ func (cmd *CommentDelete) Run() error {
 }
 
 type CommentMarkCheck struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -251,9 +481,21 @@ type CommentMarkCheck struct {
 
 func (cmd *CommentMarkCheck) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.CommentMarkCheck(cmd.ProjectId, cmd.KeyId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -262,7 +504,7 @@ func (cmd *CommentMarkCheck) Run() error {
 }
 
 type CommentMarkRead struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -271,9 +513,21 @@ type CommentMarkRead struct {
 
 func (cmd *CommentMarkRead) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.CommentMarkRead(cmd.ProjectId, cmd.KeyId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -282,7 +536,7 @@ func (cmd *CommentMarkRead) Run() error {
 }
 
 type CommentMarkUnread struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -291,9 +545,21 @@ type CommentMarkUnread struct {
 
 func (cmd *CommentMarkUnread) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.CommentMarkUnread(cmd.ProjectId, cmd.KeyId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -302,7 +568,7 @@ func (cmd *CommentMarkUnread) Run() error {
 }
 
 type CommentShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -311,9 +577,21 @@ type CommentShow struct {
 
 func (cmd *CommentShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.CommentShow(cmd.ProjectId, cmd.KeyId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -322,7 +600,7 @@ func (cmd *CommentShow) Run() error {
 }
 
 type CommentUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Message string `cli:"opt --message"`
 
@@ -332,12 +610,36 @@ type CommentUpdate struct {
 }
 
 func (cmd *CommentUpdate) Run() error {
-	params := new(phraseapp.CommentParams)
-	params.Message = cmd.Message
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.CommentParams)
+
+	val, defaultsPresent := defaults["comment/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Message != "" {
+		params.Message = cmd.Message
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.CommentUpdate(cmd.ProjectId, cmd.KeyId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -346,7 +648,7 @@ func (cmd *CommentUpdate) Run() error {
 }
 
 type CommentsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -357,9 +659,21 @@ type CommentsList struct {
 
 func (cmd *CommentsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.CommentsList(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -368,7 +682,7 @@ func (cmd *CommentsList) Run() error {
 }
 
 type ExcludeRuleCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Name string `cli:"opt --name"`
 
@@ -376,12 +690,36 @@ type ExcludeRuleCreate struct {
 }
 
 func (cmd *ExcludeRuleCreate) Run() error {
-	params := new(phraseapp.ExcludeRuleParams)
-	params.Name = cmd.Name
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.ExcludeRuleParams)
+
+	val, defaultsPresent := defaults["exclude_rule/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ExcludeRuleCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -390,7 +728,7 @@ func (cmd *ExcludeRuleCreate) Run() error {
 }
 
 type ExcludeRuleDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -398,9 +736,21 @@ type ExcludeRuleDelete struct {
 
 func (cmd *ExcludeRuleDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.ExcludeRuleDelete(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -409,7 +759,7 @@ func (cmd *ExcludeRuleDelete) Run() error {
 }
 
 type ExcludeRuleShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -417,9 +767,21 @@ type ExcludeRuleShow struct {
 
 func (cmd *ExcludeRuleShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ExcludeRuleShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -428,7 +790,7 @@ func (cmd *ExcludeRuleShow) Run() error {
 }
 
 type ExcludeRuleUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Name string `cli:"opt --name"`
 
@@ -437,12 +799,36 @@ type ExcludeRuleUpdate struct {
 }
 
 func (cmd *ExcludeRuleUpdate) Run() error {
-	params := new(phraseapp.ExcludeRuleParams)
-	params.Name = cmd.Name
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.ExcludeRuleParams)
+
+	val, defaultsPresent := defaults["exclude_rule/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ExcludeRuleUpdate(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -451,7 +837,7 @@ func (cmd *ExcludeRuleUpdate) Run() error {
 }
 
 type ExcludeRulesIndex struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -461,9 +847,21 @@ type ExcludeRulesIndex struct {
 
 func (cmd *ExcludeRulesIndex) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ExcludeRulesIndex(cmd.ProjectId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -472,7 +870,7 @@ func (cmd *ExcludeRulesIndex) Run() error {
 }
 
 type FormatsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -480,9 +878,21 @@ type FormatsList struct {
 
 func (cmd *FormatsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.FormatsList(cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -491,7 +901,7 @@ func (cmd *FormatsList) Run() error {
 }
 
 type KeyCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	DataType              *string  `cli:"opt --data-type"`
 	Description           *string  `cli:"opt --description"`
@@ -512,25 +922,88 @@ type KeyCreate struct {
 }
 
 func (cmd *KeyCreate) Run() error {
-	params := new(phraseapp.TranslationKeyParams)
-	params.DataType = cmd.DataType
-	params.Description = cmd.Description
-	params.LocalizedFormatKey = cmd.LocalizedFormatKey
-	params.LocalizedFormatString = cmd.LocalizedFormatString
-	params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
-	params.Name = cmd.Name
-	params.NamePlural = cmd.NamePlural
-	params.OriginalFile = cmd.OriginalFile
-	params.Plural = cmd.Plural
-	params.RemoveScreenshot = cmd.RemoveScreenshot
-	params.Screenshot = cmd.Screenshot
-	params.Tags = cmd.Tags
-	params.Unformatted = cmd.Unformatted
-	params.XmlSpacePreserve = cmd.XmlSpacePreserve
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationKeyParams)
+
+	val, defaultsPresent := defaults["key/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.DataType != nil {
+		params.DataType = cmd.DataType
+	}
+
+	if cmd.Description != nil {
+		params.Description = cmd.Description
+	}
+
+	if cmd.LocalizedFormatKey != nil {
+		params.LocalizedFormatKey = cmd.LocalizedFormatKey
+	}
+
+	if cmd.LocalizedFormatString != nil {
+		params.LocalizedFormatString = cmd.LocalizedFormatString
+	}
+
+	if cmd.MaxCharactersAllowed != nil {
+		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.NamePlural != nil {
+		params.NamePlural = cmd.NamePlural
+	}
+
+	if cmd.OriginalFile != nil {
+		params.OriginalFile = cmd.OriginalFile
+	}
+
+	if cmd.Plural != nil {
+		params.Plural = cmd.Plural
+	}
+
+	if cmd.RemoveScreenshot != nil {
+		params.RemoveScreenshot = cmd.RemoveScreenshot
+	}
+
+	if cmd.Screenshot != nil {
+		params.Screenshot = cmd.Screenshot
+	}
+
+	if cmd.Tags != nil {
+		params.Tags = cmd.Tags
+	}
+
+	if cmd.Unformatted != nil {
+		params.Unformatted = cmd.Unformatted
+	}
+
+	if cmd.XmlSpacePreserve != nil {
+		params.XmlSpacePreserve = cmd.XmlSpacePreserve
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.KeyCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -539,7 +1012,7 @@ func (cmd *KeyCreate) Run() error {
 }
 
 type KeyDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -547,9 +1020,21 @@ type KeyDelete struct {
 
 func (cmd *KeyDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.KeyDelete(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -558,7 +1043,7 @@ func (cmd *KeyDelete) Run() error {
 }
 
 type KeyShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -566,9 +1051,21 @@ type KeyShow struct {
 
 func (cmd *KeyShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.KeyShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -577,7 +1074,7 @@ func (cmd *KeyShow) Run() error {
 }
 
 type KeyUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	DataType              *string  `cli:"opt --data-type"`
 	Description           *string  `cli:"opt --description"`
@@ -599,25 +1096,88 @@ type KeyUpdate struct {
 }
 
 func (cmd *KeyUpdate) Run() error {
-	params := new(phraseapp.TranslationKeyParams)
-	params.DataType = cmd.DataType
-	params.Description = cmd.Description
-	params.LocalizedFormatKey = cmd.LocalizedFormatKey
-	params.LocalizedFormatString = cmd.LocalizedFormatString
-	params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
-	params.Name = cmd.Name
-	params.NamePlural = cmd.NamePlural
-	params.OriginalFile = cmd.OriginalFile
-	params.Plural = cmd.Plural
-	params.RemoveScreenshot = cmd.RemoveScreenshot
-	params.Screenshot = cmd.Screenshot
-	params.Tags = cmd.Tags
-	params.Unformatted = cmd.Unformatted
-	params.XmlSpacePreserve = cmd.XmlSpacePreserve
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationKeyParams)
+
+	val, defaultsPresent := defaults["key/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.DataType != nil {
+		params.DataType = cmd.DataType
+	}
+
+	if cmd.Description != nil {
+		params.Description = cmd.Description
+	}
+
+	if cmd.LocalizedFormatKey != nil {
+		params.LocalizedFormatKey = cmd.LocalizedFormatKey
+	}
+
+	if cmd.LocalizedFormatString != nil {
+		params.LocalizedFormatString = cmd.LocalizedFormatString
+	}
+
+	if cmd.MaxCharactersAllowed != nil {
+		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.NamePlural != nil {
+		params.NamePlural = cmd.NamePlural
+	}
+
+	if cmd.OriginalFile != nil {
+		params.OriginalFile = cmd.OriginalFile
+	}
+
+	if cmd.Plural != nil {
+		params.Plural = cmd.Plural
+	}
+
+	if cmd.RemoveScreenshot != nil {
+		params.RemoveScreenshot = cmd.RemoveScreenshot
+	}
+
+	if cmd.Screenshot != nil {
+		params.Screenshot = cmd.Screenshot
+	}
+
+	if cmd.Tags != nil {
+		params.Tags = cmd.Tags
+	}
+
+	if cmd.Unformatted != nil {
+		params.Unformatted = cmd.Unformatted
+	}
+
+	if cmd.XmlSpacePreserve != nil {
+		params.XmlSpacePreserve = cmd.XmlSpacePreserve
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.KeyUpdate(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -626,7 +1186,7 @@ func (cmd *KeyUpdate) Run() error {
 }
 
 type KeysDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
@@ -635,13 +1195,40 @@ type KeysDelete struct {
 }
 
 func (cmd *KeysDelete) Run() error {
-	params := new(phraseapp.KeysDeleteParams)
-	params.LocaleId = cmd.LocaleId
-	params.Q = cmd.Q
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.KeysDeleteParams)
+
+	val, defaultsPresent := defaults["keys/delete"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.KeysDelete(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -650,7 +1237,7 @@ func (cmd *KeysDelete) Run() error {
 }
 
 type KeysList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
@@ -664,15 +1251,48 @@ type KeysList struct {
 }
 
 func (cmd *KeysList) Run() error {
-	params := new(phraseapp.KeysListParams)
-	params.LocaleId = cmd.LocaleId
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.KeysListParams)
+
+	val, defaultsPresent := defaults["keys/list"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.KeysList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -681,7 +1301,7 @@ func (cmd *KeysList) Run() error {
 }
 
 type KeysSearch struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
@@ -695,15 +1315,48 @@ type KeysSearch struct {
 }
 
 func (cmd *KeysSearch) Run() error {
-	params := new(phraseapp.KeysSearchParams)
-	params.LocaleId = cmd.LocaleId
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.KeysSearchParams)
+
+	val, defaultsPresent := defaults["keys/search"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.KeysSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -712,7 +1365,7 @@ func (cmd *KeysSearch) Run() error {
 }
 
 type KeysTag struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	LocaleId *string  `cli:"opt --locale-id"`
 	Q        *string  `cli:"opt --query"`
@@ -722,14 +1375,44 @@ type KeysTag struct {
 }
 
 func (cmd *KeysTag) Run() error {
-	params := new(phraseapp.KeysTagParams)
-	params.LocaleId = cmd.LocaleId
-	params.Q = cmd.Q
-	params.Tags = cmd.Tags
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.KeysTagParams)
+
+	val, defaultsPresent := defaults["keys/tag"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Tags != nil {
+		params.Tags = cmd.Tags
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.KeysTag(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -738,7 +1421,7 @@ func (cmd *KeysTag) Run() error {
 }
 
 type KeysUntag struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	LocaleId *string  `cli:"opt --locale-id"`
 	Q        *string  `cli:"opt --query"`
@@ -748,14 +1431,44 @@ type KeysUntag struct {
 }
 
 func (cmd *KeysUntag) Run() error {
-	params := new(phraseapp.KeysUntagParams)
-	params.LocaleId = cmd.LocaleId
-	params.Q = cmd.Q
-	params.Tags = cmd.Tags
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.KeysUntagParams)
+
+	val, defaultsPresent := defaults["keys/untag"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Tags != nil {
+		params.Tags = cmd.Tags
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.KeysUntag(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -764,7 +1477,7 @@ func (cmd *KeysUntag) Run() error {
 }
 
 type LocaleCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Code           string  `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
@@ -777,17 +1490,56 @@ type LocaleCreate struct {
 }
 
 func (cmd *LocaleCreate) Run() error {
-	params := new(phraseapp.LocaleParams)
-	params.Code = cmd.Code
-	params.Default = cmd.Default
-	params.Main = cmd.Main
-	params.Name = cmd.Name
-	params.Rtl = cmd.Rtl
-	params.SourceLocaleId = cmd.SourceLocaleId
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.LocaleParams)
+
+	val, defaultsPresent := defaults["locale/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Code != "" {
+		params.Code = cmd.Code
+	}
+
+	if cmd.Default != nil {
+		params.Default = cmd.Default
+	}
+
+	if cmd.Main != nil {
+		params.Main = cmd.Main
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.Rtl != nil {
+		params.Rtl = cmd.Rtl
+	}
+
+	if cmd.SourceLocaleId != nil {
+		params.SourceLocaleId = cmd.SourceLocaleId
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.LocaleCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -796,7 +1548,7 @@ func (cmd *LocaleCreate) Run() error {
 }
 
 type LocaleDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -804,9 +1556,21 @@ type LocaleDelete struct {
 
 func (cmd *LocaleDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.LocaleDelete(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -815,7 +1579,7 @@ func (cmd *LocaleDelete) Run() error {
 }
 
 type LocaleDownload struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ConvertEmoji             *bool                   `cli:"opt --convert-emoji"`
 	FileFormat               string                  `cli:"opt --file-format"`
@@ -829,17 +1593,56 @@ type LocaleDownload struct {
 }
 
 func (cmd *LocaleDownload) Run() error {
-	params := new(phraseapp.LocaleDownloadParams)
-	params.ConvertEmoji = cmd.ConvertEmoji
-	params.FileFormat = cmd.FileFormat
-	params.FormatOptions = cmd.FormatOptions
-	params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
-	params.KeepNotranslateTags = cmd.KeepNotranslateTags
-	params.TagId = cmd.TagId
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.LocaleDownloadParams)
+
+	val, defaultsPresent := defaults["locale/download"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.ConvertEmoji != nil {
+		params.ConvertEmoji = cmd.ConvertEmoji
+	}
+
+	if cmd.FileFormat != "" {
+		params.FileFormat = cmd.FileFormat
+	}
+
+	if cmd.FormatOptions != nil {
+		params.FormatOptions = cmd.FormatOptions
+	}
+
+	if cmd.IncludeEmptyTranslations != nil {
+		params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
+	}
+
+	if cmd.KeepNotranslateTags != nil {
+		params.KeepNotranslateTags = cmd.KeepNotranslateTags
+	}
+
+	if cmd.TagId != nil {
+		params.TagId = cmd.TagId
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.LocaleDownload(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -849,7 +1652,7 @@ func (cmd *LocaleDownload) Run() error {
 }
 
 type LocaleShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -857,9 +1660,21 @@ type LocaleShow struct {
 
 func (cmd *LocaleShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.LocaleShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -868,7 +1683,7 @@ func (cmd *LocaleShow) Run() error {
 }
 
 type LocaleUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Code           string  `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
@@ -882,17 +1697,56 @@ type LocaleUpdate struct {
 }
 
 func (cmd *LocaleUpdate) Run() error {
-	params := new(phraseapp.LocaleParams)
-	params.Code = cmd.Code
-	params.Default = cmd.Default
-	params.Main = cmd.Main
-	params.Name = cmd.Name
-	params.Rtl = cmd.Rtl
-	params.SourceLocaleId = cmd.SourceLocaleId
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.LocaleParams)
+
+	val, defaultsPresent := defaults["locale/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Code != "" {
+		params.Code = cmd.Code
+	}
+
+	if cmd.Default != nil {
+		params.Default = cmd.Default
+	}
+
+	if cmd.Main != nil {
+		params.Main = cmd.Main
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.Rtl != nil {
+		params.Rtl = cmd.Rtl
+	}
+
+	if cmd.SourceLocaleId != nil {
+		params.SourceLocaleId = cmd.SourceLocaleId
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.LocaleUpdate(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -901,7 +1755,7 @@ func (cmd *LocaleUpdate) Run() error {
 }
 
 type LocalesList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -911,9 +1765,21 @@ type LocalesList struct {
 
 func (cmd *LocalesList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.LocalesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -922,7 +1788,7 @@ func (cmd *LocalesList) Run() error {
 }
 
 type OrderConfirm struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -930,9 +1796,21 @@ type OrderConfirm struct {
 
 func (cmd *OrderConfirm) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.OrderConfirm(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -941,7 +1819,7 @@ func (cmd *OrderConfirm) Run() error {
 }
 
 type OrderCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Category                         string   `cli:"opt --category"`
 	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
@@ -961,24 +1839,84 @@ type OrderCreate struct {
 }
 
 func (cmd *OrderCreate) Run() error {
-	params := new(phraseapp.TranslationOrderParams)
-	params.Category = cmd.Category
-	params.IncludeUntranslatedKeys = cmd.IncludeUntranslatedKeys
-	params.IncludeUnverifiedTranslations = cmd.IncludeUnverifiedTranslations
-	params.Lsp = cmd.Lsp
-	params.Message = cmd.Message
-	params.Priority = cmd.Priority
-	params.Quality = cmd.Quality
-	params.SourceLocaleId = cmd.SourceLocaleId
-	params.StyleguideId = cmd.StyleguideId
-	params.Tag = cmd.Tag
-	params.TargetLocaleIds = cmd.TargetLocaleIds
-	params.TranslationType = cmd.TranslationType
-	params.UnverifyTranslationsUponDelivery = cmd.UnverifyTranslationsUponDelivery
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationOrderParams)
+
+	val, defaultsPresent := defaults["order/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Category != "" {
+		params.Category = cmd.Category
+	}
+
+	if cmd.IncludeUntranslatedKeys != nil {
+		params.IncludeUntranslatedKeys = cmd.IncludeUntranslatedKeys
+	}
+
+	if cmd.IncludeUnverifiedTranslations != nil {
+		params.IncludeUnverifiedTranslations = cmd.IncludeUnverifiedTranslations
+	}
+
+	if cmd.Lsp != "" {
+		params.Lsp = cmd.Lsp
+	}
+
+	if cmd.Message != nil {
+		params.Message = cmd.Message
+	}
+
+	if cmd.Priority != nil {
+		params.Priority = cmd.Priority
+	}
+
+	if cmd.Quality != nil {
+		params.Quality = cmd.Quality
+	}
+
+	if cmd.SourceLocaleId != "" {
+		params.SourceLocaleId = cmd.SourceLocaleId
+	}
+
+	if cmd.StyleguideId != nil {
+		params.StyleguideId = cmd.StyleguideId
+	}
+
+	if cmd.Tag != nil {
+		params.Tag = cmd.Tag
+	}
+
+	if cmd.TargetLocaleIds != nil {
+		params.TargetLocaleIds = cmd.TargetLocaleIds
+	}
+
+	if cmd.TranslationType != "" {
+		params.TranslationType = cmd.TranslationType
+	}
+
+	if cmd.UnverifyTranslationsUponDelivery != nil {
+		params.UnverifyTranslationsUponDelivery = cmd.UnverifyTranslationsUponDelivery
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.OrderCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -987,7 +1925,7 @@ func (cmd *OrderCreate) Run() error {
 }
 
 type OrderDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -995,9 +1933,21 @@ type OrderDelete struct {
 
 func (cmd *OrderDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.OrderDelete(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1006,7 +1956,7 @@ func (cmd *OrderDelete) Run() error {
 }
 
 type OrderShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1014,9 +1964,21 @@ type OrderShow struct {
 
 func (cmd *OrderShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.OrderShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1025,7 +1987,7 @@ func (cmd *OrderShow) Run() error {
 }
 
 type OrdersList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1035,9 +1997,21 @@ type OrdersList struct {
 
 func (cmd *OrdersList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.OrdersList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -1046,20 +2020,47 @@ func (cmd *OrdersList) Run() error {
 }
 
 type ProjectCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Name                    string `cli:"opt --name"`
 	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
 }
 
 func (cmd *ProjectCreate) Run() error {
-	params := new(phraseapp.ProjectParams)
-	params.Name = cmd.Name
-	params.SharesTranslationMemory = cmd.SharesTranslationMemory
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.ProjectParams)
+
+	val, defaultsPresent := defaults["project/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.SharesTranslationMemory != nil {
+		params.SharesTranslationMemory = cmd.SharesTranslationMemory
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ProjectCreate(params)
+
 	if err != nil {
 		return err
 	}
@@ -1068,16 +2069,28 @@ func (cmd *ProjectCreate) Run() error {
 }
 
 type ProjectDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *ProjectDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.ProjectDelete(cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1086,16 +2099,28 @@ func (cmd *ProjectDelete) Run() error {
 }
 
 type ProjectShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Id string `cli:"arg required"`
 }
 
 func (cmd *ProjectShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ProjectShow(cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1104,7 +2129,7 @@ func (cmd *ProjectShow) Run() error {
 }
 
 type ProjectUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Name                    string `cli:"opt --name"`
 	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
@@ -1113,13 +2138,40 @@ type ProjectUpdate struct {
 }
 
 func (cmd *ProjectUpdate) Run() error {
-	params := new(phraseapp.ProjectParams)
-	params.Name = cmd.Name
-	params.SharesTranslationMemory = cmd.SharesTranslationMemory
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.ProjectParams)
+
+	val, defaultsPresent := defaults["project/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	if cmd.SharesTranslationMemory != nil {
+		params.SharesTranslationMemory = cmd.SharesTranslationMemory
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ProjectUpdate(cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -1128,7 +2180,7 @@ func (cmd *ProjectUpdate) Run() error {
 }
 
 type ProjectsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1136,9 +2188,21 @@ type ProjectsList struct {
 
 func (cmd *ProjectsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ProjectsList(cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -1147,14 +2211,26 @@ func (cmd *ProjectsList) Run() error {
 }
 
 type ShowUser struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 }
 
 func (cmd *ShowUser) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.ShowUser()
+
 	if err != nil {
 		return err
 	}
@@ -1163,7 +2239,7 @@ func (cmd *ShowUser) Run() error {
 }
 
 type StyleguideCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Audience           *string `cli:"opt --audience"`
 	Business           *string `cli:"opt --business"`
@@ -1183,24 +2259,84 @@ type StyleguideCreate struct {
 }
 
 func (cmd *StyleguideCreate) Run() error {
-	params := new(phraseapp.StyleguideParams)
-	params.Audience = cmd.Audience
-	params.Business = cmd.Business
-	params.CompanyBranding = cmd.CompanyBranding
-	params.Formatting = cmd.Formatting
-	params.GlossaryTerms = cmd.GlossaryTerms
-	params.GrammarConsistency = cmd.GrammarConsistency
-	params.GrammaticalPerson = cmd.GrammaticalPerson
-	params.LiteralTranslation = cmd.LiteralTranslation
-	params.OverallTone = cmd.OverallTone
-	params.Samples = cmd.Samples
-	params.TargetAudience = cmd.TargetAudience
-	params.Title = cmd.Title
-	params.VocabularyType = cmd.VocabularyType
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.StyleguideParams)
+
+	val, defaultsPresent := defaults["styleguide/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Audience != nil {
+		params.Audience = cmd.Audience
+	}
+
+	if cmd.Business != nil {
+		params.Business = cmd.Business
+	}
+
+	if cmd.CompanyBranding != nil {
+		params.CompanyBranding = cmd.CompanyBranding
+	}
+
+	if cmd.Formatting != nil {
+		params.Formatting = cmd.Formatting
+	}
+
+	if cmd.GlossaryTerms != nil {
+		params.GlossaryTerms = cmd.GlossaryTerms
+	}
+
+	if cmd.GrammarConsistency != nil {
+		params.GrammarConsistency = cmd.GrammarConsistency
+	}
+
+	if cmd.GrammaticalPerson != nil {
+		params.GrammaticalPerson = cmd.GrammaticalPerson
+	}
+
+	if cmd.LiteralTranslation != nil {
+		params.LiteralTranslation = cmd.LiteralTranslation
+	}
+
+	if cmd.OverallTone != nil {
+		params.OverallTone = cmd.OverallTone
+	}
+
+	if cmd.Samples != nil {
+		params.Samples = cmd.Samples
+	}
+
+	if cmd.TargetAudience != nil {
+		params.TargetAudience = cmd.TargetAudience
+	}
+
+	if cmd.Title != "" {
+		params.Title = cmd.Title
+	}
+
+	if cmd.VocabularyType != nil {
+		params.VocabularyType = cmd.VocabularyType
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.StyleguideCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1209,7 +2345,7 @@ func (cmd *StyleguideCreate) Run() error {
 }
 
 type StyleguideDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1217,9 +2353,21 @@ type StyleguideDelete struct {
 
 func (cmd *StyleguideDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.StyleguideDelete(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1228,7 +2376,7 @@ func (cmd *StyleguideDelete) Run() error {
 }
 
 type StyleguideShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1236,9 +2384,21 @@ type StyleguideShow struct {
 
 func (cmd *StyleguideShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.StyleguideShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1247,7 +2407,7 @@ func (cmd *StyleguideShow) Run() error {
 }
 
 type StyleguideUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Audience           *string `cli:"opt --audience"`
 	Business           *string `cli:"opt --business"`
@@ -1268,24 +2428,84 @@ type StyleguideUpdate struct {
 }
 
 func (cmd *StyleguideUpdate) Run() error {
-	params := new(phraseapp.StyleguideParams)
-	params.Audience = cmd.Audience
-	params.Business = cmd.Business
-	params.CompanyBranding = cmd.CompanyBranding
-	params.Formatting = cmd.Formatting
-	params.GlossaryTerms = cmd.GlossaryTerms
-	params.GrammarConsistency = cmd.GrammarConsistency
-	params.GrammaticalPerson = cmd.GrammaticalPerson
-	params.LiteralTranslation = cmd.LiteralTranslation
-	params.OverallTone = cmd.OverallTone
-	params.Samples = cmd.Samples
-	params.TargetAudience = cmd.TargetAudience
-	params.Title = cmd.Title
-	params.VocabularyType = cmd.VocabularyType
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.StyleguideParams)
+
+	val, defaultsPresent := defaults["styleguide/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Audience != nil {
+		params.Audience = cmd.Audience
+	}
+
+	if cmd.Business != nil {
+		params.Business = cmd.Business
+	}
+
+	if cmd.CompanyBranding != nil {
+		params.CompanyBranding = cmd.CompanyBranding
+	}
+
+	if cmd.Formatting != nil {
+		params.Formatting = cmd.Formatting
+	}
+
+	if cmd.GlossaryTerms != nil {
+		params.GlossaryTerms = cmd.GlossaryTerms
+	}
+
+	if cmd.GrammarConsistency != nil {
+		params.GrammarConsistency = cmd.GrammarConsistency
+	}
+
+	if cmd.GrammaticalPerson != nil {
+		params.GrammaticalPerson = cmd.GrammaticalPerson
+	}
+
+	if cmd.LiteralTranslation != nil {
+		params.LiteralTranslation = cmd.LiteralTranslation
+	}
+
+	if cmd.OverallTone != nil {
+		params.OverallTone = cmd.OverallTone
+	}
+
+	if cmd.Samples != nil {
+		params.Samples = cmd.Samples
+	}
+
+	if cmd.TargetAudience != nil {
+		params.TargetAudience = cmd.TargetAudience
+	}
+
+	if cmd.Title != "" {
+		params.Title = cmd.Title
+	}
+
+	if cmd.VocabularyType != nil {
+		params.VocabularyType = cmd.VocabularyType
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.StyleguideUpdate(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -1294,7 +2514,7 @@ func (cmd *StyleguideUpdate) Run() error {
 }
 
 type StyleguidesList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1304,9 +2524,21 @@ type StyleguidesList struct {
 
 func (cmd *StyleguidesList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.StyleguidesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -1315,7 +2547,7 @@ func (cmd *StyleguidesList) Run() error {
 }
 
 type TagCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Name string `cli:"opt --name"`
 
@@ -1323,12 +2555,36 @@ type TagCreate struct {
 }
 
 func (cmd *TagCreate) Run() error {
-	params := new(phraseapp.TagParams)
-	params.Name = cmd.Name
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TagParams)
+
+	val, defaultsPresent := defaults["tag/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TagCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1337,7 +2593,7 @@ func (cmd *TagCreate) Run() error {
 }
 
 type TagDelete struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -1345,9 +2601,21 @@ type TagDelete struct {
 
 func (cmd *TagDelete) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	err := phraseapp.TagDelete(cmd.ProjectId, cmd.Name)
+
 	if err != nil {
 		return err
 	}
@@ -1356,7 +2624,7 @@ func (cmd *TagDelete) Run() error {
 }
 
 type TagShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -1364,9 +2632,21 @@ type TagShow struct {
 
 func (cmd *TagShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TagShow(cmd.ProjectId, cmd.Name)
+
 	if err != nil {
 		return err
 	}
@@ -1375,7 +2655,7 @@ func (cmd *TagShow) Run() error {
 }
 
 type TagsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1385,9 +2665,21 @@ type TagsList struct {
 
 func (cmd *TagsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TagsList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}
@@ -1396,7 +2688,7 @@ func (cmd *TagsList) Run() error {
 }
 
 type TranslationCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Content      string  `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
@@ -1409,17 +2701,56 @@ type TranslationCreate struct {
 }
 
 func (cmd *TranslationCreate) Run() error {
-	params := new(phraseapp.TranslationParams)
-	params.Content = cmd.Content
-	params.Excluded = cmd.Excluded
-	params.KeyId = cmd.KeyId
-	params.LocaleId = cmd.LocaleId
-	params.PluralSuffix = cmd.PluralSuffix
-	params.Unverified = cmd.Unverified
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationParams)
+
+	val, defaultsPresent := defaults["translation/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Content != "" {
+		params.Content = cmd.Content
+	}
+
+	if cmd.Excluded != nil {
+		params.Excluded = cmd.Excluded
+	}
+
+	if cmd.KeyId != "" {
+		params.KeyId = cmd.KeyId
+	}
+
+	if cmd.LocaleId != "" {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.PluralSuffix != nil {
+		params.PluralSuffix = cmd.PluralSuffix
+	}
+
+	if cmd.Unverified != nil {
+		params.Unverified = cmd.Unverified
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1428,7 +2759,7 @@ func (cmd *TranslationCreate) Run() error {
 }
 
 type TranslationShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1436,9 +2767,21 @@ type TranslationShow struct {
 
 func (cmd *TranslationShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1447,7 +2790,7 @@ func (cmd *TranslationShow) Run() error {
 }
 
 type TranslationUpdate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Content      string  `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
@@ -1459,15 +2802,48 @@ type TranslationUpdate struct {
 }
 
 func (cmd *TranslationUpdate) Run() error {
-	params := new(phraseapp.TranslationUpdateParams)
-	params.Content = cmd.Content
-	params.Excluded = cmd.Excluded
-	params.PluralSuffix = cmd.PluralSuffix
-	params.Unverified = cmd.Unverified
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationUpdateParams)
+
+	val, defaultsPresent := defaults["translation/update"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Content != "" {
+		params.Content = cmd.Content
+	}
+
+	if cmd.Excluded != nil {
+		params.Excluded = cmd.Excluded
+	}
+
+	if cmd.PluralSuffix != nil {
+		params.PluralSuffix = cmd.PluralSuffix
+	}
+
+	if cmd.Unverified != nil {
+		params.Unverified = cmd.Unverified
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationUpdate(cmd.ProjectId, cmd.Id, params)
+
 	if err != nil {
 		return err
 	}
@@ -1476,7 +2852,7 @@ func (cmd *TranslationUpdate) Run() error {
 }
 
 type TranslationsByKey struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1490,14 +2866,44 @@ type TranslationsByKey struct {
 }
 
 func (cmd *TranslationsByKey) Run() error {
-	params := new(phraseapp.TranslationsByKeyParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsByKeyParams)
+
+	val, defaultsPresent := defaults["translations/by_key"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsByKey(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -1506,7 +2912,7 @@ func (cmd *TranslationsByKey) Run() error {
 }
 
 type TranslationsByLocale struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1520,14 +2926,44 @@ type TranslationsByLocale struct {
 }
 
 func (cmd *TranslationsByLocale) Run() error {
-	params := new(phraseapp.TranslationsByLocaleParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsByLocaleParams)
+
+	val, defaultsPresent := defaults["translations/by_locale"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsByLocale(cmd.ProjectId, cmd.LocaleId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -1536,7 +2972,7 @@ func (cmd *TranslationsByLocale) Run() error {
 }
 
 type TranslationsExclude struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1546,14 +2982,44 @@ type TranslationsExclude struct {
 }
 
 func (cmd *TranslationsExclude) Run() error {
-	params := new(phraseapp.TranslationsExcludeParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsExcludeParams)
+
+	val, defaultsPresent := defaults["translations/exclude"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsExclude(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1562,7 +3028,7 @@ func (cmd *TranslationsExclude) Run() error {
 }
 
 type TranslationsInclude struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1572,14 +3038,44 @@ type TranslationsInclude struct {
 }
 
 func (cmd *TranslationsInclude) Run() error {
-	params := new(phraseapp.TranslationsIncludeParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsIncludeParams)
+
+	val, defaultsPresent := defaults["translations/include"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsInclude(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1588,7 +3084,7 @@ func (cmd *TranslationsInclude) Run() error {
 }
 
 type TranslationsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1601,14 +3097,44 @@ type TranslationsList struct {
 }
 
 func (cmd *TranslationsList) Run() error {
-	params := new(phraseapp.TranslationsListParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsListParams)
+
+	val, defaultsPresent := defaults["translations/list"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -1617,7 +3143,7 @@ func (cmd *TranslationsList) Run() error {
 }
 
 type TranslationsSearch struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1630,14 +3156,44 @@ type TranslationsSearch struct {
 }
 
 func (cmd *TranslationsSearch) Run() error {
-	params := new(phraseapp.TranslationsSearchParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsSearchParams)
+
+	val, defaultsPresent := defaults["translations/search"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+
 	if err != nil {
 		return err
 	}
@@ -1646,7 +3202,7 @@ func (cmd *TranslationsSearch) Run() error {
 }
 
 type TranslationsUnverify struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1656,14 +3212,44 @@ type TranslationsUnverify struct {
 }
 
 func (cmd *TranslationsUnverify) Run() error {
-	params := new(phraseapp.TranslationsUnverifyParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsUnverifyParams)
+
+	val, defaultsPresent := defaults["translations/unverify"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsUnverify(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1672,7 +3258,7 @@ func (cmd *TranslationsUnverify) Run() error {
 }
 
 type TranslationsVerify struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -1682,14 +3268,44 @@ type TranslationsVerify struct {
 }
 
 func (cmd *TranslationsVerify) Run() error {
-	params := new(phraseapp.TranslationsVerifyParams)
-	params.Order = cmd.Order
-	params.Q = cmd.Q
-	params.Sort = cmd.Sort
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.TranslationsVerifyParams)
+
+	val, defaultsPresent := defaults["translations/verify"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Order != nil {
+		params.Order = cmd.Order
+	}
+
+	if cmd.Q != nil {
+		params.Q = cmd.Q
+	}
+
+	if cmd.Sort != nil {
+		params.Sort = cmd.Sort
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.TranslationsVerify(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1698,7 +3314,7 @@ func (cmd *TranslationsVerify) Run() error {
 }
 
 type UploadCreate struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ConvertEmoji       *bool                   `cli:"opt --convert-emoji"`
 	File               string                  `cli:"opt --file"`
@@ -1714,20 +3330,68 @@ type UploadCreate struct {
 }
 
 func (cmd *UploadCreate) Run() error {
-	params := new(phraseapp.LocaleFileImportParams)
-	params.ConvertEmoji = cmd.ConvertEmoji
-	params.File = cmd.File
-	params.FileFormat = cmd.FileFormat
-	params.FormatOptions = cmd.FormatOptions
-	params.LocaleId = cmd.LocaleId
-	params.SkipUnverification = cmd.SkipUnverification
-	params.SkipUploadTags = cmd.SkipUploadTags
-	params.Tags = cmd.Tags
-	params.UpdateTranslations = cmd.UpdateTranslations
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.LocaleFileImportParams)
+
+	val, defaultsPresent := defaults["upload/create"]
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.ConvertEmoji != nil {
+		params.ConvertEmoji = cmd.ConvertEmoji
+	}
+
+	if cmd.File != "" {
+		params.File = cmd.File
+	}
+
+	if cmd.FileFormat != nil {
+		params.FileFormat = cmd.FileFormat
+	}
+
+	if cmd.FormatOptions != nil {
+		params.FormatOptions = cmd.FormatOptions
+	}
+
+	if cmd.LocaleId != nil {
+		params.LocaleId = cmd.LocaleId
+	}
+
+	if cmd.SkipUnverification != nil {
+		params.SkipUnverification = cmd.SkipUnverification
+	}
+
+	if cmd.SkipUploadTags != nil {
+		params.SkipUploadTags = cmd.SkipUploadTags
+	}
+
+	if cmd.Tags != nil {
+		params.Tags = cmd.Tags
+	}
+
+	if cmd.UpdateTranslations != nil {
+		params.UpdateTranslations = cmd.UpdateTranslations
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.UploadCreate(cmd.ProjectId, params)
+
 	if err != nil {
 		return err
 	}
@@ -1736,7 +3400,7 @@ func (cmd *UploadCreate) Run() error {
 }
 
 type UploadShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1744,9 +3408,21 @@ type UploadShow struct {
 
 func (cmd *UploadShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.UploadShow(cmd.ProjectId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1755,7 +3431,7 @@ func (cmd *UploadShow) Run() error {
 }
 
 type VersionShow struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	ProjectId     string `cli:"arg required"`
 	TranslationId string `cli:"arg required"`
@@ -1764,9 +3440,21 @@ type VersionShow struct {
 
 func (cmd *VersionShow) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.VersionShow(cmd.ProjectId, cmd.TranslationId, cmd.Id)
+
 	if err != nil {
 		return err
 	}
@@ -1775,7 +3463,7 @@ func (cmd *VersionShow) Run() error {
 }
 
 type VersionsList struct {
-	phraseapp.AuthHandler
+	phraseapp.AuthCredentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1786,9 +3474,21 @@ type VersionsList struct {
 
 func (cmd *VersionsList) Run() error {
 
-	phraseapp.RegisterAuthHandler(&cmd.AuthHandler)
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
 	res, err := phraseapp.VersionsList(cmd.ProjectId, cmd.TranslationId, cmd.Page, cmd.PerPage)
+
 	if err != nil {
 		return err
 	}

@@ -2,13 +2,17 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/dynport/dgtk/cli"
+	"os"
 )
 
 func main() {
-	err := router().RunWithArgs()
+	Run()
+}
+
+func Run() {
+	callArgs, _ := ConfigCallArgs()
+	err := router(callArgs).RunWithArgs()
 	switch err {
 	case cli.ErrorHelpRequested, cli.ErrorNoRoute:
 		os.Exit(1)
