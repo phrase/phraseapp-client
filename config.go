@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
+
+	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const configName = ".phraseapp.yml"
@@ -128,6 +129,7 @@ type CallArgs struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
 		ProjectId   string `yaml:"project_id"`
+		Host        string `yaml:"host"`
 		Page        int
 		PerPage     int
 	}
@@ -146,6 +148,7 @@ func parseCallArgs(yml string) (map[string]string, error) {
 	if callArgs != nil {
 		m["ProjectId"] = callArgs.Phraseapp.ProjectId
 		m["AccessToken"] = callArgs.Phraseapp.AccessToken
+		m["Host"] = callArgs.Phraseapp.Host
 	}
 
 	return m, nil

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/dynport/dgtk/cli"
 	"os"
+
+	"github.com/dynport/dgtk/cli"
 )
 
 func main() {
