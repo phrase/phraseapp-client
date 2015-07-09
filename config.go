@@ -90,6 +90,7 @@ func defaultConfigDir() (string, error) {
 type credentialConf struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
+		Host        string `yaml:"host"`
 		Username    string
 		TFA         bool
 	}
@@ -103,7 +104,7 @@ func parseCredentials(yml string) (*phraseapp.AuthCredentials, error) {
 	}
 
 	phrase := conf.Phraseapp
-	credentials := &phraseapp.AuthCredentials{Token: phrase.AccessToken, Username: phrase.Username, TFA: phrase.TFA}
+	credentials := &phraseapp.AuthCredentials{Token: phrase.AccessToken, Username: phrase.Username, TFA: phrase.TFA, Host: phrase.Host}
 
 	return credentials, nil
 }
@@ -129,7 +130,6 @@ type CallArgs struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
 		ProjectId   string `yaml:"project_id"`
-		Host        string `yaml:"host"`
 		Page        int
 		PerPage     int
 	}
@@ -148,7 +148,6 @@ func parseCallArgs(yml string) (map[string]string, error) {
 	if callArgs != nil {
 		m["ProjectId"] = callArgs.Phraseapp.ProjectId
 		m["AccessToken"] = callArgs.Phraseapp.AccessToken
-		m["Host"] = callArgs.Phraseapp.Host
 	}
 
 	return m, nil
