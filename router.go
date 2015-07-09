@@ -31,9 +31,9 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("comment/mark/check", &CommentMarkCheck{ProjectId: projectId}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
 
-	r.Register("comment/mark/read", &CommentMarkRead{ProjectId: projectId}, "Mark a comment as read")
+	r.Register("comment/mark/read", &CommentMarkRead{ProjectId: projectId}, "Mark a comment as read.")
 
-	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectId: projectId}, "Mark a comment as unread")
+	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectId: projectId}, "Mark a comment as unread.")
 
 	r.Register("comment/show", &CommentShow{ProjectId: projectId}, "Get details on a single comment.")
 
@@ -135,13 +135,13 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("translations/exclude", &TranslationsExclude{ProjectId: projectId}, "Exclude translations matching query from locale export.")
 
-	r.Register("translations/include", &TranslationsInclude{ProjectId: projectId}, "Include translations matching query in locale export")
+	r.Register("translations/include", &TranslationsInclude{ProjectId: projectId}, "Include translations matching query in locale export.")
 
 	r.Register("translations/list", &TranslationsList{ProjectId: projectId}, "List translations for the given project. Alternatively, POST request to /search")
 
 	r.Register("translations/search", &TranslationsSearch{ProjectId: projectId}, "List translations for the given project if you exceed GET request limitations on translations list.")
 
-	r.Register("translations/unverify", &TranslationsUnverify{ProjectId: projectId}, "Mark translations matching query as unverified")
+	r.Register("translations/unverify", &TranslationsUnverify{ProjectId: projectId}, "Mark translations matching query as unverified.")
 
 	r.Register("translations/verify", &TranslationsVerify{ProjectId: projectId}, "Verify translations matching query.")
 
@@ -187,7 +187,7 @@ func wizardCommand() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-06-30 15:26:49.093151695 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-09 19:15:12.300293583 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
