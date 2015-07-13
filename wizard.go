@@ -294,9 +294,9 @@ func writeConfig(data *WizardData, filename string) {
 	fmt.Println("$ phraseapp pull")
 	fmt.Println("")
 	var initialPush string
-	fmt.Print("Enter 'push' to upload your locales now for the first time: ")
+	fmt.Print("Enter 'yes' to upload your locales now for the first time (Default: 'yes'): ")
 	fmt.Scanln(&initialPush)
-	if initialPush == "push" {
+	if initialPush == "y" || initialPush == "Y" || initialPush == "" {
 		err = firstPush()
 		if err != nil {
 			panic(err.Error())
