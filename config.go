@@ -44,14 +44,14 @@ func ConfigCallArgs() (map[string]string, error) {
 func ConfigContent() (string, error) {
 	path, err := phraseConfigPath()
 	if err != nil {
-		return "", nil
+		return "{}", nil
 	}
 
-	b, err := bytesAtPath(path)
+	bytes, err := readFile(path)
 	if err != nil {
-		return "", nil
+		return "{}", nil
 	}
-	return string(b), nil
+	return string(bytes), nil
 }
 
 func phraseConfigPath() (string, error) {
@@ -68,19 +68,19 @@ func phraseConfigPath() (string, error) {
 	return defaultConfigDir()
 }
 
-func bytesAtPath(path string) ([]byte, error) {
-	f, err := os.Open(path)
+func readFile(path string) ([]byte, error) {
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer file.Close()
 
-	return ioutil.ReadAll(f)
+	return ioutil.ReadAll(file)
 }
 
 func defaultConfigDir() (string, error) {
-	usr, e := user.Current()
-	if e != nil {
+	usr, err := user.Current()
+	if err != nil {
 		return "", nil
 	}
 	return path.Join(usr.HomeDir, defaultDir, configName), nil
