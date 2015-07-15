@@ -153,11 +153,11 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("versions/list", &VersionsList{ProjectId: projectId}, "List all versions for the given translation.")
 
-	r.RegisterFunc("pull", pullCommand, "Pull locales from your PhraseApp project.")
+	r.RegisterFunc("pull", pullCommand, "Download locales from your PhraseApp project.")
 
-	r.RegisterFunc("push", pushCommand, "Push locales to your PhraseApp project.")
+	r.RegisterFunc("push", pushCommand, "Upload locales to your PhraseApp project.")
 
-	r.RegisterFunc("wizard", wizardCommand, "Push locales to your PhraseApp project.")
+	r.RegisterFunc("init", wizardCommand, "Configure your PhraseApp client.")
 
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
@@ -187,7 +187,7 @@ func wizardCommand() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-09 19:15:12.300293583 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-15 15:39:01.053097625 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
@@ -210,6 +210,7 @@ func (cmd *AuthorizationCreate) Run() error {
 	params := new(phraseapp.AuthorizationParams)
 
 	val, defaultsPresent := defaults["authorization/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -326,6 +327,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 	params := new(phraseapp.AuthorizationParams)
 
 	val, defaultsPresent := defaults["authorization/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -412,6 +414,7 @@ func (cmd *CommentCreate) Run() error {
 	params := new(phraseapp.CommentParams)
 
 	val, defaultsPresent := defaults["comment/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -620,6 +623,7 @@ func (cmd *CommentUpdate) Run() error {
 	params := new(phraseapp.CommentParams)
 
 	val, defaultsPresent := defaults["comment/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -700,6 +704,7 @@ func (cmd *ExcludeRuleCreate) Run() error {
 	params := new(phraseapp.ExcludeRuleParams)
 
 	val, defaultsPresent := defaults["exclude_rule/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -809,6 +814,7 @@ func (cmd *ExcludeRuleUpdate) Run() error {
 	params := new(phraseapp.ExcludeRuleParams)
 
 	val, defaultsPresent := defaults["exclude_rule/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -932,6 +938,7 @@ func (cmd *KeyCreate) Run() error {
 	params := new(phraseapp.TranslationKeyParams)
 
 	val, defaultsPresent := defaults["key/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1106,6 +1113,7 @@ func (cmd *KeyUpdate) Run() error {
 	params := new(phraseapp.TranslationKeyParams)
 
 	val, defaultsPresent := defaults["key/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1205,6 +1213,7 @@ func (cmd *KeysDelete) Run() error {
 	params := new(phraseapp.KeysDeleteParams)
 
 	val, defaultsPresent := defaults["keys/delete"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1261,6 +1270,7 @@ func (cmd *KeysList) Run() error {
 	params := new(phraseapp.KeysListParams)
 
 	val, defaultsPresent := defaults["keys/list"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1325,6 +1335,7 @@ func (cmd *KeysSearch) Run() error {
 	params := new(phraseapp.KeysSearchParams)
 
 	val, defaultsPresent := defaults["keys/search"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1385,6 +1396,7 @@ func (cmd *KeysTag) Run() error {
 	params := new(phraseapp.KeysTagParams)
 
 	val, defaultsPresent := defaults["keys/tag"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1441,6 +1453,7 @@ func (cmd *KeysUntag) Run() error {
 	params := new(phraseapp.KeysUntagParams)
 
 	val, defaultsPresent := defaults["keys/untag"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1500,6 +1513,7 @@ func (cmd *LocaleCreate) Run() error {
 	params := new(phraseapp.LocaleParams)
 
 	val, defaultsPresent := defaults["locale/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1586,7 +1600,7 @@ type LocaleDownload struct {
 	FormatOptions            *map[string]interface{} `cli:"opt --format-options"`
 	IncludeEmptyTranslations *bool                   `cli:"opt --include-empty-translations"`
 	KeepNotranslateTags      *bool                   `cli:"opt --keep-notranslate-tags"`
-	TagId                    *string                 `cli:"opt --tag-id"`
+	Tag                      *string                 `cli:"opt --tag"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1603,6 +1617,7 @@ func (cmd *LocaleDownload) Run() error {
 	params := new(phraseapp.LocaleDownloadParams)
 
 	val, defaultsPresent := defaults["locale/download"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1630,8 +1645,8 @@ func (cmd *LocaleDownload) Run() error {
 		params.KeepNotranslateTags = cmd.KeepNotranslateTags
 	}
 
-	if cmd.TagId != nil {
-		params.TagId = cmd.TagId
+	if cmd.Tag != nil {
+		params.Tag = cmd.Tag
 	}
 
 	defaultCredentials, e := ConfigDefaultCredentials()
@@ -1707,6 +1722,7 @@ func (cmd *LocaleUpdate) Run() error {
 	params := new(phraseapp.LocaleParams)
 
 	val, defaultsPresent := defaults["locale/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -1849,6 +1865,7 @@ func (cmd *OrderCreate) Run() error {
 	params := new(phraseapp.TranslationOrderParams)
 
 	val, defaultsPresent := defaults["order/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2037,6 +2054,7 @@ func (cmd *ProjectCreate) Run() error {
 	params := new(phraseapp.ProjectParams)
 
 	val, defaultsPresent := defaults["project/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2148,6 +2166,7 @@ func (cmd *ProjectUpdate) Run() error {
 	params := new(phraseapp.ProjectParams)
 
 	val, defaultsPresent := defaults["project/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2269,6 +2288,7 @@ func (cmd *StyleguideCreate) Run() error {
 	params := new(phraseapp.StyleguideParams)
 
 	val, defaultsPresent := defaults["styleguide/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2438,6 +2458,7 @@ func (cmd *StyleguideUpdate) Run() error {
 	params := new(phraseapp.StyleguideParams)
 
 	val, defaultsPresent := defaults["styleguide/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2565,6 +2586,7 @@ func (cmd *TagCreate) Run() error {
 	params := new(phraseapp.TagParams)
 
 	val, defaultsPresent := defaults["tag/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2711,6 +2733,7 @@ func (cmd *TranslationCreate) Run() error {
 	params := new(phraseapp.TranslationParams)
 
 	val, defaultsPresent := defaults["translation/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2812,6 +2835,7 @@ func (cmd *TranslationUpdate) Run() error {
 	params := new(phraseapp.TranslationUpdateParams)
 
 	val, defaultsPresent := defaults["translation/update"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2876,6 +2900,7 @@ func (cmd *TranslationsByKey) Run() error {
 	params := new(phraseapp.TranslationsByKeyParams)
 
 	val, defaultsPresent := defaults["translations/by_key"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2936,6 +2961,7 @@ func (cmd *TranslationsByLocale) Run() error {
 	params := new(phraseapp.TranslationsByLocaleParams)
 
 	val, defaultsPresent := defaults["translations/by_locale"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -2992,6 +3018,7 @@ func (cmd *TranslationsExclude) Run() error {
 	params := new(phraseapp.TranslationsExcludeParams)
 
 	val, defaultsPresent := defaults["translations/exclude"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3048,6 +3075,7 @@ func (cmd *TranslationsInclude) Run() error {
 	params := new(phraseapp.TranslationsIncludeParams)
 
 	val, defaultsPresent := defaults["translations/include"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3107,6 +3135,7 @@ func (cmd *TranslationsList) Run() error {
 	params := new(phraseapp.TranslationsListParams)
 
 	val, defaultsPresent := defaults["translations/list"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3166,6 +3195,7 @@ func (cmd *TranslationsSearch) Run() error {
 	params := new(phraseapp.TranslationsSearchParams)
 
 	val, defaultsPresent := defaults["translations/search"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3222,6 +3252,7 @@ func (cmd *TranslationsUnverify) Run() error {
 	params := new(phraseapp.TranslationsUnverifyParams)
 
 	val, defaultsPresent := defaults["translations/unverify"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3278,6 +3309,7 @@ func (cmd *TranslationsVerify) Run() error {
 	params := new(phraseapp.TranslationsVerifyParams)
 
 	val, defaultsPresent := defaults["translations/verify"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {
@@ -3340,6 +3372,7 @@ func (cmd *UploadCreate) Run() error {
 	params := new(phraseapp.LocaleFileImportParams)
 
 	val, defaultsPresent := defaults["upload/create"]
+
 	if defaultsPresent {
 		params, e = params.ApplyDefaults(val)
 		if e != nil {

@@ -334,7 +334,7 @@ func next(data *WizardData) string {
 
 func tokenStep(data *WizardData) {
 	printParrot()
-	fmt.Println("PhraseApp.com presents API Client v2:")
+	fmt.Println("PhraseApp.com API Client Setup")
 	fmt.Println("")
 	fmt.Print("Please enter you API Access Token (Generate one in your profile at phraseapp.com): ")
 	fmt.Scanln(&data.AccessToken)

@@ -25,7 +25,7 @@ type PullParams struct {
 	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
 	IncludeEmptyTranslations *bool                   `yaml:"include_empty_translations,omitempty"`
 	KeepNotranslateTags      *bool                   `yaml:"keep_notranslate_tags,omitempty"`
-	TagId                    *string                 `yaml:"tag_id,omitempty"`
+	Tag                      *string                 `yaml:"tag,omitempty"`
 }
 
 func (t *Target) GetFormat() string {
@@ -41,6 +41,13 @@ func (t *Target) GetFormat() string {
 func (t *Target) GetLocaleId() string {
 	if t.Params != nil {
 		return t.Params.LocaleId
+	}
+	return ""
+}
+
+func (t *Target) GetTag() string {
+	if t.Params != nil && t.Params.Tag != nil {
+		return *t.Params.Tag
 	}
 	return ""
 }
@@ -70,7 +77,8 @@ func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 		return nil, err
 	}
 
-	localeToPathMapping, err := ExpandPathsWithLocale(p, target.GetLocaleId(), locales)
+	info := &LocaleFileNameInfo{LocaleId: target.GetLocaleId(), Tag: target.GetTag()}
+	localeToPathMapping, err := ExpandPathsWithLocale(p, locales, info)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +123,7 @@ func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
 	if params != nil && params.LocaleId != "" {
 		localeId = params.LocaleId
 	} else {
-		localeId = localePath.LocaleId
+		localeId = localePath.Info.LocaleId
 	}
 
 	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
@@ -171,9 +179,9 @@ func setDownloadParams(target *Target, localePath *LocalePath) *phraseapp.Locale
 		downloadParams.KeepNotranslateTags = keepNotranslateTags
 	}
 
-	tagId := params.TagId
-	if tagId != nil {
-		downloadParams.TagId = tagId
+	tag := params.Tag
+	if tag != nil {
+		downloadParams.Tag = tag
 	}
 
 	return downloadParams

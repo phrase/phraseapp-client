@@ -29,6 +29,7 @@ type PushParams struct {
 	SkipUnverification *bool                   `yaml:"skip_unverification,omitempty"`
 	SkipUploadTags     *bool                   `yaml:"skip_upload_tags,omitempty"`
 	Tags               []string                `yaml:"tags,omitempty"`
+	Tag                *string                 `yaml:"tag,omitempty"`
 	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
 }
 
@@ -45,6 +46,13 @@ func (s *Source) GetFormat() string {
 func (s *Source) GetLocaleId() string {
 	if s.Params != nil {
 		return s.Params.LocaleId
+	}
+	return ""
+}
+
+func (s *Source) GetTag() string {
+	if s.Params != nil && s.Params.Tag != nil {
+		return *s.Params.Tag
 	}
 	return ""
 }
@@ -74,7 +82,8 @@ func (source *Source) Push(alreadySeen []string) ([]string, error) {
 		return nil, err
 	}
 
-	localeToPathMapping, err := ExpandPathsWithLocale(p, source.GetLocaleId(), locales)
+	info := &LocaleFileNameInfo{LocaleId: source.GetLocaleId(), Tag: source.GetTag()}
+	localeToPathMapping, err := ExpandPathsWithLocale(p, locales, info)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +159,7 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	uploadParams := new(phraseapp.LocaleFileImportParams)
 	uploadParams.File = localePath.Path
 	uploadParams.FileFormat = &source.FileFormat
-	remoteLocaleId := localePath.LocaleId
+	remoteLocaleId := localePath.Info.LocaleId
 
 	if remoteLocaleId != "" {
 		uploadParams.LocaleId = &remoteLocaleId
@@ -193,6 +202,13 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	}
 
 	tags := params.Tags
+	info := localePath.Info
+	if info != nil && info.Tag != "" {
+		if tags == nil {
+			tags = make([]string, 0)
+		}
+		tags = append(tags, info.Tag)
+	}
 	if tags != nil {
 		uploadParams.Tags = tags
 	}
