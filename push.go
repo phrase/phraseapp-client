@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/mgutz/ansi"
-	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/mgutz/ansi"
+	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 type Sources []*Source
@@ -63,7 +64,10 @@ func PushAll(sources Sources) error {
 func (source *Source) Push(alreadySeen []string) ([]string, error) {
 	Authenticate()
 
-	p := PathComponents(source.File)
+	p, err := PathComponents(source.File)
+	if err != nil {
+		return nil, err
+	}
 
 	locales, err := phraseapp.LocalesList(source.ProjectId, 1, 25)
 	if err != nil {
@@ -100,14 +104,17 @@ func (source *Source) Push(alreadySeen []string) ([]string, error) {
 
 func LocaleFileGlob(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
 	switch {
-	case p.Mode == "":
+	case p.GlobPattern == "" && !(p.IsDir):
 		return paths, nil
 
-	case p.Mode == "*":
+	case p.GlobPattern == "*":
 		return expandSingleDirectory(p, paths, fileFormat)
 
-	case p.Mode == "**/*":
+	case p.GlobPattern == "**/*":
 		return recurseDirectory(fileFormat, paths)
+
+	case p.IsDir:
+		return expandSingleDirectory(p, paths, fileFormat)
 
 	default:
 		return paths, nil

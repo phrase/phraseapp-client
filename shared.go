@@ -8,16 +8,18 @@ import (
 	"strings"
 
 	"bytes"
+
 	"github.com/mgutz/ansi"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 // PhrasePath replacement for ugly slicing string logic on paths
 type PhrasePath struct {
-	UserPath   string
-	Separator  string
-	Components []string
-	Mode       string
+	UserPath    string
+	Separator   string
+	Components  []string
+	GlobPattern string
+	IsDir       bool
 }
 
 func (p *PhrasePath) RelPath() string {
@@ -56,17 +58,44 @@ func (p *PhrasePath) isValidLocalePath(locale *phraseapp.Locale) bool {
 	return locale != nil && (p.isLocaleCodeTagInPath() && locale.Code != "") || (p.isLocaleNameTagInPath() && locale.Name != "")
 }
 
-func PathComponents(userPath string) *PhrasePath {
+func PathComponents(userPath string) (*PhrasePath, error) {
 	p := &PhrasePath{Separator: string(os.PathSeparator)}
 
-	p.Mode = extractGlobMode(userPath)
-	p.UserPath = cleanUserPath(userPath, p.Mode)
-	p.Components = splitToParts(p.UserPath, p.Separator)
+	p.GlobPattern = extractGlobPattern(userPath)
+	p.UserPath = cleanUserPath(userPath, p.GlobPattern)
+	p.Components = splitToParts(userPath, p.Separator)
+	isDir, err := isDir(userPath)
+	if err != nil {
+		return nil, err
+	}
 
-	return p
+	p.IsDir = isDir
+
+	return p, nil
 }
 
-func extractGlobMode(userPath string) string {
+func isDir(path string) (bool, error) {
+	if strings.Contains(path, "<") {
+		return false, nil
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	stat, err := file.Stat()
+	if err != nil {
+		return false, err
+	}
+	switch mode := stat.Mode(); {
+	case mode.IsDir():
+		return true, nil
+	}
+	return false, nil
+}
+
+func extractGlobPattern(userPath string) string {
 	if strings.HasSuffix(userPath, path.Join("**", "*")) {
 		return "**/*"
 	} else if strings.HasSuffix(userPath, "*") {

@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"os"
 )
 
 type Targets []*Target
@@ -59,7 +60,10 @@ func PullAll(targets Targets) error {
 func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 	Authenticate()
 
-	p := PathComponents(target.File)
+	p, err := PathComponents(target.File)
+	if err != nil {
+		return nil, err
+	}
 
 	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
 	if err != nil {
@@ -87,7 +91,7 @@ func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 
 		err = downloadAndWriteToFile(target, localeToPath)
 		if err != nil {
-			printErr(err, fmt.Sprint(" for %s", localeToPath.Path))
+			printErr(err, fmt.Sprint("for %s", localeToPath.Path))
 		}
 	}
 
@@ -104,10 +108,7 @@ func TargetsFromConfig() (Targets, error) {
 }
 
 func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
-	downloadParams, err := setDownloadParams(target, localePath)
-	if err != nil {
-		return err
-	}
+	downloadParams := setDownloadParams(target, localePath)
 
 	params := target.Params
 	localeId := ""
@@ -121,6 +122,7 @@ func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
 	if err != nil {
 		return err
 	}
+
 	fh, err := os.OpenFile(localePath.Path, os.O_WRONLY, 0700)
 	if err != nil {
 		return err
@@ -134,14 +136,14 @@ func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
 	return nil
 }
 
-func setDownloadParams(target *Target, localePath *LocalePath) (*phraseapp.LocaleDownloadParams, error) {
+func setDownloadParams(target *Target, localePath *LocalePath) *phraseapp.LocaleDownloadParams {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
 	downloadParams.FileFormat = target.FileFormat
 
 	params := target.Params
 
 	if target.Params == nil {
-		return downloadParams, nil
+		return downloadParams
 	}
 
 	format := params.FileFormat
@@ -174,7 +176,7 @@ func setDownloadParams(target *Target, localePath *LocalePath) (*phraseapp.Local
 		downloadParams.TagId = tagId
 	}
 
-	return downloadParams, nil
+	return downloadParams
 }
 
 // Parsing
