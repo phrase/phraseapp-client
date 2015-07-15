@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -100,6 +101,7 @@ func parseCredentials(yml string) (*phraseapp.AuthCredentials, error) {
 	var conf *credentialConf
 
 	if err := yaml.Unmarshal([]byte(yml), &conf); err != nil {
+		fmt.Println("Could not parse .phraseapp.yml")
 		return nil, err
 	}
 
@@ -120,6 +122,7 @@ func parseDefaults(yml string) (phraseapp.DefaultParams, error) {
 
 	err := yaml.Unmarshal([]byte(yml), &conf)
 	if err != nil {
+		fmt.Println("Could not parse .phraseapp.yml")
 		return nil, err
 	}
 
