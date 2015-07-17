@@ -10,6 +10,28 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+type PullCommand struct {
+	Verbose bool `cli:"opt --verbose default=false"`
+}
+
+func (cmd *PullCommand) Run() error {
+	if cmd.Verbose {
+		Debug = true
+	}
+	targets, err := TargetsFromConfig()
+	if err != nil {
+		return err
+	}
+
+	for _, target := range targets {
+		err := target.Pull()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		}
+	}
+	return nil
+}
+
 type Targets []*Target
 
 type Target struct {
@@ -53,21 +75,6 @@ func (t *Target) GetTag() string {
 		return t.Params.Tag
 	}
 	return ""
-}
-
-func pullCommand() error {
-	targets, err := TargetsFromConfig()
-	if err != nil {
-		return err
-	}
-
-	for _, target := range targets {
-		err := target.Pull()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		}
-	}
-	return nil
 }
 
 func (target *Target) Pull() error {

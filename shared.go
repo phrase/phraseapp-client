@@ -11,6 +11,8 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+var Debug bool
+
 type LocaleFiles []*LocaleFile
 type LocaleFile struct {
 	Path, Name, Id, RFC, Tag, FileFormat string
@@ -126,20 +128,24 @@ func CopyLocale(relPath string, localeFile *LocaleFile) *LocaleFile {
 
 func (localeFile *LocaleFile) Message() string {
 	str := ""
-	if localeFile.Name != "" {
-		str = fmt.Sprintf("%s Name: %s", str, localeFile.Name)
-	}
-	if localeFile.Id != "" {
-		str = fmt.Sprintf("%s Id: %s", str, localeFile.Id)
-	}
-	if localeFile.RFC != "" {
-		str = fmt.Sprintf("%s RFC5646: %s", str, localeFile.RFC)
-	}
-	if localeFile.Tag != "" {
-		str = fmt.Sprintf("%s Tag: %s", str, localeFile.Tag)
-	}
-	if localeFile.FileFormat != "" {
-		str = fmt.Sprintf("%s Format: %s", str, localeFile.FileFormat)
+	if Debug {
+		if localeFile.Name != "" {
+			str = fmt.Sprintf("%s Name: %s", str, localeFile.Name)
+		}
+		if localeFile.Id != "" {
+			str = fmt.Sprintf("%s Id: %s", str, localeFile.Id)
+		}
+		if localeFile.RFC != "" {
+			str = fmt.Sprintf("%s RFC5646: %s", str, localeFile.RFC)
+		}
+		if localeFile.Tag != "" {
+			str = fmt.Sprintf("%s Tag: %s", str, localeFile.Tag)
+		}
+		if localeFile.FileFormat != "" {
+			str = fmt.Sprintf("%s Format: %s", str, localeFile.FileFormat)
+		}
+	} else {
+		str = fmt.Sprintf("%s", localeFile.Name)
 	}
 	return strings.TrimSpace(str)
 }
@@ -218,7 +224,7 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 		remote := fmt.Sprint(green, localeFile.Message(), reset)
 		fmt.Println("Downloaded", remote, "to", local)
 	} else {
-		fmt.Println("Uploaded", local)
+		fmt.Println("Uploaded", local, "successfully.")
 	}
 }
 

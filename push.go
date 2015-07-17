@@ -12,6 +12,29 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+type PushCommand struct {
+	Verbose bool `cli:"opt --verbose default=false"`
+}
+
+func (cmd *PushCommand) Run() error {
+	if cmd.Verbose {
+		Debug = true
+	}
+
+	sources, err := SourcesFromConfig()
+	if err != nil {
+		return err
+	}
+
+	for _, source := range sources {
+		err := source.Push()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		}
+	}
+	return nil
+}
+
 type Sources []*Source
 
 type Source struct {
@@ -36,21 +59,6 @@ type PushParams struct {
 	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
 }
 
-func pushCommand() error {
-	sources, err := SourcesFromConfig()
-	if err != nil {
-		return err
-	}
-
-	for _, source := range sources {
-		err := source.Push()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		}
-	}
-	return nil
-}
-
 func (source *Source) Push() error {
 	Authenticate()
 
@@ -66,7 +74,7 @@ func (source *Source) Push() error {
 	}
 
 	for _, localeFile := range localeFiles {
-		fmt.Println("Starting upload of", localeFile.RelPath())
+		fmt.Println("Uploading", localeFile.RelPath())
 		err = source.uploadFile(localeFile)
 		if err != nil {
 			printErr(err, "")
@@ -135,7 +143,9 @@ func (source *Source) glob() ([]string, error) {
 	pattern := source.FileWithoutPlaceholder() + "*" + source.Extension
 	files, err := filepath.Glob(pattern)
 
-	fmt.Println("Found", len(files), "files matching the source pattern", pattern)
+	if Debug {
+		fmt.Println("Found", len(files), "files matching the source pattern", pattern)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -248,12 +258,21 @@ type PushConfig struct {
 }
 
 func printSummary(summary *phraseapp.SummaryType) {
-	localesCreated := joinMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-	keysCreated := joinMessage("Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-	translationsCreated := joinMessage("Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-	translationsUpdated := joinMessage("Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-	formatted := fmt.Sprintf("%s - %s - %s - %s", localesCreated, keysCreated, translationsCreated, translationsUpdated)
-	fmt.Println(formatted)
+	newItems := []int64{summary.LocalesCreated, summary.TranslationsUpdated, summary.TranslationKeysCreated, summary.TranslationsCreated}
+	var changed bool
+	for _, item := range newItems {
+		if item > 0 {
+			changed = true
+		}
+	}
+	if changed || Debug {
+		localesCreated := joinMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
+		keysCreated := joinMessage("Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+		translationsCreated := joinMessage("Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+		translationsUpdated := joinMessage("Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+		formatted := fmt.Sprintf("%s - %s - %s - %s", localesCreated, keysCreated, translationsCreated, translationsUpdated)
+		fmt.Println(formatted)
+	}
 }
 
 func joinMessage(msg, stat string) string {

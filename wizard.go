@@ -18,6 +18,16 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+type WizardCommand struct {
+	Host string `cli:"opt --host"`
+}
+
+func (cmd *WizardCommand) Run() error {
+	data := WizardData{Host: cmd.Host}
+	DisplayWizard(&data, "", "")
+	return nil
+}
+
 type WizardData struct {
 	Host        string `yaml:"host"`
 	AccessToken string `yaml:"access_token"`
@@ -301,7 +311,8 @@ func writeConfig(data *WizardData, filename string) {
 }
 
 func firstPush() error {
-	return pullCommand()
+	cmd := &PullCommand{}
+	return cmd.Run()
 }
 
 func next(data *WizardData) string {
