@@ -103,6 +103,6 @@ $ phraseapp projects list --token 3d7e6598d955c45c040459df5692ac4c32a99cbfcab104
 
 
 ## Further reading
-* [Usage Example](/api/v2/examples/)
-* [API v2 Specification](/api/v2/)
+* [Usage Example](http://docs.phraseapp.com/api/v2/examples/)
+* [API v2 Specification](http://docs.phraseapp.com/api/v2/)
 * [PhraseApp API command-line client on GitHub (Bug reports, Feature requests))](https://github.com/phrase/phraseapp-client)
