@@ -61,46 +61,38 @@ func pullCommand() error {
 		return err
 	}
 
-	pulledFiles := []string{}
 	for _, target := range targets {
-		pulledFilesAfterTargetPull, err := target.Pull(pulledFiles)
+		err := target.Pull()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		}
-		pulledFiles = pulledFilesAfterTargetPull
 	}
 	return nil
 }
 
-func (target *Target) Pull(pulledFiles []string) ([]string, error) {
+func (target *Target) Pull() error {
 	Authenticate()
 
 	pathComponents, err := ExtractPathComponents(target.File)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	target.RemoteLocales, err = RemoteLocales(target.ProjectId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	locale := &Locale{Id: target.GetLocaleId(), Tag: target.GetTag()}
-	localeToPathMapping, err := pathComponents.ExpandPathsWithLocale(target.RemoteLocales, locale)
+	localeFile := &LocaleFile{Id: target.GetLocaleId(), Tag: target.GetTag()}
+	localeToPathMapping, err := pathComponents.ExpandPathsWithLocale(target.RemoteLocales, localeFile)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, localeToPath := range localeToPathMapping {
-
-		if contains(pulledFiles, localeToPath.Path) {
-			continue
-		}
-		pulledFiles = append(pulledFiles, localeToPath.Path)
-
 		err := createFile(localeToPath.Path)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		sharedMessage("pull", localeToPath)
@@ -111,7 +103,7 @@ func (target *Target) Pull(pulledFiles []string) ([]string, error) {
 		}
 	}
 
-	return pulledFiles, nil
+	return nil
 }
 
 func TargetsFromConfig() (Targets, error) {
@@ -123,15 +115,15 @@ func TargetsFromConfig() (Targets, error) {
 	return parsePull(content)
 }
 
-func (target *Target) DownloadAndWriteToFile(locale *Locale) error {
-	downloadParams := target.setDownloadParams(locale)
+func (target *Target) DownloadAndWriteToFile(localeFile *LocaleFile) error {
+	downloadParams := target.setDownloadParams()
 
 	params := target.Params
 	localeId := ""
 	if params != nil && params.LocaleId != "" {
 		localeId = params.LocaleId
 	} else {
-		localeId = locale.Id
+		localeId = localeFile.Id
 	}
 
 	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
@@ -139,14 +131,14 @@ func (target *Target) DownloadAndWriteToFile(locale *Locale) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(locale.Path, res, 0700)
+	err = ioutil.WriteFile(localeFile.Path, res, 0700)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (target *Target) setDownloadParams(locale *Locale) *phraseapp.LocaleDownloadParams {
+func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
 	downloadParams.FileFormat = target.FileFormat
 

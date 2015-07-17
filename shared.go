@@ -7,15 +7,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bytes"
-
 	"github.com/mgutz/ansi"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-type Locales []*Locale
-type Locale struct {
+type LocaleFiles []*LocaleFile
+type LocaleFile struct {
 	Path, Name, Id, RFC, Tag, FileFormat string
+}
+
+func (localeFile *LocaleFile) RelPath() string {
+	callerPath, _ := os.Getwd()
+	relativePath, _ := filepath.Rel(callerPath, localeFile.Path)
+	return relativePath
 }
 
 // PathComponents replacement for ugly slicing string logic on paths
@@ -115,59 +119,38 @@ func splitToParts(userPath, separator string) []string {
 }
 
 // Locale to Path mapping
-func CopyLocale(relPath string, locale *Locale) *Locale {
-	newLocale := &Locale{Path: relPath, Id: locale.Id, Name: locale.Name, Tag: locale.Tag, FileFormat: locale.FileFormat}
+func CopyLocale(relPath string, localeFile *LocaleFile) *LocaleFile {
+	newLocale := &LocaleFile{Path: relPath, Id: localeFile.Id, Name: localeFile.Name, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
 	return newLocale
 }
 
-func (locale *Locale) Message() string {
+func (localeFile *LocaleFile) Message() string {
 	str := ""
-	if locale.Name != "" {
-		str = fmt.Sprintf("Name: %s", locale.Name)
+	if localeFile.Name != "" {
+		str = fmt.Sprintf("%s Name: %s", str, localeFile.Name)
 	}
-	if locale.Id != "" {
-		str = fmt.Sprintf("%s Id: %s", str, locale.Id)
+	if localeFile.Id != "" {
+		str = fmt.Sprintf("%s Id: %s", str, localeFile.Id)
 	}
-	if locale.RFC != "" {
-		str = fmt.Sprintf("%s RFC5646: %s", str, locale.RFC)
+	if localeFile.RFC != "" {
+		str = fmt.Sprintf("%s RFC5646: %s", str, localeFile.RFC)
 	}
-	if locale.Tag != "" {
-		str = fmt.Sprintf("%s Tag: %s", str, locale.Tag)
+	if localeFile.Tag != "" {
+		str = fmt.Sprintf("%s Tag: %s", str, localeFile.Tag)
 	}
-	if locale.FileFormat != "" {
-		str = fmt.Sprintf("%s Format: %s", str, locale.FileFormat)
+	if localeFile.FileFormat != "" {
+		str = fmt.Sprintf("%s Format: %s", str, localeFile.FileFormat)
 	}
 	return strings.TrimSpace(str)
 }
 
 // Locale placeholder logic <locale_name>
-func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, locale *Locale) (Locales, error) {
-	return pc.pathsForRemoteLocales(locales, locale)
-}
-
-func (pc *PathComponents) singlePathWithLocale(locales []*phraseapp.Locale, localeFile *Locale) (Locales, error) {
-	newPaths := []*Locale{}
-	newLocaleFile := localeForLocaleId(localeFile.Id, locales)
-	valid, err := pc.isValidLocale(newLocaleFile)
-	if err != nil {
-		return nil, err
-	}
-	if !valid {
-		return nil, fmt.Errorf("Could not find remote locale with Id:", localeFile.Id)
-	}
-	locale := &Locale{Id: localeFile.Id, Name: localeFile.Name, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
-	absPath, err := pc.filePath(locale)
-	if err != nil {
-		return nil, err
-	}
-	locale.Path = absPath
-	newPaths = append(newPaths, locale)
-	return newPaths, nil
-}
-
-func (pc *PathComponents) pathsForRemoteLocales(locales []*phraseapp.Locale, info *Locale) (Locales, error) {
-	files := []*Locale{}
+func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, localeFile *LocaleFile) (LocaleFiles, error) {
+	files := []*LocaleFile{}
 	for _, remoteLocale := range locales {
+		if localeFile.Id != "" && !(remoteLocale.Id == localeFile.Id || remoteLocale.Name == localeFile.Id) {
+			continue
+		}
 		valid, err := pc.isValidLocale(remoteLocale)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -176,13 +159,13 @@ func (pc *PathComponents) pathsForRemoteLocales(locales []*phraseapp.Locale, inf
 			continue
 		}
 
-		locale := &Locale{Name: remoteLocale.Name, Id: remoteLocale.Id, RFC: remoteLocale.Code, Tag: info.Tag, FileFormat: info.FileFormat}
-		absPath, err := pc.filePath(locale)
+		localeFile := &LocaleFile{Name: remoteLocale.Name, Id: remoteLocale.Id, RFC: remoteLocale.Code, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
+		absPath, err := pc.filePath(localeFile)
 		if err != nil {
 			return nil, err
 		}
-		locale.Path = absPath
-		files = append(files, locale)
+		localeFile.Path = absPath
+		files = append(files, localeFile)
 	}
 	return files, nil
 }
@@ -197,15 +180,15 @@ func localeForLocaleId(localeId string, locales []*phraseapp.Locale) *phraseapp.
 	return nil
 }
 
-func (pc *PathComponents) filePath(locale *Locale) (string, error) {
+func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 	absPath, err := filepath.Abs(pc.Path)
 	if err != nil {
 		return "", err
 	}
 
-	path := strings.Replace(absPath, "<locale_name>", locale.Name, -1)
-	path = strings.Replace(path, "<locale_code>", locale.RFC, -1)
-	path = strings.Replace(path, "<tag>", locale.Tag, -1)
+	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
+	path = strings.Replace(path, "<locale_code>", localeFile.RFC, -1)
+	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
 
 	return path, nil
 }
@@ -225,32 +208,18 @@ func printErr(err error, msg string) {
 	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", red, err, msg, reset)
 }
 
-func sharedMessage(method string, locale *Locale) {
-	yellow := ansi.ColorCode("yellow+b:black")
+func sharedMessage(method string, localeFile *LocaleFile) {
+	green := ansi.ColorCode("green+b:black")
 	reset := ansi.ColorCode("reset")
 
-	localPath := locale.Path
-	callerPath, err := os.Getwd()
-	if err == nil {
-		localPath = "." + strings.Replace(locale.Path, callerPath, "", 1)
-	}
+	local := fmt.Sprint(green, localeFile.RelPath(), reset)
 
-	remote := fmt.Sprint(yellow, locale.Message(), reset)
-	local := fmt.Sprint(yellow, localPath, reset)
-
-	from, to := "", ""
 	if method == "pull" {
-		from, to = remote, local
+		remote := fmt.Sprint(green, localeFile.Message(), reset)
+		fmt.Println("Downloaded", remote, "to", local)
 	} else {
-		from, to = local, remote
+		fmt.Println("Uploaded", local)
 	}
-
-	var buffer bytes.Buffer
-	buffer.WriteString("From: ")
-	buffer.WriteString(from)
-	buffer.WriteString(" To: ")
-	buffer.WriteString(to)
-	fmt.Println(buffer.String())
 }
 
 func contains(pathes []string, str string) bool {

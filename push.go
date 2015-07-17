@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/mgutz/ansi"
@@ -21,7 +22,6 @@ type Source struct {
 	Params         *PushParams `yaml:"params,omitempty"`
 	RemoteLocales  []*phraseapp.Locale
 	PathComponents *PathComponents
-	Root           string
 	Extension      string
 }
 
@@ -54,25 +54,31 @@ func pushCommand() error {
 func (source *Source) Push() error {
 	Authenticate()
 
-	locales, err := source.Locales()
+	remoteLocales, err := RemoteLocales(source.ProjectId)
+	if err != nil {
+		return err
+	}
+	source.RemoteLocales = remoteLocales
+
+	localeFiles, err := source.LocaleFiles()
 	if err != nil {
 		return err
 	}
 
-	for _, locale := range locales {
-		fmt.Printf("Trying to push %s", locale.Path)
-		err = source.uploadFile(locale)
+	for _, localeFile := range localeFiles {
+		fmt.Println("Starting upload of", localeFile.RelPath())
+		err = source.uploadFile(localeFile)
 		if err != nil {
 			printErr(err, "")
 		}
-		sharedMessage("push", locale)
+		sharedMessage("push", localeFile)
 	}
 
 	return nil
 }
 
-func (source *Source) uploadFile(locale *Locale) error {
-	uploadParams, err := source.setUploadParams(locale)
+func (source *Source) uploadFile(localeFile *LocaleFile) error {
+	uploadParams, err := source.setUploadParams(localeFile)
 	if err != nil {
 		return err
 	}
@@ -83,8 +89,6 @@ func (source *Source) uploadFile(locale *Locale) error {
 	}
 
 	printSummary(&aUpload.Summary)
-
-	fmt.Printf("%%", aUpload)
 
 	return nil
 }
@@ -97,21 +101,41 @@ func (source *Source) GlobPattern() string {
 	return source.PathComponents.GlobPattern
 }
 
-func (source *Source) Locales() (Locales, error) {
+func (source *Source) LocaleFiles() (LocaleFiles, error) {
+	source.Extension = filepath.Ext(source.File)
+
 	filePaths, err := source.glob()
 	if err != nil {
 		return nil, err
 	}
-	var locales Locales
+	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		locales = append(locales, &Locale{Path: path})
+		localeFile := source.generateLocaleForFile(path)
+		localeFiles = append(localeFiles, localeFile)
 	}
-	return locales, nil
+	return localeFiles, nil
+}
+
+func (source *Source) generateLocaleForFile(path string) *LocaleFile {
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		printErr(err, "")
+		return nil
+	}
+
+	return &LocaleFile{Path: absolutePath}
+}
+
+func (source *Source) FileWithoutPlaceholder() string {
+	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
+	return strings.TrimSuffix(re.ReplaceAllString(source.File, ""), source.Extension)
 }
 
 func (source *Source) glob() ([]string, error) {
-	files, err := filepath.Glob(source.Root + "*." + source.Extension)
+	pattern := source.FileWithoutPlaceholder() + "*" + source.Extension
+	files, err := filepath.Glob(pattern)
 
+	fmt.Println("Found", len(files), "files matching the source pattern", pattern)
 	if err != nil {
 		return nil, err
 	}
@@ -152,13 +176,13 @@ func SourcesFromConfig() (Sources, error) {
 	return sources, nil
 }
 
-func (source *Source) setUploadParams(locale *Locale) (*phraseapp.LocaleFileImportParams, error) {
+func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
 	uploadParams := new(phraseapp.LocaleFileImportParams)
-	uploadParams.File = locale.Path
+	uploadParams.File = localeFile.Path
 	uploadParams.FileFormat = &source.FileFormat
 
-	if locale.Id != "" {
-		uploadParams.LocaleId = &(locale.Id)
+	if localeFile.Id != "" {
+		uploadParams.LocaleId = &(localeFile.Id)
 	}
 
 	if source.Params == nil {

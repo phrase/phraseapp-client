@@ -157,21 +157,25 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.RegisterFunc("push", pushCommand, "Upload locales to your PhraseApp project.")
 
-	r.RegisterFunc("init", wizardCommand, "Configure your PhraseApp client.")
+	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
 	r.RegisterFunc("help", helpCommand, "Help for this client")
 
 	return r
 }
 
-func wizardCommand() error {
-	data := WizardData{}
+type WizardCommand struct {
+	Host string `cli:"opt --host"`
+}
+
+func (cmd *WizardCommand) Run() error {
+	data := WizardData{Host: cmd.Host}
 	DisplayWizard(&data, "", "")
 	return nil
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-17 15:38:15.488368137 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-17 16:58:51.63810937 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

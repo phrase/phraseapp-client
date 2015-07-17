@@ -19,6 +19,7 @@ import (
 )
 
 type WizardData struct {
+	Host        string `yaml:"host"`
 	AccessToken string `yaml:"access_token"`
 	ProjectId   string `yaml:"project_id"`
 	Format      string `yaml:"file_format"`
@@ -209,11 +210,8 @@ func pushConfig(data *WizardData) {
 	}
 
 	data.Push.Sources = make(WizardSources, 1)
-	if strings.HasSuffix(pushPath, "/") || strings.HasSuffix(pushPath, ".") {
-		data.Push.Sources[0] = &WizardPushConfig{Dir: pushPath}
-	} else {
-		data.Push.Sources[0] = &WizardPushConfig{File: pushPath}
-	}
+	data.Push.Sources[0] = &WizardPushConfig{File: pushPath, Params: &WizardPushParams{FileFormat: data.Format}}
+
 	DisplayWizard(data, next(data), "")
 }
 
@@ -231,11 +229,7 @@ func pullConfig(data *WizardData) {
 	}
 
 	data.Pull.Targets = make([]*WizardPullConfig, 1)
-	if strings.HasSuffix(pullPath, "/") || strings.HasSuffix(pullPath, ".") {
-		data.Pull.Targets[0] = &WizardPullConfig{Dir: pullPath}
-	} else {
-		data.Pull.Targets[0] = &WizardPullConfig{File: pullPath}
-	}
+	data.Pull.Targets[0] = &WizardPullConfig{File: pullPath, Params: &WizardPullParams{FileFormat: data.Format}}
 	DisplayWizard(data, next(data), "")
 }
 
@@ -387,7 +381,7 @@ type ChannelEnd struct {
 }
 
 func selectProjectStep(data *WizardData) {
-	auth := phraseapp.AuthCredentials{Token: data.AccessToken}
+	auth := phraseapp.AuthCredentials{Token: data.AccessToken, Host: data.Host}
 	fmt.Println("Please select your project:")
 	phraseapp.RegisterAuthCredentials(&auth, nil)
 	var wg sync.WaitGroup
