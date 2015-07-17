@@ -13,78 +13,63 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-// PhrasePath replacement for ugly slicing string logic on paths
-type PhrasePath struct {
-	UserPath    string
+type Locales []*Locale
+type Locale struct {
+	Path, Name, Id, RFC, Tag, FileFormat string
+}
+
+// PathComponents replacement for ugly slicing string logic on paths
+type PathComponents struct {
+	Path        string
 	Separator   string
-	Components  []string
+	Parts       []string
 	GlobPattern string
 	IsDir       bool
 }
 
-func (p *PhrasePath) RelPath() string {
-	return path.Join(p.Separator, p.UserPath, p.Separator)
+func (pc *PathComponents) isLocalePatternUsed() bool {
+	return pc.isLocaleNameInPath() || pc.isLocaleCodeInPath()
 }
 
-func (p *PhrasePath) AbsPath() (string, error) {
-	absBase, err := filepath.Abs("")
-	if err != nil {
-		return "", err
-	}
-	return path.Join(absBase, p.Separator, p.RelPath()), nil
+func (pc *PathComponents) isLocaleNameInPath() bool {
+	return strings.Contains(pc.Path, "<locale_name>")
 }
 
-func (p *PhrasePath) isLocalePatternUsed() bool {
-	return p.isLocaleNameTagInPath() || p.isLocaleIdTagInPath()
+func (pc *PathComponents) isLocaleCodeInPath() bool {
+	return strings.Contains(pc.Path, "<locale_code>")
 }
 
-func (p *PhrasePath) isLocaleNameTagInPath() bool {
-	return componentContains(p.Components, "<locale_name>")
+func (pc *PathComponents) isTagInPath() bool {
+	return strings.Contains(pc.Path, "<tag>")
 }
 
-func (p *PhrasePath) isLocaleIdTagInPath() bool {
-	return componentContains(p.Components, "<locale_id>")
-}
-
-func (p *PhrasePath) isLocaleRFCInPath() bool {
-	return componentContains(p.Components, "<locale_code>")
-}
-
-func (p *PhrasePath) isFormatTagInPath() bool {
-	return componentContains(p.Components, "<file_format>")
-}
-
-func (p *PhrasePath) isTagNameInPath() bool {
-	return componentContains(p.Components, "<tag>")
-}
-
-func (p *PhrasePath) isValidLocalePath(locale *phraseapp.Locale) (bool, error) {
+func (pc *PathComponents) isValidLocale(locale *phraseapp.Locale) (bool, error) {
 	localePresent := (locale != nil)
 
 	if !localePresent {
 		return false, fmt.Errorf("Locale not set")
 	}
 
-	if p.isLocaleRFCInPath() && (locale.Code == "") {
-		return false, fmt.Errorf("Locale code is not set for Locale with Id: %s but used in file name", locale.Id)
+	if pc.isLocaleCodeInPath() && (locale.Code == "") {
+		return false, fmt.Errorf("Locale code is not set for Locale with Id: %s but locale_code is used in file name", locale.Id)
 	}
 	return true, nil
 }
 
-func PathComponents(userPath string) (*PhrasePath, error) {
-	p := &PhrasePath{Separator: string(os.PathSeparator)}
+func ExtractPathComponents(userPath string) (*PathComponents, error) {
+	pc := &PathComponents{Separator: string(os.PathSeparator)}
+	pc.GlobPattern = extractGlobPattern(userPath)
+	pc.Path = strings.TrimSpace(strings.TrimSuffix(userPath, pc.GlobPattern))
+	pc.Parts = splitToParts(userPath, pc.Separator)
 
-	p.GlobPattern = extractGlobPattern(userPath)
-	p.UserPath = cleanUserPath(userPath, p.GlobPattern)
-	p.Components = splitToParts(userPath, p.Separator)
 	isDir, err := isDir(userPath)
 	if err != nil {
 		return nil, err
 	}
 
-	p.IsDir = isDir
+	pc.IsDir = isDir
 
-	return p, nil
+	return pc, nil
 }
 
 func isDir(path string) (bool, error) {
@@ -118,109 +103,72 @@ func extractGlobPattern(userPath string) string {
 	}
 }
 
-func cleanUserPath(userPath, mode string) string {
-	pathWithoutMode := trimSuffix(userPath, mode)
-	return strings.TrimSpace(pathWithoutMode)
-}
-
 func splitToParts(userPath, separator string) []string {
 	split := strings.Split(userPath, separator)
-	components := []string{}
+	parts := []string{}
 	for _, part := range split {
 		if part != separator {
-			components = append(components, part)
+			parts = append(parts, part)
 		}
 	}
-	return components
-}
-
-func componentContains(components []string, pattern string) bool {
-	for _, part := range components {
-		if strings.Contains(part, pattern) {
-			return true
-		}
-	}
-	return false
+	return parts
 }
 
 // Locale to Path mapping
-func CopyLocalePath(relPath string, l *LocalePath) *LocalePath {
-	info := &LocaleFileNameInfo{LocaleId: l.Info.LocaleId, LocaleName: l.Info.LocaleName, Tag: l.Info.Tag, FileFormat: l.Info.FileFormat}
-	return &LocalePath{Path: relPath, Info: info}
+func CopyLocale(relPath string, locale *Locale) *Locale {
+	newLocale := &Locale{Path: relPath, Id: locale.Id, Name: locale.Name, Tag: locale.Tag, FileFormat: locale.FileFormat}
+	return newLocale
 }
 
-type LocaleFileNameInfo struct {
-	LocaleName, LocaleId, LocaleRFC5646, Tag, FileFormat string
-}
-
-func (info *LocaleFileNameInfo) Message() string {
+func (locale *Locale) Message() string {
 	str := ""
-	if info.LocaleName != "" {
-		str = fmt.Sprintf("Name: %s", info.LocaleName)
+	if locale.Name != "" {
+		str = fmt.Sprintf("Name: %s", locale.Name)
 	}
-	if info.LocaleId != "" {
-		str = fmt.Sprintf("%s Id: %s", str, info.LocaleId)
+	if locale.Id != "" {
+		str = fmt.Sprintf("%s Id: %s", str, locale.Id)
 	}
-	if info.LocaleRFC5646 != "" {
-		str = fmt.Sprintf("%s RFC5646: %s", str, info.LocaleRFC5646)
+	if locale.RFC != "" {
+		str = fmt.Sprintf("%s RFC5646: %s", str, locale.RFC)
 	}
-	if info.Tag != "" {
-		str = fmt.Sprintf("%s Tag: %s", str, info.Tag)
+	if locale.Tag != "" {
+		str = fmt.Sprintf("%s Tag: %s", str, locale.Tag)
 	}
-	if info.FileFormat != "" {
-		str = fmt.Sprintf("%s Format: %s", str, info.FileFormat)
+	if locale.FileFormat != "" {
+		str = fmt.Sprintf("%s Format: %s", str, locale.FileFormat)
 	}
 	return strings.TrimSpace(str)
 }
 
-type LocalePaths []*LocalePath
-type LocalePath struct {
-	Path string
-	Info *LocaleFileNameInfo
-}
-
 // Locale placeholder logic <locale_name>
-func ExpandPathsWithLocale(p *PhrasePath, locales []*phraseapp.Locale, info *LocaleFileNameInfo) (LocalePaths, error) {
-	switch {
-	case p.isLocalePatternUsed() && info.LocaleId != "":
-		return singlePathWithLocale(p, locales, info)
-
-	case p.isLocalePatternUsed() && info.LocaleId == "":
-		return multiplePathsWithLocales(p, locales, info)
-	case !p.isLocalePatternUsed():
-		return singlePathWithoutLocale(p, info)
-
-	default:
-		if info.LocaleId == "" {
-			return nil, fmt.Errorf("no target locale id specified")
-		}
-		return defaultPathWithLocale(p, locales, info)
-	}
+func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, locale *Locale) (Locales, error) {
+	return pc.pathsForRemoteLocales(locales, locale)
 }
 
-func singlePathWithLocale(p *PhrasePath, locales []*phraseapp.Locale, info *LocaleFileNameInfo) (LocalePaths, error) {
-	newPaths := []*LocalePath{}
-	locale := localeForLocaleId(info.LocaleId, locales)
-	valid, err := p.isValidLocalePath(locale)
+func (pc *PathComponents) singlePathWithLocale(locales []*phraseapp.Locale, localeFile *Locale) (Locales, error) {
+	newPaths := []*Locale{}
+	newLocaleFile := localeForLocaleId(localeFile.Id, locales)
+	valid, err := pc.isValidLocale(newLocaleFile)
 	if err != nil {
 		return nil, err
 	}
 	if !valid {
-		return nil, fmt.Errorf("Could not find remote locale with Id:", info.LocaleId)
+		return nil, fmt.Errorf("Could not find remote locale with Id:", localeFile.Id)
 	}
-	permutedInfo := &LocaleFileNameInfo{LocaleId: locale.Id, LocaleName: locale.Name, Tag: info.Tag, FileFormat: info.FileFormat}
-	absPath, err := newLocaleFile(p, permutedInfo)
+	locale := &Locale{Id: localeFile.Id, Name: localeFile.Name, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
+	absPath, err := pc.filePath(locale)
 	if err != nil {
 		return nil, err
 	}
-	newPaths = append(newPaths, &LocalePath{Path: absPath, Info: permutedInfo})
+	locale.Path = absPath
+	newPaths = append(newPaths, locale)
 	return newPaths, nil
 }
 
-func multiplePathsWithLocales(p *PhrasePath, locales []*phraseapp.Locale, info *LocaleFileNameInfo) (LocalePaths, error) {
-	files := []*LocalePath{}
-	for _, locale := range locales {
-		valid, err := p.isValidLocalePath(locale)
+func (pc *PathComponents) pathsForRemoteLocales(locales []*phraseapp.Locale, info *Locale) (Locales, error) {
+	files := []*Locale{}
+	for _, remoteLocale := range locales {
+		valid, err := pc.isValidLocale(remoteLocale)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -228,50 +176,15 @@ func multiplePathsWithLocales(p *PhrasePath, locales []*phraseapp.Locale, info *
 			continue
 		}
 
-		permutedInfo := &LocaleFileNameInfo{LocaleName: locale.Name, LocaleId: locale.Id, Tag: info.Tag, FileFormat: info.FileFormat}
-
-		absPath, err := newLocaleFile(p, permutedInfo)
+		locale := &Locale{Name: remoteLocale.Name, Id: remoteLocale.Id, RFC: remoteLocale.Code, Tag: info.Tag, FileFormat: info.FileFormat}
+		absPath, err := pc.filePath(locale)
 		if err != nil {
 			return nil, err
 		}
-		localePath := &LocalePath{Path: absPath, Info: permutedInfo}
-		files = append(files, localePath)
+		locale.Path = absPath
+		files = append(files, locale)
 	}
 	return files, nil
-}
-
-func singlePathWithoutLocale(p *PhrasePath, info *LocaleFileNameInfo) (LocalePaths, error) {
-	absPath, err := filepath.Abs(p.UserPath)
-	if err != nil {
-		return nil, err
-	}
-
-	path := &LocalePath{Path: absPath, Info: info}
-	localePath := []*LocalePath{path}
-	return localePath, nil
-}
-
-func defaultPathWithLocale(p *PhrasePath, locales []*phraseapp.Locale, info *LocaleFileNameInfo) (LocalePaths, error) {
-	absPath, err := filepath.Abs(p.UserPath)
-	if err != nil {
-		return nil, err
-	}
-
-	matchedLocale := localeForLocaleId(info.LocaleId, locales)
-	if matchedLocale == nil {
-		return nil, fmt.Errorf("locale specified in your path did not match any remote locales")
-	}
-
-	permutedInfo := &LocaleFileNameInfo{
-		LocaleId:      info.LocaleId,
-		LocaleName:    matchedLocale.Name,
-		LocaleRFC5646: matchedLocale.Code,
-		FileFormat:    info.FileFormat,
-		Tag:           info.Tag,
-	}
-	path := &LocalePath{Path: absPath, Info: permutedInfo}
-	localePath := []*LocalePath{path}
-	return localePath, nil
 }
 
 // Locale logic
@@ -284,55 +197,17 @@ func localeForLocaleId(localeId string, locales []*phraseapp.Locale) *phraseapp.
 	return nil
 }
 
-func newLocaleFile(p *PhrasePath, info *LocaleFileNameInfo) (string, error) {
-	absPath, err := p.AbsPath()
+func (pc *PathComponents) filePath(locale *Locale) (string, error) {
+	absPath, err := filepath.Abs(pc.Path)
 	if err != nil {
 		return "", err
 	}
 
-	realPath := strings.Replace(absPath, "<locale_name>", info.LocaleName, -1)
-	realPath = strings.Replace(realPath, "<locale_code>", info.LocaleId, -1)
-	realPath = strings.Replace(realPath, "<tag>", info.Tag, -1)
+	path := strings.Replace(absPath, "<locale_name>", locale.Name, -1)
+	path = strings.Replace(path, "<locale_code>", locale.RFC, -1)
+	path = strings.Replace(path, "<tag>", locale.Tag, -1)
 
-	return realPath, nil
-}
-
-func isLocaleFile(file, extension string) bool {
-	fileExtension := fmt.Sprintf(".%s", extension)
-	return strings.HasSuffix(file, fileExtension)
-}
-
-func trimSuffix(s, suffix string) string {
-	if strings.HasSuffix(s, suffix) {
-		s = s[:len(s)-len(suffix)]
-	}
-	return s
-}
-
-// File creation
-func createFile(realPath string) error {
-	err := fileExists(realPath)
-	if err != nil {
-		absDir := filepath.Dir(realPath)
-		err := fileExists(absDir)
-		if err != nil {
-			os.MkdirAll(absDir, 0700)
-		}
-
-		f, err := os.Create(realPath)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-	}
-	return nil
-}
-
-func fileExists(absPath string) error {
-	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return fmt.Errorf("no such file or directory:", absPath)
-	}
-	return nil
+	return path, nil
 }
 
 func Authenticate() error {
@@ -350,17 +225,17 @@ func printErr(err error, msg string) {
 	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", red, err, msg, reset)
 }
 
-func sharedMessage(method string, localePath *LocalePath) {
+func sharedMessage(method string, locale *Locale) {
 	yellow := ansi.ColorCode("yellow+b:black")
 	reset := ansi.ColorCode("reset")
 
-	localPath := localePath.Path
+	localPath := locale.Path
 	callerPath, err := os.Getwd()
 	if err == nil {
-		localPath = "." + strings.Replace(localePath.Path, callerPath, "", 1)
+		localPath = "." + strings.Replace(locale.Path, callerPath, "", 1)
 	}
 
-	remote := fmt.Sprint(yellow, localePath.Info.Message(), reset)
+	remote := fmt.Sprint(yellow, locale.Message(), reset)
 	local := fmt.Sprint(yellow, localPath, reset)
 
 	from, to := "", ""
@@ -378,11 +253,27 @@ func sharedMessage(method string, localePath *LocalePath) {
 	fmt.Println(buffer.String())
 }
 
-func wasAlreadySeen(alreadySeen []string, maybeSeen string) bool {
-	for _, seen := range alreadySeen {
-		if maybeSeen == seen {
+func contains(pathes []string, str string) bool {
+	for _, item := range pathes {
+		if str == item {
 			return true
 		}
 	}
 	return false
+}
+
+func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
+	locales, err := phraseapp.LocalesList(projectId, 1, 25)
+	if err != nil {
+		return nil, err
+	}
+	result := locales
+	for len(locales) == 25 {
+		locales, err = phraseapp.LocalesList(projectId, 1, 25)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, locales...)
+	}
+	return locales, nil
 }

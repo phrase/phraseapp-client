@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
@@ -11,11 +13,12 @@ import (
 type Targets []*Target
 
 type Target struct {
-	File        string      `yaml:"file,omitempty"`
-	ProjectId   string      `yaml:"project_id,omitempty"`
-	AccessToken string      `yaml:"access_token,omitempty"`
-	FileFormat  string      `yaml:"file_format,omitempty"`
-	Params      *PullParams `yaml:"params,omitempty"`
+	File          string      `yaml:"file,omitempty"`
+	ProjectId     string      `yaml:"project_id,omitempty"`
+	AccessToken   string      `yaml:"access_token,omitempty"`
+	FileFormat    string      `yaml:"file_format,omitempty"`
+	Params        *PullParams `yaml:"params,omitempty"`
+	RemoteLocales []*phraseapp.Locale
 }
 
 type PullParams struct {
@@ -25,7 +28,7 @@ type PullParams struct {
 	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
 	IncludeEmptyTranslations *bool                   `yaml:"include_empty_translations,omitempty"`
 	KeepNotranslateTags      *bool                   `yaml:"keep_notranslate_tags,omitempty"`
-	Tag                      *string                 `yaml:"tag,omitempty"`
+	Tag                      string                  `yaml:"tag,omitempty"`
 }
 
 func (t *Target) GetFormat() string {
@@ -46,49 +49,54 @@ func (t *Target) GetLocaleId() string {
 }
 
 func (t *Target) GetTag() string {
-	if t.Params != nil && t.Params.Tag != nil {
-		return *t.Params.Tag
+	if t.Params != nil {
+		return t.Params.Tag
 	}
 	return ""
 }
 
-func PullAll(targets Targets) error {
-	alreadySeen := []string{}
+func pullCommand() error {
+	targets, err := TargetsFromConfig()
+	if err != nil {
+		return err
+	}
+
+	pulledFiles := []string{}
 	for _, target := range targets {
-		newSeen, err := target.Pull(alreadySeen)
+		pulledFilesAfterTargetPull, err := target.Pull(pulledFiles)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		}
-		alreadySeen = newSeen
+		pulledFiles = pulledFilesAfterTargetPull
 	}
 	return nil
 }
 
-func (target *Target) Pull(alreadySeen []string) ([]string, error) {
+func (target *Target) Pull(pulledFiles []string) ([]string, error) {
 	Authenticate()
 
-	p, err := PathComponents(target.File)
+	pathComponents, err := ExtractPathComponents(target.File)
 	if err != nil {
 		return nil, err
 	}
 
-	locales, err := phraseapp.LocalesList(target.ProjectId, 1, 25)
+	target.RemoteLocales, err = RemoteLocales(target.ProjectId)
 	if err != nil {
 		return nil, err
 	}
 
-	info := &LocaleFileNameInfo{LocaleId: target.GetLocaleId(), Tag: target.GetTag()}
-	localeToPathMapping, err := ExpandPathsWithLocale(p, locales, info)
+	locale := &Locale{Id: target.GetLocaleId(), Tag: target.GetTag()}
+	localeToPathMapping, err := pathComponents.ExpandPathsWithLocale(target.RemoteLocales, locale)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, localeToPath := range localeToPathMapping {
 
-		if wasAlreadySeen(alreadySeen, localeToPath.Path) {
+		if contains(pulledFiles, localeToPath.Path) {
 			continue
 		}
-		alreadySeen = append(alreadySeen, localeToPath.Path)
+		pulledFiles = append(pulledFiles, localeToPath.Path)
 
 		err := createFile(localeToPath.Path)
 		if err != nil {
@@ -97,13 +105,13 @@ func (target *Target) Pull(alreadySeen []string) ([]string, error) {
 
 		sharedMessage("pull", localeToPath)
 
-		err = downloadAndWriteToFile(target, localeToPath)
+		err = target.DownloadAndWriteToFile(localeToPath)
 		if err != nil {
 			printErr(err, fmt.Sprint("for %s", localeToPath.Path))
 		}
 	}
 
-	return alreadySeen, nil
+	return pulledFiles, nil
 }
 
 func TargetsFromConfig() (Targets, error) {
@@ -115,15 +123,15 @@ func TargetsFromConfig() (Targets, error) {
 	return parsePull(content)
 }
 
-func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
-	downloadParams := setDownloadParams(target, localePath)
+func (target *Target) DownloadAndWriteToFile(locale *Locale) error {
+	downloadParams := target.setDownloadParams(locale)
 
 	params := target.Params
 	localeId := ""
 	if params != nil && params.LocaleId != "" {
 		localeId = params.LocaleId
 	} else {
-		localeId = localePath.Info.LocaleId
+		localeId = locale.Id
 	}
 
 	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
@@ -131,20 +139,14 @@ func downloadAndWriteToFile(target *Target, localePath *LocalePath) error {
 		return err
 	}
 
-	fh, err := os.OpenFile(localePath.Path, os.O_WRONLY, 0700)
-	if err != nil {
-		return err
-	}
-	defer fh.Close()
-
-	_, err = fh.Write(res)
+	err = ioutil.WriteFile(locale.Path, res, 0700)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func setDownloadParams(target *Target, localePath *LocalePath) *phraseapp.LocaleDownloadParams {
+func (target *Target) setDownloadParams(locale *Locale) *phraseapp.LocaleDownloadParams {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
 	downloadParams.FileFormat = target.FileFormat
 
@@ -180,8 +182,8 @@ func setDownloadParams(target *Target, localePath *LocalePath) *phraseapp.Locale
 	}
 
 	tag := params.Tag
-	if tag != nil {
-		downloadParams.Tag = tag
+	if tag != "" {
+		downloadParams.Tag = &tag
 	}
 
 	return downloadParams
@@ -225,4 +227,29 @@ func parsePull(yml string) (Targets, error) {
 	}
 
 	return targets, nil
+
+}
+func createFile(path string) error {
+	err := exists(path)
+	if err != nil {
+		absDir := filepath.Dir(path)
+		err := exists(absDir)
+		if err != nil {
+			os.MkdirAll(absDir, 0700)
+		}
+
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	}
+	return nil
+}
+
+func exists(absPath string) error {
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		return fmt.Errorf("no such file or directory:", absPath)
+	}
+	return nil
 }

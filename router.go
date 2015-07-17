@@ -164,22 +164,6 @@ func router(defaults map[string]string) *cli.Router {
 	return r
 }
 
-func pullCommand() error {
-	targets, err := TargetsFromConfig()
-	if err != nil {
-		return err
-	}
-	return PullAll(targets)
-}
-
-func pushCommand() error {
-	sources, err := SourcesFromConfig()
-	if err != nil {
-		return err
-	}
-	return PushAll(sources)
-}
-
 func wizardCommand() error {
 	data := WizardData{}
 	DisplayWizard(&data, "", "")
@@ -187,7 +171,7 @@ func wizardCommand() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-15 15:39:01.053097625 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-17 15:38:15.488368137 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 

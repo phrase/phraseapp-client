@@ -307,11 +307,7 @@ func writeConfig(data *WizardData, filename string) {
 }
 
 func firstPush() error {
-	sources, err := SourcesFromConfig()
-	if err != nil {
-		return err
-	}
-	return PushAll(sources)
+	return pullCommand()
 }
 
 func next(data *WizardData) string {

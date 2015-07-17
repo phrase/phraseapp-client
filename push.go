@@ -14,11 +14,15 @@ import (
 type Sources []*Source
 
 type Source struct {
-	File        string      `yaml:"file,omitempty"`
-	ProjectId   string      `yaml:"project_id,omitempty"`
-	AccessToken string      `yaml:"access_token,omitempty"`
-	FileFormat  string      `yaml:"file_format,omitempty"`
-	Params      *PushParams `yaml:"params,omitempty"`
+	File           string      `yaml:"file,omitempty"`
+	ProjectId      string      `yaml:"project_id,omitempty"`
+	AccessToken    string      `yaml:"access_token,omitempty"`
+	FileFormat     string      `yaml:"file_format,omitempty"`
+	Params         *PushParams `yaml:"params,omitempty"`
+	RemoteLocales  []*phraseapp.Locale
+	PathComponents *PathComponents
+	Root           string
+	Extension      string
 }
 
 type PushParams struct {
@@ -29,118 +33,46 @@ type PushParams struct {
 	SkipUnverification *bool                   `yaml:"skip_unverification,omitempty"`
 	SkipUploadTags     *bool                   `yaml:"skip_upload_tags,omitempty"`
 	Tags               []string                `yaml:"tags,omitempty"`
-	Tag                *string                 `yaml:"tag,omitempty"`
 	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
 }
 
-func (s *Source) GetFormat() string {
-	if s.Params != nil && s.Params.FileFormat != "" {
-		return s.Params.FileFormat
+func pushCommand() error {
+	sources, err := SourcesFromConfig()
+	if err != nil {
+		return err
 	}
-	if s.FileFormat != "" {
-		return s.FileFormat
-	}
-	return ""
-}
 
-func (s *Source) GetLocaleId() string {
-	if s.Params != nil {
-		return s.Params.LocaleId
-	}
-	return ""
-}
-
-func (s *Source) GetTag() string {
-	if s.Params != nil && s.Params.Tag != nil {
-		return *s.Params.Tag
-	}
-	return ""
-}
-
-func PushAll(sources Sources) error {
-	alreadySeen := []string{}
 	for _, source := range sources {
-		newSeen, err := source.Push(alreadySeen)
+		err := source.Push()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		}
-		alreadySeen = newSeen
 	}
 	return nil
 }
 
-func (source *Source) Push(alreadySeen []string) ([]string, error) {
+func (source *Source) Push() error {
 	Authenticate()
 
-	p, err := PathComponents(source.File)
+	locales, err := source.Locales()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	locales, err := phraseapp.LocalesList(source.ProjectId, 1, 25)
-	if err != nil {
-		return nil, err
-	}
-
-	info := &LocaleFileNameInfo{LocaleId: source.GetLocaleId(), Tag: source.GetTag()}
-	localeToPathMapping, err := ExpandPathsWithLocale(p, locales, info)
-	if err != nil {
-		return nil, err
-	}
-
-	virtualPaths, err := LocaleFileGlob(p, source.GetFormat(), localeToPathMapping)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, localeToPath := range virtualPaths {
-
-		if wasAlreadySeen(alreadySeen, localeToPath.Path) {
-			continue
-		}
-		alreadySeen = append(alreadySeen, localeToPath.Path)
-
-		sharedMessage("push", localeToPath)
-
-		err = uploadFile(source, localeToPath)
+	for _, locale := range locales {
+		fmt.Printf("Trying to push %s", locale.Path)
+		err = source.uploadFile(locale)
 		if err != nil {
 			printErr(err, "")
 		}
+		sharedMessage("push", locale)
 	}
 
-	return alreadySeen, nil
+	return nil
 }
 
-func LocaleFileGlob(p *PhrasePath, fileFormat string, paths LocalePaths) (LocalePaths, error) {
-	switch {
-	case p.GlobPattern == "" && !(p.IsDir):
-		return paths, nil
-
-	case p.GlobPattern == "*":
-		return expandSingleDirectory(p, paths, fileFormat)
-
-	case p.GlobPattern == "**/*":
-		return recurseDirectory(fileFormat, paths)
-
-	case p.IsDir:
-		return expandSingleDirectory(p, paths, fileFormat)
-
-	default:
-		return paths, nil
-	}
-}
-
-func SourcesFromConfig() (Sources, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		return nil, err
-	}
-
-	return parsePush(content)
-}
-
-func uploadFile(source *Source, localePath *LocalePath) error {
-	uploadParams, err := setUploadParams(source, localePath)
+func (source *Source) uploadFile(locale *Locale) error {
+	uploadParams, err := source.setUploadParams(locale)
 	if err != nil {
 		return err
 	}
@@ -152,17 +84,81 @@ func uploadFile(source *Source, localePath *LocalePath) error {
 
 	printSummary(&aUpload.Summary)
 
+	fmt.Printf("%%", aUpload)
+
 	return nil
 }
 
-func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleFileImportParams, error) {
-	uploadParams := new(phraseapp.LocaleFileImportParams)
-	uploadParams.File = localePath.Path
-	uploadParams.FileFormat = &source.FileFormat
-	remoteLocaleId := localePath.Info.LocaleId
+func (source *Source) IsDir() bool {
+	return source.PathComponents.IsDir
+}
 
-	if remoteLocaleId != "" {
-		uploadParams.LocaleId = &remoteLocaleId
+func (source *Source) GlobPattern() string {
+	return source.PathComponents.GlobPattern
+}
+
+func (source *Source) Locales() (Locales, error) {
+	filePaths, err := source.glob()
+	if err != nil {
+		return nil, err
+	}
+	var locales Locales
+	for _, path := range filePaths {
+		locales = append(locales, &Locale{Path: path})
+	}
+	return locales, nil
+}
+
+func (source *Source) glob() ([]string, error) {
+	files, err := filepath.Glob(source.Root + "*." + source.Extension)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+func SourcesFromConfig() (Sources, error) {
+	content, err := ConfigContent()
+	if err != nil {
+		return nil, err
+	}
+
+	var config *PushConfig
+
+	err = yaml.Unmarshal([]byte(content), &config)
+	if err != nil {
+		return nil, err
+	}
+
+	token := config.Phraseapp.AccessToken
+	projectId := config.Phraseapp.ProjectId
+	fileFormat := config.Phraseapp.FileFormat
+	sources := *config.Phraseapp.Push.Sources
+
+	for _, source := range sources {
+		if source.ProjectId == "" {
+			source.ProjectId = projectId
+		}
+		if source.AccessToken == "" {
+			source.AccessToken = token
+		}
+		if source.FileFormat == "" {
+			source.FileFormat = fileFormat
+		}
+	}
+
+	return sources, nil
+}
+
+func (source *Source) setUploadParams(locale *Locale) (*phraseapp.LocaleFileImportParams, error) {
+	uploadParams := new(phraseapp.LocaleFileImportParams)
+	uploadParams.File = locale.Path
+	uploadParams.FileFormat = &source.FileFormat
+
+	if locale.Id != "" {
+		uploadParams.LocaleId = &(locale.Id)
 	}
 
 	if source.Params == nil {
@@ -202,13 +198,7 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	}
 
 	tags := params.Tags
-	info := localePath.Info
-	if info != nil && info.Tag != "" {
-		if tags == nil {
-			tags = make([]string, 0)
-		}
-		tags = append(tags, info.Tag)
-	}
+
 	if tags != nil {
 		uploadParams.Tags = tags
 	}
@@ -221,77 +211,6 @@ func setUploadParams(source *Source, localePath *LocalePath) (*phraseapp.LocaleF
 	return uploadParams, nil
 }
 
-// File expansion for * and **/* and ""
-func expandSingleDirectory(p *PhrasePath, paths LocalePaths, fileFormat string) (LocalePaths, error) {
-	expandedPaths := []*LocalePath{}
-	for _, localePath := range paths {
-
-		asDirectory := fmt.Sprintf("%s/", localePath.Path)
-		pathsPerDirectory, err := glob(asDirectory, fileFormat)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, absPath := range pathsPerDirectory {
-			localeToPathMapping := CopyLocalePath(absPath, localePath)
-			expandedPaths = append(expandedPaths, localeToPathMapping)
-		}
-
-	}
-	return expandedPaths, nil
-}
-
-func recurseDirectory(fileFormat string, paths LocalePaths) (LocalePaths, error) {
-	expandedPaths := []*LocalePath{}
-	for _, localePath := range paths {
-		newPaths, err := walk(localePath.Path, fileFormat)
-		if err != nil {
-			return nil, err
-		}
-		for _, newPath := range newPaths {
-			localeToPathMapping := CopyLocalePath(newPath, localePath)
-			expandedPaths = append(expandedPaths, localeToPathMapping)
-		}
-	}
-	return expandedPaths, nil
-}
-
-func walk(root, fileFormat string) ([]string, error) {
-	fileList := []string{}
-	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
-		if isLocaleFile(f.Name(), fileFormat) {
-			fileList = append(fileList, path)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return fileList, nil
-}
-
-func glob(root, fileFormat string) ([]string, error) {
-	files, err := filepath.Glob(root + "*")
-
-	if err != nil {
-		return nil, err
-	}
-	localeFiles := []string{}
-	for _, f := range files {
-		if fileFormat != "" {
-			if isLocaleFile(f, fileFormat) {
-				localeFiles = append(localeFiles, f)
-			}
-		} else {
-			localeFiles = append(localeFiles, f)
-		}
-	}
-	return localeFiles, nil
-}
-
 // Parsing
 type PushConfig struct {
 	Phraseapp struct {
@@ -299,37 +218,9 @@ type PushConfig struct {
 		ProjectId   string `yaml:"project_id"`
 		FileFormat  string `yaml:"file_format,omitempty"`
 		Push        struct {
-			Sources Sources
+			Sources *Sources
 		}
 	}
-}
-
-func parsePush(yml string) (Sources, error) {
-	var config *PushConfig
-
-	err := yaml.Unmarshal([]byte(yml), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	projectId := config.Phraseapp.ProjectId
-	fileFormat := config.Phraseapp.FileFormat
-	sources := config.Phraseapp.Push.Sources
-
-	for _, source := range sources {
-		if source.ProjectId == "" {
-			source.ProjectId = projectId
-		}
-		if source.AccessToken == "" {
-			source.AccessToken = token
-		}
-		if source.FileFormat == "" {
-			source.FileFormat = fileFormat
-		}
-	}
-
-	return sources, nil
 }
 
 func printSummary(summary *phraseapp.SummaryType) {
