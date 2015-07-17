@@ -238,13 +238,15 @@ func contains(pathes []string, str string) bool {
 }
 
 func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
-	locales, err := phraseapp.LocalesList(projectId, 1, 25)
+	page := 1
+	locales, err := phraseapp.LocalesList(projectId, page, 25)
 	if err != nil {
 		return nil, err
 	}
 	result := locales
 	for len(locales) == 25 {
-		locales, err = phraseapp.LocalesList(projectId, 1, 25)
+		page = page + 1
+		locales, err = phraseapp.LocalesList(projectId, page, 25)
 		if err != nil {
 			return nil, err
 		}
