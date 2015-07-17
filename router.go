@@ -175,7 +175,7 @@ func (cmd *WizardCommand) Run() error {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-17 16:58:51.63810937 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-17 17:00:49.201710257 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
