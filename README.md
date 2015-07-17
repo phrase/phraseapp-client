@@ -101,17 +101,10 @@ will be given on the command line.
 The `phraseapp` tool provides a router to determine all different commands
 available, i.e. there is a single binary that does different things depending on
 the path given as first arguments (similar to what git does). For example to get
-the list of all projects, there is a route `project list` that will receive this
+the list of all projects, there is a route `projects list` that will receive this
 information:
 
-	$ phraseapp project list
-
-For convenience the routes must not be given completely, but any unambiguous
-part of the segments is sufficient, therefore
-
-	$ phraseapp proj li
-
-would work, too.
+	$ phraseapp projects list
 
 If no route is given, a list of all available routes will be printed. Each route
 can have options that are shown in more detail with the `-h/--help` flag:
