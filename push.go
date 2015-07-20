@@ -136,7 +136,7 @@ func (source *Source) generateLocaleForFile(path string) *LocaleFile {
 
 func (source *Source) FileWithoutPlaceholder() string {
 	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
-	return strings.TrimSuffix(re.ReplaceAllString(source.File, ""), source.Extension)
+	return strings.TrimSuffix(re.ReplaceAllString(source.File, "*"), source.Extension)
 }
 
 func (source *Source) glob() ([]string, error) {
