@@ -252,5 +252,5 @@ func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
 		}
 		result = append(result, locales...)
 	}
-	return locales, nil
+	return result, nil
 }
