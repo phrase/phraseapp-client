@@ -75,6 +75,18 @@ func (source *Source) Push() error {
 
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
+
+		if !localeFile.ExistsRemote {
+			localeDetails, err := source.createLocale(localeFile)
+			if err != nil {
+				printErr(err, "")
+				continue
+			}
+			localeFile.Id = localeDetails.Id
+			localeFile.RFC = localeDetails.Code
+			localeFile.Name = localeDetails.Name
+		}
+
 		err = source.uploadFile(localeFile)
 		if err != nil {
 			printErr(err, "")
@@ -83,6 +95,25 @@ func (source *Source) Push() error {
 	}
 
 	return nil
+}
+
+func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+	localeParams := new(phraseapp.LocaleParams)
+
+	if localeFile.RFC != "" {
+		localeParams.Code = localeFile.RFC
+	}
+	if localeFile.Name != "" {
+		localeParams.Name = localeFile.Name
+	} else {
+		localeParams.Name = localeFile.RFC
+	}
+
+	localeDetails, err := phraseapp.LocaleCreate(source.ProjectId, localeParams)
+	if err != nil {
+		return nil, err
+	}
+	return localeDetails, nil
 }
 
 func (source *Source) uploadFile(localeFile *LocaleFile) error {
@@ -101,14 +132,6 @@ func (source *Source) uploadFile(localeFile *LocaleFile) error {
 	return nil
 }
 
-func (source *Source) IsDir() bool {
-	return source.PathComponents.IsDir
-}
-
-func (source *Source) GlobPattern() string {
-	return source.PathComponents.GlobPattern
-}
-
 func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	source.Extension = filepath.Ext(source.File)
 
@@ -116,31 +139,118 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		localeFile := source.generateLocaleForFile(path)
+		localeFile, err := source.generateLocaleForFile(path)
+		if err != nil {
+			return nil, err
+		}
 		localeFiles = append(localeFiles, localeFile)
 	}
 	return localeFiles, nil
 }
 
-func (source *Source) generateLocaleForFile(path string) *LocaleFile {
-	absolutePath, err := filepath.Abs(path)
-	if err != nil {
-		printErr(err, "")
-		return nil
+func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
+
+	taggedMatches := source.findTaggedMatches(path)
+	name := taggedMatches["locale_name"]
+	rfc := taggedMatches["locale_code"]
+	tag := taggedMatches["tag"]
+
+	lc := &LocaleFile{}
+	if name != "" {
+		lc.Name = name
 	}
 
-	return &LocaleFile{Path: absolutePath}
+	if rfc != "" {
+		lc.RFC = rfc
+	}
+
+	if tag != "" {
+		lc.Tag = tag
+	}
+
+	locale := source.getRemoteLocaleForLocaleFile(lc)
+	if locale != nil {
+		lc.ExistsRemote = true
+		lc.RFC = locale.Code
+		lc.Name = locale.Name
+		lc.Id = locale.Id
+	} else if lc.Name == "" && lc.RFC == "" {
+		return nil, fmt.Errorf("No valid locale information. Provide a locale name/code or id for %s", source.File)
+	}
+
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Path = absolutePath
+
+	return lc, nil
 }
 
-func (source *Source) FileWithoutPlaceholder() string {
+func (source *Source) findTaggedMatches(path string) map[string]string {
+	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
+
+	separator := string(os.PathSeparator)
+	taggedMatches := map[string]string{}
+	parts := splitToParts(source.File, separator)
+
+	if len(parts) > 0 && parts[0] == "." {
+		parts = parts[1:]
+	}
+
+	for pos, part := range parts {
+		if !re.MatchString(part) {
+			continue
+		}
+		match := part
+		for _, group := range re.FindAllString(part, -1) {
+			replacer := fmt.Sprintf("(?P%s.+?)", group)
+			match = strings.Replace(match, group, replacer, 1)
+		}
+
+		reMatcher := regexp.MustCompile(match)
+		if pos > 0 || strings.Contains(part, source.Extension) {
+			reMatcher = regexp.MustCompile(separator + match)
+		}
+		namedMatches := reMatcher.SubexpNames()
+		subMatches := reMatcher.FindStringSubmatch(path)
+		for i, subMatch := range subMatches {
+			if subMatch != "" {
+				taggedMatches[namedMatches[i]] = subMatch
+			}
+		}
+	}
+
+	return taggedMatches
+}
+
+func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
+	for _, remote := range source.RemoteLocales {
+		if source.Params != nil {
+			localeId := source.Params.LocaleId
+			if remote.Id == localeId || remote.Name == localeId {
+				return remote
+			}
+		}
+		if remote.Name == localeFile.Name || remote.Code == localeFile.RFC {
+			return remote
+		}
+	}
+	return nil
+}
+
+func (source *Source) fileWithoutPlaceholder() string {
 	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
 	return strings.TrimSuffix(re.ReplaceAllString(source.File, "*"), source.Extension)
 }
 
 func (source *Source) glob() ([]string, error) {
-	pattern := source.FileWithoutPlaceholder() + "*" + source.Extension
+	pattern := source.fileWithoutPlaceholder() + "*" + source.Extension
+
 	files, err := filepath.Glob(pattern)
 
 	if Debug {
@@ -193,6 +303,8 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 
 	if localeFile.Id != "" {
 		uploadParams.LocaleId = &(localeFile.Id)
+	} else if localeFile.RFC != "" {
+		uploadParams.LocaleId = &(localeFile.RFC)
 	}
 
 	if source.Params == nil {

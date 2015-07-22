@@ -16,6 +16,7 @@ var Debug bool
 type LocaleFiles []*LocaleFile
 type LocaleFile struct {
 	Path, Name, Id, RFC, Tag, FileFormat string
+	ExistsRemote                         bool
 }
 
 func (localeFile *LocaleFile) RelPath() string {
@@ -68,13 +69,11 @@ func ExtractPathComponents(userPath string) (*PathComponents, error) {
 	pc.Path = strings.TrimSpace(strings.TrimSuffix(userPath, pc.GlobPattern))
 	pc.Parts = splitToParts(userPath, pc.Separator)
 
-	isDir, err := isDir(userPath)
+	isDirectory, err := isDir(userPath)
 	if err != nil {
 		return nil, err
 	}
-
-	pc.IsDir = isDir
-
+	pc.IsDir = isDirectory
 	return pc, nil
 }
 
@@ -121,11 +120,6 @@ func splitToParts(userPath, separator string) []string {
 }
 
 // Locale to Path mapping
-func CopyLocale(relPath string, localeFile *LocaleFile) *LocaleFile {
-	newLocale := &LocaleFile{Path: relPath, Id: localeFile.Id, Name: localeFile.Name, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
-	return newLocale
-}
-
 func (localeFile *LocaleFile) Message() string {
 	str := ""
 	if Debug {
