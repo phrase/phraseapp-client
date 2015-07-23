@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../dynport/dgtk/cli/cli.iml" filepath="$PROJECT_DIR$/../../dynport/dgtk/cli/cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../sacry/myproj/myproj.iml" filepath="$PROJECT_DIR$/../../sacry/myproj/myproj.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../phraseapp-api-client/phraseapp-api-client.iml" filepath="$PROJECT_DIR$/../phraseapp-api-client/phraseapp-api-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/phraseapp-client.iml" filepath="$PROJECT_DIR$/phraseapp-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../phraseapp-go/phraseapp-go.iml" filepath="$PROJECT_DIR$/../phraseapp-go/phraseapp-go.iml" />
+    </modules>
+  </component>
+</project>
