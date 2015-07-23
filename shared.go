@@ -67,7 +67,7 @@ func ExtractPathComponents(userPath string) (*PathComponents, error) {
 	pc := &PathComponents{Separator: string(os.PathSeparator)}
 	pc.GlobPattern = extractGlobPattern(userPath)
 	pc.Path = strings.TrimSpace(strings.TrimSuffix(userPath, pc.GlobPattern))
-	pc.Parts = splitToParts(userPath, pc.Separator)
+	pc.Parts = strings.Split(userPath, pc.Separator)
 
 	isDirectory, err := isDir(userPath)
 	if err != nil {
@@ -106,17 +106,6 @@ func extractGlobPattern(userPath string) string {
 	} else {
 		return ""
 	}
-}
-
-func splitToParts(userPath, separator string) []string {
-	split := strings.Split(userPath, separator)
-	parts := []string{}
-	for _, part := range split {
-		if part != separator {
-			parts = append(parts, part)
-		}
-	}
-	return parts
 }
 
 // Locale to Path mapping
@@ -222,15 +211,6 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 	}
 }
 
-func contains(pathes []string, str string) bool {
-	for _, item := range pathes {
-		if str == item {
-			return true
-		}
-	}
-	return false
-}
-
 func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
 	page := 1
 	locales, err := phraseapp.LocalesList(projectId, page, 25)
@@ -247,4 +227,24 @@ func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
 		result = append(result, locales...)
 	}
 	return result, nil
+}
+
+func Contains(seq []string, str string) bool {
+	for _, elem := range seq {
+		if str == elem {
+			return true
+		}
+	}
+	return false
+}
+
+func TakeWhile(seq []string, predicate func(string) bool) []string {
+	take := []string{}
+	for _, elem := range seq {
+		if !predicate(elem) {
+			break
+		}
+		take = append(take, elem)
+	}
+	return take
 }

@@ -29,7 +29,7 @@ func (cmd *PushCommand) Run() error {
 	for _, source := range sources {
 		err := source.Push()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			printErr(err, "")
 		}
 	}
 	return nil
@@ -135,9 +135,30 @@ func (source *Source) uploadFile(localeFile *LocaleFile) error {
 func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	source.Extension = filepath.Ext(source.File)
 
-	filePaths, err := source.glob()
+	recursiveFiles := []string{}
+	if strings.Contains(source.File, "**") {
+		rec, err := source.recurse()
+		if err != nil {
+			return nil, err
+		}
+		recursiveFiles = rec
+	}
+
+	globFiles, err := source.glob()
 	if err != nil {
 		return nil, err
+	}
+
+	filePaths := []string{}
+	for _, f := range globFiles {
+		if !Contains(filePaths, f) {
+			filePaths = append(filePaths, f)
+		}
+	}
+	for _, f := range recursiveFiles {
+		if !Contains(filePaths, f) {
+			filePaths = append(filePaths, f)
+		}
 	}
 
 	var localeFiles LocaleFiles
@@ -196,7 +217,7 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 
 	separator := string(os.PathSeparator)
 	taggedMatches := map[string]string{}
-	parts := splitToParts(source.File, separator)
+	parts := strings.Split(source.File, separator)
 
 	for _, part := range parts {
 		if !re.MatchString(part) {
@@ -256,6 +277,29 @@ func (source *Source) glob() ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func (source *Source) recurse() ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
+		if strings.HasSuffix(f.Name(), source.Extension) {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+func (source *Source) root() string {
+	separator := string(os.PathSeparator)
+	parts := strings.Split(source.File, separator)
+	root := TakeWhile(parts, func(x string) bool { return x != "**" })
+	return strings.Join(root, separator)
 }
 
 func SourcesFromConfig() (Sources, error) {
@@ -352,7 +396,6 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	return uploadParams, nil
 }
 
-// Parsing
 type PushConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
