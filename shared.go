@@ -159,16 +159,6 @@ func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, loc
 	return files, nil
 }
 
-// Locale logic
-func localeForLocaleId(localeId string, locales []*phraseapp.Locale) *phraseapp.Locale {
-	for _, locale := range locales {
-		if locale.Id == localeId {
-			return locale
-		}
-	}
-	return nil
-}
-
 func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 	absPath, err := filepath.Abs(pc.Path)
 	if err != nil {

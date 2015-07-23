@@ -78,20 +78,20 @@ func (source *Source) Push() error {
 
 		if !localeFile.ExistsRemote {
 			localeDetails, err := source.createLocale(localeFile)
-			if err != nil {
-				printErr(err, "")
-				continue
+			if err == nil {
+				localeFile.Id = localeDetails.Id
+				localeFile.RFC = localeDetails.Code
+				localeFile.Name = localeDetails.Name
 			}
-			localeFile.Id = localeDetails.Id
-			localeFile.RFC = localeDetails.Code
-			localeFile.Name = localeDetails.Name
 		}
 
 		err = source.uploadFile(localeFile)
 		if err != nil {
 			printErr(err, "")
+		} else {
+			sharedMessage("push", localeFile)
 		}
-		sharedMessage("push", localeFile)
+
 	}
 
 	return nil
@@ -198,8 +198,6 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 		lc.RFC = locale.Code
 		lc.Name = locale.Name
 		lc.Id = locale.Id
-	} else if lc.Name == "" && lc.RFC == "" {
-		return nil, fmt.Errorf("No valid locale information. Provide a locale name/code or id for %s", source.File)
 	}
 
 	absolutePath, err := filepath.Abs(path)
