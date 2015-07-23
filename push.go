@@ -198,11 +198,7 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 	taggedMatches := map[string]string{}
 	parts := splitToParts(source.File, separator)
 
-	if len(parts) > 0 && parts[0] == "." {
-		parts = parts[1:]
-	}
-
-	for pos, part := range parts {
+	for _, part := range parts {
 		if !re.MatchString(part) {
 			continue
 		}
@@ -213,14 +209,13 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		}
 
 		reMatcher := regexp.MustCompile(match)
-		if pos > 0 || strings.Contains(part, source.Extension) {
-			reMatcher = regexp.MustCompile(separator + match)
-		}
 		namedMatches := reMatcher.SubexpNames()
 		subMatches := reMatcher.FindStringSubmatch(path)
 		for i, subMatch := range subMatches {
 			if subMatch != "" {
-				taggedMatches[namedMatches[i]] = subMatch
+				split := strings.Split(subMatch, separator)
+				match := split[len(split)-1]
+				taggedMatches[namedMatches[i]] = match
 			}
 		}
 	}
