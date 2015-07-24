@@ -300,18 +300,17 @@ func writeConfig(data *WizardData, filename string) {
 	var initialPush string
 	fmt.Print("Enter 'yes' to upload your locales now for the first time (Default: 'yes'): ")
 	fmt.Scanln(&initialPush)
-	if initialPush == "y" || initialPush == "Y" || initialPush == "" {
+	if initialPush == "yes" || initialPush == "" {
 		err = firstPush()
 		if err != nil {
 			panic(err.Error())
 		}
-		fmt.Println("Pushing....")
 	}
 	fmt.Println("Setup completed!")
 }
 
 func firstPush() error {
-	cmd := &PullCommand{}
+	cmd := &PushCommand{}
 	return cmd.Run()
 }
 

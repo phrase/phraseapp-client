@@ -1,1 +1,9 @@
 .phraseapp.yml
+
+# InteliJ
+*.iml
+.idea/
+*.ipr
+*.iws
+/out/
+.idea_modules/
