@@ -2,7 +2,7 @@
 
 # InteliJ
 *.iml
-.idea/
+.idea/*
 *.ipr
 *.iws
 /out/
