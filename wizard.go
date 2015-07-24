@@ -440,7 +440,7 @@ func selectProjectStep(data *WizardData) {
 	if len(projects) == 1 {
 		data.ProjectId = projects[0].Id
 		data.MainFormat = projects[0].MainFormat
-		fmt.Printf("You've got one project, %s. Answer \"y\" to select this or \"n\" to create a new project: ")
+		fmt.Printf("You've got one project, \"%s\". Answer \"y\" to select this or \"n\" to create a new project: ", projects[0].Name)
 		var answer string
 		fmt.Scanln(&answer)
 		if answer == "y" {
