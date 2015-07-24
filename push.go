@@ -223,7 +223,7 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		}
 		match := part
 		for _, group := range re.FindAllString(part, -1) {
-			replacer := fmt.Sprintf("(?P%s.+?)", group)
+			replacer := fmt.Sprintf("(?P%s.+)", group)
 			match = strings.Replace(match, group, replacer, 1)
 		}
 
@@ -262,10 +262,20 @@ func (source *Source) fileWithoutPlaceholder() string {
 	return strings.TrimSuffix(re.ReplaceAllString(source.File, "*"), source.Extension)
 }
 
-func (source *Source) glob() ([]string, error) {
-	pattern := source.fileWithoutPlaceholder() + "*" + source.Extension
+func (source *Source) extensionWithoutPlaceholder() string {
+	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
+	if re.MatchString(source.Extension) {
+		return ""
+	}
+	return "*" + source.Extension
+}
 
+func (source *Source) glob() ([]string, error) {
+	pattern := source.fileWithoutPlaceholder() + source.extensionWithoutPlaceholder()
+
+	fmt.Println(pattern)
 	files, err := filepath.Glob(pattern)
+	fmt.Println(files)
 
 	if Debug {
 		fmt.Println("Found", len(files), "files matching the source pattern", pattern)

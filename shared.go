@@ -31,7 +31,6 @@ type PathComponents struct {
 	Separator   string
 	Parts       []string
 	GlobPattern string
-	IsDir       bool
 }
 
 func (pc *PathComponents) isLocalePatternUsed() bool {
@@ -69,33 +68,7 @@ func ExtractPathComponents(userPath string) (*PathComponents, error) {
 	pc.Path = strings.TrimSpace(strings.TrimSuffix(userPath, pc.GlobPattern))
 	pc.Parts = strings.Split(userPath, pc.Separator)
 
-	isDirectory, err := isDir(userPath)
-	if err != nil {
-		return nil, err
-	}
-	pc.IsDir = isDirectory
 	return pc, nil
-}
-
-func isDir(path string) (bool, error) {
-	if strings.Contains(path, "<") {
-		return false, nil
-	}
-
-	file, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer file.Close()
-	stat, err := file.Stat()
-	if err != nil {
-		return false, err
-	}
-	switch mode := stat.Mode(); {
-	case mode.IsDir():
-		return true, nil
-	}
-	return false, nil
 }
 
 func extractGlobPattern(userPath string) string {
