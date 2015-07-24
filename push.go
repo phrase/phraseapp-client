@@ -215,17 +215,22 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 
 	separator := string(os.PathSeparator)
 	taggedMatches := map[string]string{}
-	parts := strings.Split(source.File, separator)
 
+	// config/locale/<locale_code>.yml -> ["config", "locale", "<locale_code>.yml"]
+	parts := strings.Split(source.File, separator)
 	for _, part := range parts {
 		if !re.MatchString(part) {
 			continue
 		}
+
+		// <locale_code>.yml -> (?P<locale_code>.+).yml
 		match := part
-		for _, group := range re.FindAllString(part, -1) {
-			replacer := fmt.Sprintf("(?P%s.+)", group)
-			match = strings.Replace(match, group, replacer, 1)
+		group := re.FindString(part)
+		if group == "" {
+			continue
 		}
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		match = strings.Replace(match, group, replacer, 1)
 
 		reMatcher := regexp.MustCompile(match)
 		namedMatches := reMatcher.SubexpNames()
@@ -233,8 +238,16 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		for i, subMatch := range subMatches {
 			if subMatch != "" {
 				split := strings.Split(subMatch, separator)
-				match := split[len(split)-1]
-				taggedMatches[namedMatches[i]] = match
+
+				// the match is either from start or end of path
+				// res/values-en/Strings.xml -> en/Strings.xml
+				newMatch := split[0]
+				if strings.HasPrefix(match, replacer) {
+					// config/en.lproj -> config/en
+					newMatch = split[len(split)-1]
+				}
+
+				taggedMatches[namedMatches[i]] = newMatch
 			}
 		}
 	}
@@ -273,9 +286,7 @@ func (source *Source) extensionWithoutPlaceholder() string {
 func (source *Source) glob() ([]string, error) {
 	pattern := source.fileWithoutPlaceholder() + source.extensionWithoutPlaceholder()
 
-	fmt.Println(pattern)
 	files, err := filepath.Glob(pattern)
-	fmt.Println(files)
 
 	if Debug {
 		fmt.Println("Found", len(files), "files matching the source pattern", pattern)
