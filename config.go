@@ -17,7 +17,7 @@ const defaultDir = "./"
 func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
 	content, err := ConfigContent()
 	if err != nil {
-		return nil, err
+		content = "{}"
 	}
 
 	return parseCredentials(content)
@@ -26,7 +26,7 @@ func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
 func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 	content, err := ConfigContent()
 	if err != nil {
-		return nil, err
+		content = "{}"
 	}
 
 	return parseDefaults(content)
@@ -35,7 +35,7 @@ func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 func ConfigCallArgs() (map[string]string, error) {
 	content, err := ConfigContent()
 	if err != nil {
-		return nil, err
+		content = "{}"
 	}
 
 	return parseCallArgs(content)
@@ -45,12 +45,12 @@ func ConfigCallArgs() (map[string]string, error) {
 func ConfigContent() (string, error) {
 	path, err := phraseConfigPath()
 	if err != nil {
-		return "{}", nil
+		return "", err
 	}
 
 	bytes, err := readFile(path)
 	if err != nil {
-		return "{}", nil
+		return "", err
 	}
 	return string(bytes), nil
 }

@@ -321,8 +321,12 @@ func (source *Source) recurse() ([]string, error) {
 func (source *Source) root() string {
 	separator := string(os.PathSeparator)
 	parts := strings.Split(source.File, separator)
-	root := TakeWhile(parts, func(x string) bool { return x != "**" })
-	return strings.Join(root, separator)
+	rootParts := TakeWhile(parts, func(x string) bool { return x != "**" })
+	root := strings.Join(rootParts, separator)
+	if root == "" {
+		root = "."
+	}
+	return root
 }
 
 func SourcesFromConfig() (Sources, error) {
@@ -341,6 +345,11 @@ func SourcesFromConfig() (Sources, error) {
 	token := config.Phraseapp.AccessToken
 	projectId := config.Phraseapp.ProjectId
 	fileFormat := config.Phraseapp.FileFormat
+
+	if &config.Phraseapp.Push == nil {
+		return nil, fmt.Errorf("no sources specified")
+	}
+
 	sources := *config.Phraseapp.Push.Sources
 
 	validSources := []*Source{}

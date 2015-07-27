@@ -216,6 +216,11 @@ func parsePull(yml string) (Targets, error) {
 	token := config.Phraseapp.AccessToken
 	projectId := config.Phraseapp.ProjectId
 	fileFormat := config.Phraseapp.FileFormat
+
+	if &config.Phraseapp.Pull == nil {
+		return nil, fmt.Errorf("no targets specified")
+	}
+
 	targets := config.Phraseapp.Pull.Targets
 
 	validTargets := []*Target{}
