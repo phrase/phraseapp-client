@@ -165,7 +165,7 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-27 12:36:26.860264819 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-27 16:41:41.178079842 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
