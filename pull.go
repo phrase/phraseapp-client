@@ -8,6 +8,7 @@ import (
 
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"strings"
 )
 
 type PullCommand struct {
@@ -26,7 +27,7 @@ func (cmd *PullCommand) Run() error {
 	for _, target := range targets {
 		err := target.Pull()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			printErr(err, "")
 		}
 	}
 	return nil
@@ -79,6 +80,10 @@ func (t *Target) GetTag() string {
 
 func (target *Target) Pull() error {
 	Authenticate()
+
+	if strings.TrimSpace(target.File) == "" {
+		return fmt.Errorf("file of target may not be empty")
+	}
 
 	pathComponents, err := ExtractPathComponents(target.File)
 	if err != nil {
@@ -213,7 +218,11 @@ func parsePull(yml string) (Targets, error) {
 	fileFormat := config.Phraseapp.FileFormat
 	targets := config.Phraseapp.Pull.Targets
 
+	validTargets := []*Target{}
 	for _, target := range targets {
+		if target == nil {
+			continue
+		}
 		if target.ProjectId == "" {
 			target.ProjectId = projectId
 		}
@@ -223,9 +232,14 @@ func parsePull(yml string) (Targets, error) {
 		if target.FileFormat == "" {
 			target.FileFormat = fileFormat
 		}
+		validTargets = append(validTargets, target)
 	}
 
-	return targets, nil
+	if len(validTargets) <= 0 {
+		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
+	}
+
+	return validTargets, nil
 
 }
 func createFile(path string) error {

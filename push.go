@@ -62,6 +62,10 @@ type PushParams struct {
 func (source *Source) Push() error {
 	Authenticate()
 
+	if strings.TrimSpace(source.File) == "" {
+		return fmt.Errorf("file of source may not be empty")
+	}
+
 	remoteLocales, err := RemoteLocales(source.ProjectId)
 	if err != nil {
 		return err
@@ -339,7 +343,11 @@ func SourcesFromConfig() (Sources, error) {
 	fileFormat := config.Phraseapp.FileFormat
 	sources := *config.Phraseapp.Push.Sources
 
+	validSources := []*Source{}
 	for _, source := range sources {
+		if source == nil {
+			continue
+		}
 		if source.ProjectId == "" {
 			source.ProjectId = projectId
 		}
@@ -349,9 +357,14 @@ func SourcesFromConfig() (Sources, error) {
 		if source.FileFormat == "" {
 			source.FileFormat = fileFormat
 		}
+		validSources = append(validSources, source)
 	}
 
-	return sources, nil
+	if len(validSources) <= 0 {
+		return nil, fmt.Errorf("no sources could be identified! Refine the sources list in your config")
+	}
+
+	return validSources, nil
 }
 
 func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
