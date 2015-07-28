@@ -165,7 +165,7 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func helpCommand() error {
-	fmt.Printf("Built at 2015-07-27 16:41:41.178079842 +0200 CEST\n")
+	fmt.Printf("Built at 2015-07-28 12:15:57.352317591 +0200 CEST\n")
 	return cli.ErrorHelpRequested
 }
 
@@ -887,20 +887,20 @@ func (cmd *FormatsList) Run() error {
 type KeyCreate struct {
 	phraseapp.AuthCredentials
 
-	DataType              *string  `cli:"opt --data-type"`
-	Description           *string  `cli:"opt --description"`
-	LocalizedFormatKey    *string  `cli:"opt --localized-format-key"`
-	LocalizedFormatString *string  `cli:"opt --localized-format-string"`
-	MaxCharactersAllowed  *int64   `cli:"opt --max-characters-allowed"`
-	Name                  string   `cli:"opt --name"`
-	NamePlural            *string  `cli:"opt --name-plural"`
-	OriginalFile          *string  `cli:"opt --original-file"`
-	Plural                *bool    `cli:"opt --plural"`
-	RemoveScreenshot      *bool    `cli:"opt --remove-screenshot"`
-	Screenshot            *string  `cli:"opt --screenshot"`
-	Tags                  []string `cli:"opt --tags"`
-	Unformatted           *bool    `cli:"opt --unformatted"`
-	XmlSpacePreserve      *bool    `cli:"opt --xml-space-preserve"`
+	DataType              *string `cli:"opt --data-type"`
+	Description           *string `cli:"opt --description"`
+	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
+	LocalizedFormatString *string `cli:"opt --localized-format-string"`
+	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
+	Name                  string  `cli:"opt --name"`
+	NamePlural            *string `cli:"opt --name-plural"`
+	OriginalFile          *string `cli:"opt --original-file"`
+	Plural                *bool   `cli:"opt --plural"`
+	RemoveScreenshot      *bool   `cli:"opt --remove-screenshot"`
+	Screenshot            *string `cli:"opt --screenshot"`
+	Tags                  *string `cli:"opt --tags"`
+	Unformatted           *bool   `cli:"opt --unformatted"`
+	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
 
 	ProjectId string `cli:"arg required"`
 }
@@ -1061,20 +1061,20 @@ func (cmd *KeyShow) Run() error {
 type KeyUpdate struct {
 	phraseapp.AuthCredentials
 
-	DataType              *string  `cli:"opt --data-type"`
-	Description           *string  `cli:"opt --description"`
-	LocalizedFormatKey    *string  `cli:"opt --localized-format-key"`
-	LocalizedFormatString *string  `cli:"opt --localized-format-string"`
-	MaxCharactersAllowed  *int64   `cli:"opt --max-characters-allowed"`
-	Name                  string   `cli:"opt --name"`
-	NamePlural            *string  `cli:"opt --name-plural"`
-	OriginalFile          *string  `cli:"opt --original-file"`
-	Plural                *bool    `cli:"opt --plural"`
-	RemoveScreenshot      *bool    `cli:"opt --remove-screenshot"`
-	Screenshot            *string  `cli:"opt --screenshot"`
-	Tags                  []string `cli:"opt --tags"`
-	Unformatted           *bool    `cli:"opt --unformatted"`
-	XmlSpacePreserve      *bool    `cli:"opt --xml-space-preserve"`
+	DataType              *string `cli:"opt --data-type"`
+	Description           *string `cli:"opt --description"`
+	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
+	LocalizedFormatString *string `cli:"opt --localized-format-string"`
+	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
+	Name                  string  `cli:"opt --name"`
+	NamePlural            *string `cli:"opt --name-plural"`
+	OriginalFile          *string `cli:"opt --original-file"`
+	Plural                *bool   `cli:"opt --plural"`
+	RemoveScreenshot      *bool   `cli:"opt --remove-screenshot"`
+	Screenshot            *string `cli:"opt --screenshot"`
+	Tags                  *string `cli:"opt --tags"`
+	Unformatted           *bool   `cli:"opt --unformatted"`
+	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1214,13 +1214,13 @@ func (cmd *KeysDelete) Run() error {
 
 	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
-	err := phraseapp.KeysDelete(cmd.ProjectId, params)
+	res, err := phraseapp.KeysDelete(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type KeysList struct {
@@ -1356,9 +1356,9 @@ func (cmd *KeysSearch) Run() error {
 type KeysTag struct {
 	phraseapp.AuthCredentials
 
-	LocaleId *string  `cli:"opt --locale-id"`
-	Q        *string  `cli:"opt --query"`
-	Tags     []string `cli:"opt --tags"`
+	LocaleId *string `cli:"opt --locale-id"`
+	Q        *string `cli:"opt --query"`
+	Tags     string  `cli:"opt --tags"`
 
 	ProjectId string `cli:"arg required"`
 }
@@ -1390,7 +1390,7 @@ func (cmd *KeysTag) Run() error {
 		params.Q = cmd.Q
 	}
 
-	if cmd.Tags != nil {
+	if cmd.Tags != "" {
 		params.Tags = cmd.Tags
 	}
 
@@ -1401,21 +1401,21 @@ func (cmd *KeysTag) Run() error {
 
 	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
-	err := phraseapp.KeysTag(cmd.ProjectId, params)
+	res, err := phraseapp.KeysTag(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type KeysUntag struct {
 	phraseapp.AuthCredentials
 
-	LocaleId *string  `cli:"opt --locale-id"`
-	Q        *string  `cli:"opt --query"`
-	Tags     []string `cli:"opt --tags"`
+	LocaleId *string `cli:"opt --locale-id"`
+	Q        *string `cli:"opt --query"`
+	Tags     string  `cli:"opt --tags"`
 
 	ProjectId string `cli:"arg required"`
 }
@@ -1447,7 +1447,7 @@ func (cmd *KeysUntag) Run() error {
 		params.Q = cmd.Q
 	}
 
-	if cmd.Tags != nil {
+	if cmd.Tags != "" {
 		params.Tags = cmd.Tags
 	}
 
@@ -1458,13 +1458,13 @@ func (cmd *KeysUntag) Run() error {
 
 	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
 
-	err := phraseapp.KeysUntag(cmd.ProjectId, params)
+	res, err := phraseapp.KeysUntag(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type LocaleCreate struct {
