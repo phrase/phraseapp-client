@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mgutz/ansi"
+	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-api-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
@@ -457,17 +457,17 @@ func printSummary(summary *phraseapp.SummaryType) {
 		}
 	}
 	if changed || Debug {
-		localesCreated := joinMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		keysCreated := joinMessage("Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		translationsCreated := joinMessage("Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		translationsUpdated := joinMessage("Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-		formatted := fmt.Sprintf("%s - %s - %s - %s", localesCreated, keysCreated, translationsCreated, translationsUpdated)
-		fmt.Println(formatted)
+		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
+		printMessage("- Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+		printMessage("- Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+		printMessage("- Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+		fmt.Print("\n")
 	}
 }
 
-func joinMessage(msg, stat string) string {
-	green := ansi.ColorCode("green+b:black")
-	reset := ansi.ColorCode("reset")
-	return strings.Join([]string{msg, green, stat, reset}, "")
+func printMessage(msg, stat string) {
+	fmt.Print(msg)
+	ct.Foreground(ct.Green, true)
+	fmt.Print(stat)
+	ct.ResetColor()
 }

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mgutz/ansi"
+	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -155,20 +155,22 @@ func Authenticate() error {
 }
 
 func printErr(err error, msg string) {
-	red := ansi.ColorCode("red+b:black")
-	reset := ansi.ColorCode("reset")
-	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", red, err, msg, reset)
+	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", err, msg)
 }
 
 func sharedMessage(method string, localeFile *LocaleFile) {
-	green := ansi.ColorCode("green+b:black")
-	reset := ansi.ColorCode("reset")
-
-	local := fmt.Sprint(green, localeFile.RelPath(), reset)
+	local := localeFile.RelPath()
 
 	if method == "pull" {
-		remote := fmt.Sprint(green, localeFile.Message(), reset)
-		fmt.Println("Downloaded", remote, "to", local)
+		remote := localeFile.Message()
+		fmt.Print("Downloaded")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(remote)
+		ct.ResetColor()
+		fmt.Print("to")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(local, "\n")
+		ct.ResetColor()
 	} else {
 		fmt.Println("Uploaded", local, "successfully.")
 	}

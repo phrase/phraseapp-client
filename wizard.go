@@ -14,7 +14,7 @@ import (
 
 	"gopkg.in/yaml.v1"
 
-	"github.com/mgutz/ansi"
+	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -102,7 +102,7 @@ func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.Wait
 	}
 
 	wg.Add(1)
-	chars := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+	chars := []string{".", "-", ".", "-", "-", ".", "-", ".", "-", "-", ".", "-", ".", "-", "-", "."}
 	if position > len(chars)-1 {
 		position = 0
 	}
@@ -125,33 +125,31 @@ func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.Wait
 }
 
 func printParrot() {
-	cyan := ansi.ColorCode("cyan+b:black")
-	reset := ansi.ColorCode("reset")
 
 	parrotLines := strings.Split(parrot, "\n")
+	ct.Foreground(ct.Cyan, true)
 	for _, line := range parrotLines {
-		fmt.Println(cyan, line, reset)
+		fmt.Println(line)
 	}
+	ct.ResetColor()
 }
 
 func printError(errorMsg string) {
-	red := ansi.ColorCode("red+b:black")
-	reset := ansi.ColorCode("reset")
-
-	fmt.Println(red, errorMsg, reset)
+	printWithColor(errorMsg, ct.Red, true)
 }
 
 func printWait(msg string) {
-	yellow := ansi.ColorCode("yellow+b:black")
-	reset := ansi.ColorCode("reset")
-	fmt.Print(yellow, msg, reset)
+	printWithColor(msg, ct.Yellow, true)
+}
+
+func printWithColor(msg string, color ct.Color, bright bool) {
+	ct.Foreground(color, bright)
+	fmt.Println(msg)
+	ct.ResetColor()
 }
 
 func printSuccess(msg string) {
-	green := ansi.ColorCode("green+b:black")
-	reset := ansi.ColorCode("reset")
-
-	fmt.Println(green, msg, reset)
+	printWithColor(msg, ct.Green, true)
 }
 
 func DisplayWizard(data *WizardData, step string, errorMsg string) {
@@ -478,42 +476,40 @@ func selectProjectStep(data *WizardData) {
 }
 
 const parrot = `
-
-                                  ,,;g#QQQQQQQQQQQgg,,                              
-                            ,gQQQQQQQQQQQQQQQQQQQQQQQQQQQQy,                        
-                        ,QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQy                    
-                    ,@QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ,                
-                ,#QQQQQQQQQQQQQQQQ##ER"''''...'''""YE#QQQQQQQQQQQQQQQQ              
-      ,,,,,y#QQQQQQQQQQQQQQ#ET^'.                       'PW@QQQQQQQQQQQQQ           
-       YQQQQQQQQQQQQWET^'.                                  '"@QQQQQQQQQQQ,         
-          ''^^^''                          ,gQQQQQQQQQQQQggQQQR "@QQQQQQQQQQ        
-                                        ;QQQQQQQ#WWWQQQQQQQQQR    '@QQQQQQQQQy      
-         ,Q,                          #QQQQQQQL   #QQ^@QQQQQE   ,,  HQQQQQQQQQQ     
-        ;QQQQ                       ;QQQQQQQQ>   "@Q#''QQQQO    @QQ, 'QQQQQQQQQQ    
-       ,QQQQQQQy                   @QQQQQQQQQQ        jQQQM      5QQ  |QQQQQQQQQQ   
-       QQQQQQQQL                  @QQQQQQQQQQQQ      ,QQQG        7QQ  @QQQQQQQQQQ  
-      @QQQQQQQM                  ]QQQQQQQQQQQQQQQQQQQQQQ#          "Qp  QQQQQQQQQQ  
-     .QQQQQQQQ                   ]QQQQQQQQQQQQQQQQQQQQQT            @Q  QQQQQQQQQQQ 
-     @QQQQQQQQ                   ]QQQQQQQQQQQQQQQ#E"'                E  QQQQQQQQQQQ 
-     @QQQQQQQ>                   ]QQQQQQQQQQQQQQM                      {QQQQQQQQQQQ>
-     @QQQQQQQ>                    @QQQQQQQQQQQQQ                       @QQQQQQQQQQQ>
-     @QQQQQQQ>                     @QQQQQQQQQQQQ                      @QQQQQQQQQQQQ>
-     @QQQQQQQ>                     '@QQQQQQQQQQQQQ                   @QQQQQQQQQQQQQ>
-     @QQQQQQQQ                       "@QQQQQQQQQQQQQ               ,QQQQQQQQQQQQQQQ 
-     'QQQQQQQQQ                        'W@QQQQQQQQQQQQ           ,QQQQQQQQQQQQQQQQQ 
-      @QQQQQQQQ,                           '"KSSQQQQQQQ       ,#QQQQQQQQQQQQQQQQQQ~ 
-       @QQQQQQQQ                                 ;QQQQQ>  ,gQQQQQQQQQQQQQQQQQQQQQC  
-       "QQQQQQQQQQ                            ]QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ#   
-        7QQQQQQQQQQ                            QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQM    
-         7QQQQQQQQQQQ                          @QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQM     
-           @QQQQQQQQQQQ                         @QQQQQQQQQQQQQQQQQQQQQQQQQQQQT      
-            @QQQQQQQQQQQy,                       @QQQQQQQQQQQQQQQQQQQQQQQQQE~       
-              YQQQQQQQQQQQQg,                     7QQQQQQQQQQQQQQQQQQQQQQ#'         
-               '@QQQQQQQQQQQQQQQ,                   "QQQQQQQQQQQQQQQQQQQ^           
-                  "@QQQQQQQQQQQQQQQQg,,,              ]@QQQQQQQQQQQQQE              
-                     F@QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQE^                
-                        ?WQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ#R                    
-                            "RSQQQQQQQQQQQQQQQQQQQQQQQQQQSRT^.                      
-                                  'QQQQQQQQQQQQQQQQQQQ'                             
-    
+                               ppe############eep                               
+                         p############################pp                        
+                    p######################################p                    
+                p#############################################pp                
+            p###################ERRR  hrrr   PREE################p              
+    p pp################ERHhr                        HE#############p           
+   E############EERHrr                                  rPE###########          
+      rPPPPrr                          pp############pp###R PE##########        
+                                    p########EEE#########R     S#########p      
+      #                           ########R   ##p#######E       H#########p     
+    p####                       p########h    E##h ####R    E##e P##########    
+    #######p                   ##########p        a###R      E##  A##########   
+   ########h                  ############p      p###E        P##  E#########p  
+  S#######E                  a#######################          A#p  ##########  
+  ########                   ######################R            E#  ##########p 
+ #########                   #################ERH                #  ########### 
+ S#######h                   A##############R                      a###########h
+ S#######h                    P#############                       ############h
+ P#######h                     S############                      #############h
+ S#######p                     rE############p                   S#############h
+ E########                       PS############p               p############### 
+ P########p                        PE############p            ################# 
+  S########p                           PRRSS#######       p###################h 
+   S########                                 p#####h  pp#####################R  
+   P#########p                            a##################################   
+    P#########p                            #################################    
+      ##########p                          S##############################E     
+       E##########p                         S############################R      
+        H###########p                        S#########################Eh       
+          E############p                      H#######################R         
+           AE##############p                    P###################R           
+              PS################ppp               PS#############E              
+                 R############################################ER                
+                    HS#####################################Rh                   
+                        PRS##########################SRRhr                      
+                              PHRASEAPP###PPAESARHP                             
 `
