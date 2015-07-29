@@ -116,16 +116,11 @@ func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.Wait
 		}
 	}
 
-	switch runtime.GOOS {
-	case "windows":
-		printWait(fmt.Sprintf("%s %s%s", waitMsg, prefix, postfix))
-	default:
-		clean()
-		printWait(fmt.Sprintf("%s %s%s", waitMsg, prefix, postfix))
-		time.Sleep(100 * time.Millisecond)
+	clean()
+	printWait(fmt.Sprintf("%s %s%s", waitMsg, prefix, postfix))
+	time.Sleep(100 * time.Millisecond)
 
-		spinner(waitMsg, position+1, channelEnd, wg)
-	}
+	spinner(waitMsg, position+1, channelEnd, wg)
 
 	wg.Done()
 }
