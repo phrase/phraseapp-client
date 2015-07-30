@@ -125,7 +125,7 @@ func clean() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	case "windows":
-		cmd := exec.Command("cls")
+		cmd := exec.Command("cmd", "/c", "cls")
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
