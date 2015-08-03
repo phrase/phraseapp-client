@@ -13,15 +13,19 @@ import (
 )
 
 type PushCommand struct {
-	Verbose bool `cli:"opt --verbose default=false"`
+	Verbose  bool   `cli:"opt --verbose default=false"`
+	Token    string `cli:"opt --token desc='token used for authentication'"`
+	Username string `cli:"opt --username desc='username used for authentication'"`
 }
 
 func (cmd *PushCommand) Run() error {
+	Authenticate(cmd.Token, cmd.Username)
+
 	if cmd.Verbose {
 		Debug = true
 	}
 
-	sources, err := SourcesFromConfig()
+	sources, err := SourcesFromConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -29,7 +33,7 @@ func (cmd *PushCommand) Run() error {
 	for _, source := range sources {
 		err := source.Push()
 		if err != nil {
-			printErr(err, "")
+			return err
 		}
 	}
 	return nil
@@ -60,8 +64,6 @@ type PushParams struct {
 }
 
 func (source *Source) Push() error {
-	Authenticate()
-
 	if strings.TrimSpace(source.File) == "" {
 		return fmt.Errorf("file of source may not be empty")
 	}
@@ -91,7 +93,7 @@ func (source *Source) Push() error {
 
 		err = source.uploadFile(localeFile)
 		if err != nil {
-			printErr(err, "")
+			return err
 		} else {
 			sharedMessage("push", localeFile)
 		}
@@ -329,7 +331,7 @@ func (source *Source) root() string {
 	return root
 }
 
-func SourcesFromConfig() (Sources, error) {
+func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
@@ -343,11 +345,14 @@ func SourcesFromConfig() (Sources, error) {
 	}
 
 	token := config.Phraseapp.AccessToken
+	if cmd.Token != "" {
+		token = cmd.Token
+	}
 	projectId := config.Phraseapp.ProjectId
 	fileFormat := config.Phraseapp.FileFormat
 
-	if &config.Phraseapp.Push == nil {
-		return nil, fmt.Errorf("no sources specified")
+	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
+		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
 	sources := *config.Phraseapp.Push.Sources

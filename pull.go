@@ -12,14 +12,18 @@ import (
 )
 
 type PullCommand struct {
-	Verbose bool `cli:"opt --verbose default=false"`
+	Verbose  bool   `cli:"opt --verbose default=false"`
+	Token    string `cli:"opt --token desc='token used for authentication'"`
+	Username string `cli:"opt --username desc='username used for authentication'"`
 }
 
 func (cmd *PullCommand) Run() error {
+	Authenticate(cmd.Token, cmd.Username)
+
 	if cmd.Verbose {
 		Debug = true
 	}
-	targets, err := TargetsFromConfig()
+	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -27,7 +31,7 @@ func (cmd *PullCommand) Run() error {
 	for _, target := range targets {
 		err := target.Pull()
 		if err != nil {
-			printErr(err, "")
+			return err
 		}
 	}
 	return nil
@@ -79,10 +83,8 @@ func (t *Target) GetTag() string {
 }
 
 func (target *Target) Pull() error {
-	Authenticate()
-
 	if strings.TrimSpace(target.File) == "" {
-		return fmt.Errorf("file of target may not be empty")
+		return fmt.Errorf("file pattern for target may not be empty")
 	}
 
 	pathComponents, err := ExtractPathComponents(target.File)
@@ -107,24 +109,65 @@ func (target *Target) Pull() error {
 			return err
 		}
 
-		sharedMessage("pull", localeToPath)
-
 		err = target.DownloadAndWriteToFile(localeToPath)
 		if err != nil {
-			printErr(err, fmt.Sprint("for %s", localeToPath.Path))
+			return fmt.Errorf("%s for %s", err, localeToPath.Path)
+		} else {
+			sharedMessage("pull", localeToPath)
 		}
 	}
 
 	return nil
 }
 
-func TargetsFromConfig() (Targets, error) {
+func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	content, err := ConfigContent()
 	if err != nil {
 		return nil, err
 	}
 
-	return parsePull(content)
+	var config *PullConfig
+
+	err = yaml.Unmarshal([]byte(content), &config)
+	if err != nil {
+		return nil, err
+	}
+
+	token := config.Phraseapp.AccessToken
+	if cmd.Token != "" {
+		token = cmd.Token
+	}
+	projectId := config.Phraseapp.ProjectId
+	fileFormat := config.Phraseapp.FileFormat
+
+	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
+		return nil, fmt.Errorf("no targets for download specified")
+	}
+
+	targets := config.Phraseapp.Pull.Targets
+
+	validTargets := []*Target{}
+	for _, target := range targets {
+		if target == nil {
+			continue
+		}
+		if target.ProjectId == "" {
+			target.ProjectId = projectId
+		}
+		if target.AccessToken == "" {
+			target.AccessToken = token
+		}
+		if target.FileFormat == "" {
+			target.FileFormat = fileFormat
+		}
+		validTargets = append(validTargets, target)
+	}
+
+	if len(validTargets) <= 0 {
+		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
+	}
+
+	return validTargets, nil
 }
 
 func (target *Target) DownloadAndWriteToFile(localeFile *LocaleFile) error {
@@ -205,48 +248,6 @@ type PullConfig struct {
 	}
 }
 
-func parsePull(yml string) (Targets, error) {
-	var config *PullConfig
-
-	err := yaml.Unmarshal([]byte(yml), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	projectId := config.Phraseapp.ProjectId
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Pull == nil {
-		return nil, fmt.Errorf("no targets specified")
-	}
-
-	targets := config.Phraseapp.Pull.Targets
-
-	validTargets := []*Target{}
-	for _, target := range targets {
-		if target == nil {
-			continue
-		}
-		if target.ProjectId == "" {
-			target.ProjectId = projectId
-		}
-		if target.AccessToken == "" {
-			target.AccessToken = token
-		}
-		if target.FileFormat == "" {
-			target.FileFormat = fileFormat
-		}
-		validTargets = append(validTargets, target)
-	}
-
-	if len(validTargets) <= 0 {
-		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
-	}
-
-	return validTargets, nil
-
-}
 func createFile(path string) error {
 	err := exists(path)
 	if err != nil {

@@ -145,17 +145,29 @@ func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 	return path, nil
 }
 
-func Authenticate() error {
+func Authenticate(token, username string) error {
 	defaultCredentials, err := ConfigDefaultCredentials()
 	if err != nil {
 		return err
 	}
-	phraseapp.RegisterAuthCredentials(defaultCredentials, defaultCredentials)
+
+	if token != "" {
+		defaultCredentials.Token = token
+	}
+
+	if username != "" {
+		defaultCredentials.Username = username
+	}
+
+	phraseapp.RegisterAuthCredentials(new(phraseapp.AuthCredentials), defaultCredentials)
+
 	return nil
 }
 
-func printErr(err error, msg string) {
-	fmt.Fprintf(os.Stderr, "%sERROR: %s %s%s\n", err, msg)
+func printErr(err error) {
+	ct.Foreground(ct.Red, true)
+	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+	ct.ResetColor()
 }
 
 func sharedMessage(method string, localeFile *LocaleFile) {
