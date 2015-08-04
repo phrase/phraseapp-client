@@ -145,21 +145,13 @@ func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 	return path, nil
 }
 
-func Authenticate(token, username string) error {
+func Authenticate(cmd *phraseapp.AuthCredentials) error {
 	defaultCredentials, err := ConfigDefaultCredentials()
 	if err != nil {
 		return err
 	}
 
-	if token != "" {
-		defaultCredentials.Token = token
-	}
-
-	if username != "" {
-		defaultCredentials.Username = username
-	}
-
-	phraseapp.RegisterAuthCredentials(new(phraseapp.AuthCredentials), defaultCredentials)
+	phraseapp.RegisterAuthCredentials(cmd, defaultCredentials)
 
 	return nil
 }

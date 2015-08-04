@@ -12,15 +12,13 @@ import (
 )
 
 type PullCommand struct {
-	Verbose  bool   `cli:"opt --verbose default=false"`
-	Token    string `cli:"opt --token desc='token used for authentication'"`
-	Username string `cli:"opt --username desc='username used for authentication'"`
+	phraseapp.AuthCredentials
 }
 
 func (cmd *PullCommand) Run() error {
-	Authenticate(cmd.Token, cmd.Username)
+	Authenticate(&cmd.AuthCredentials)
 
-	if cmd.Verbose {
+	if cmd.Debug {
 		Debug = true
 	}
 	targets, err := TargetsFromConfig(cmd)
