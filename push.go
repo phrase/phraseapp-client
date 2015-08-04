@@ -96,8 +96,6 @@ func (source *Source) Push() error {
 			}
 		}
 
-		fmt.Println("LocaleFile:", localeFile)
-
 		err = source.uploadFile(localeFile)
 		if err != nil {
 			return err

@@ -176,7 +176,11 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 		fmt.Print(local, "\n")
 		ct.ResetColor()
 	} else {
-		fmt.Println("Uploaded", local, "successfully.")
+		fmt.Print("Uploaded ")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(local)
+		ct.ResetColor()
+		fmt.Println(" successfully.")
 	}
 }
 
