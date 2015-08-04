@@ -266,7 +266,7 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 				// the match is either from start or end of path
 				// res/values-en/Strings.xml -> en/Strings.xml
 				newMatch := split[0]
-				if strings.HasPrefix(match, replacer) {
+				if strings.HasPrefix(match, replacer) && match != replacer {
 					// config/en.lproj -> config/en
 					newMatch = split[len(split)-1]
 				}
@@ -413,6 +413,10 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 		uploadParams.LocaleId = &(localeFile.RFC)
 	}
 
+	if localeFile.Tag != "" {
+		uploadParams.Tags = []string{localeFile.Tag}
+	}
+
 	if source.Params == nil {
 		return uploadParams, nil
 	}
@@ -450,8 +454,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	}
 
 	tags := params.Tags
-
-	if tags != nil {
+	if tags != nil && uploadParams.Tags != nil {
 		uploadParams.Tags = tags
 	}
 

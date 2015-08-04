@@ -255,7 +255,7 @@ func pushConfig(data *WizardData) {
 		panic(err.Error())
 	}
 
-	fmt.Printf("Enter the path to your language files [Press enter to use default: %s]: ", defaultPath)
+	fmt.Printf("Enter the path from where you want to upload your locale files to Phrase [Press enter to use default: %s]: ", defaultPath)
 	var pushPath string
 	fmt.Scanln(&pushPath)
 	if pushPath == "" {
@@ -274,7 +274,7 @@ func pullConfig(data *WizardData) {
 		panic(err.Error())
 	}
 
-	fmt.Printf("Enter the path you want to put the downlaaded language file from Phrase [Press enter to use default: %s]: ", defaultPath)
+	fmt.Printf("Enter the path you want to put the downloaded locale files from Phrase [Press enter to use default: %s]: ", defaultPath)
 	var pullPath string
 	fmt.Scanln(&pullPath)
 	if pullPath == "" {
