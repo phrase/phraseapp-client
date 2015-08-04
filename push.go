@@ -61,6 +61,13 @@ type PushParams struct {
 	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
 }
 
+func (source *Source) GetLocaleId() string {
+	if source.Params != nil {
+		return source.Params.LocaleId
+	}
+	return ""
+}
+
 func (source *Source) Push() error {
 	if strings.TrimSpace(source.File) == "" {
 		return fmt.Errorf("file of source may not be empty")
@@ -104,13 +111,19 @@ func (source *Source) Push() error {
 func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
 	localeParams := new(phraseapp.LocaleParams)
 
-	if localeFile.RFC != "" {
-		localeParams.Code = localeFile.RFC
-	}
 	if localeFile.Name != "" {
 		localeParams.Name = localeFile.Name
 	} else {
 		localeParams.Name = localeFile.RFC
+	}
+
+	localeName := source.replacePlaceholderInParams(localeFile)
+	if localeName != localeFile.RFC {
+		localeParams.Name = localeName
+	}
+
+	if localeFile.RFC != "" {
+		localeParams.Code = localeFile.RFC
 	}
 
 	localeDetails, err := phraseapp.LocaleCreate(source.ProjectId, localeParams)
@@ -118,6 +131,13 @@ func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDet
 		return nil, err
 	}
 	return localeDetails, nil
+}
+
+func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string {
+	if localeFile.RFC != "" && strings.Contains(source.GetLocaleId(), "<locale_code>") {
+		return strings.Replace(source.GetLocaleId(), "<locale_code>", localeFile.RFC, 1)
+	}
+	return ""
 }
 
 func (source *Source) uploadFile(localeFile *LocaleFile) error {
@@ -261,13 +281,16 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
 	for _, remote := range source.RemoteLocales {
-		if source.Params != nil {
-			localeId := source.Params.LocaleId
-			if remote.Id == localeId || remote.Name == localeId {
-				return remote
-			}
+		if remote.Id == source.GetLocaleId() || remote.Name == source.GetLocaleId() {
+			return remote
 		}
-		if remote.Name == localeFile.Name || remote.Code == localeFile.RFC {
+
+		localeName := source.replacePlaceholderInParams(localeFile)
+		if strings.Contains(remote.Name, localeName) {
+			return remote
+		}
+
+		if remote.Name == localeFile.Name {
 			return remote
 		}
 	}
@@ -397,7 +420,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	params := source.Params
 
 	localeId := params.LocaleId
-	if localeId != "" {
+	if localeId != "" && !strings.Contains(localeId, "<locale_code>") {
 		uploadParams.LocaleId = &localeId
 	}
 
