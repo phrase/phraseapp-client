@@ -16,7 +16,6 @@ func Run() {
 	err := router(callArgs).RunWithArgs()
 	switch err {
 	case cli.ErrorHelpRequested, cli.ErrorNoRoute:
-		printErr(err)
 		os.Exit(1)
 	case nil:
 		os.Exit(0)
