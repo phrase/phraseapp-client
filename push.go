@@ -117,11 +117,9 @@ func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDet
 		localeParams.Name = localeFile.RFC
 	}
 
-	if localeFile.RFC != "" && strings.Contains(source.GetLocaleId(), "<locale_code>") {
-		tmp := strings.Replace(source.GetLocaleId(), "<locale_code>", localeFile.RFC, 1)
-		if tmp != localeFile.RFC {
-			localeParams.Name = tmp
-		}
+	localeName := source.replacePlaceholderInParams(localeFile)
+	if localeName != localeFile.RFC {
+		localeParams.Name = localeName
 	}
 
 	if localeFile.RFC != "" {
@@ -133,6 +131,13 @@ func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDet
 		return nil, err
 	}
 	return localeDetails, nil
+}
+
+func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string {
+	if localeFile.RFC != "" && strings.Contains(source.GetLocaleId(), "<locale_code>") {
+		return strings.Replace(source.GetLocaleId(), "<locale_code>", localeFile.RFC, 1)
+	}
+	return ""
 }
 
 func (source *Source) uploadFile(localeFile *LocaleFile) error {
@@ -280,11 +285,9 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 			return remote
 		}
 
-		if localeFile.RFC != "" && strings.Contains(source.GetLocaleId(), "<locale_code>") {
-			localeCombination := strings.Replace(source.GetLocaleId(), "<locale_code>", localeFile.RFC, 1)
-			if strings.Contains(remote.Name, localeCombination) {
-				return remote
-			}
+		localeName := source.replacePlaceholderInParams(localeFile)
+		if strings.Contains(remote.Name, localeName) {
+			return remote
 		}
 
 		if remote.Name == localeFile.Name {
