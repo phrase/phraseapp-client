@@ -2,7 +2,7 @@
 
 The PhraseApp Client is available for all major platforms and lets you access all API endpoints as well as easily sync your locale files between your source code and PhraseApp.
 
-Check out our [documentation for more information](http://docs.phraseapp.com/developers/cli/){:target="_blank"}.
+Check out our [documentation for more information](http://docs.phraseapp.com/developers/cli/).
 
 ## Quick Start
 
