@@ -41,7 +41,7 @@ To see all supported options for a command, simple use the `--help` flag:
 
     $ phraseapp locales list --help
 
-See our [detailed guides](http://docs.phraseapp.com/developers/cli/){:target="_blank"} for in-depth instructions on how to use the PhraseApp Client.
+See our [detailed guides](http://docs.phraseapp.com/developers/cli/) for in-depth instructions on how to use the PhraseApp Client.
 
 ## Further reading
 * [PhraseApp Client Download Page](https://phraseapp.com/cli)
