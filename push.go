@@ -264,6 +264,8 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 	return lc, nil
 }
 
+// path: en.lproj/someTag/Localizable.strings
+// source.File: ./abc/<locale_code>.lproj/<tag>/Localizable.strings
 func (source *Source) findTaggedMatches(path string) map[string]string {
 	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
@@ -276,6 +278,7 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		if part == "." {
 			continue
 		}
+
 		if !re.MatchString(part) {
 			path = cutPathByPart(path, part)
 			continue
@@ -287,7 +290,9 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		if group == "" {
 			continue
 		}
+		// (?P<locale_code>.+)
 		replacer := fmt.Sprintf("(?P%s.+)", group)
+		// (?P<locale_code>.+).lproj
 		match = strings.Replace(match, group, replacer, 1)
 
 		reMatcher := regexp.MustCompile(match)
@@ -295,30 +300,31 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		subMatches := reMatcher.FindStringSubmatch(path)
 		for i, subMatch := range subMatches {
 			if subMatch != "" {
+				// res/<tag>/<locale_code>.lproj/Localizable.strings
+				// res , tag , localeCode.lproj Localizable.strings
 				split := strings.Split(subMatch, separator)
 				split = Select(split, func(x string) bool {
 					return x != ""
 				})
 
-				// the match is either from start or end of path
-				// res/values-en/Strings.xml -> en/Strings.xml
 				newMatch := split[0]
 				if strings.HasPrefix(match, replacer) && match != replacer {
-					// config/en.lproj -> config/en
 					newMatch = split[len(split)-1]
 				}
 
 				taggedMatches[namedMatches[i]] = newMatch
 			}
 		}
+		fullMatch := taggedMatches[namedMatches[0]]
+		path = cutPathByPart(path, fullMatch)
 	}
 
 	return taggedMatches
 }
 
-func cutPathByPart(path, part string) string {
+func cutPathByPart(path, replacer string) string {
 	separator := string(os.PathSeparator)
-	path = strings.Replace(path, part, "", 1)
+	path = strings.Replace(path, replacer, "", 1)
 	path = strings.Replace(path, separator+separator, separator, 1)
 	path = strings.TrimPrefix(path, separator)
 	return path
@@ -392,7 +398,9 @@ func (source *Source) recurse() ([]string, error) {
 func (source *Source) root() string {
 	separator := string(os.PathSeparator)
 	parts := strings.Split(source.File, separator)
-	rootParts := TakeWhile(parts, func(x string) bool { return x != "**" })
+	rootParts := TakeWhile(parts, func(x string) bool {
+		return x != "**"
+	})
 	root := strings.Join(rootParts, separator)
 	if root == "" {
 		root = "."
@@ -502,7 +510,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	}
 
 	tags := params.Tags
-	if tags != nil && uploadParams.Tags != nil {
+	if tags != nil && uploadParams.Tags == nil {
 		uploadParams.Tags = tags
 	}
 

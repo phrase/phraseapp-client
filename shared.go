@@ -231,3 +231,14 @@ func Select(seq []string, f func(string) bool) []string {
 	}
 	return newSeq
 }
+
+func DropWhile(seq []string, predicate func(string) bool) []string {
+	sliced := 0
+	for idx, elem := range seq {
+		if predicate(elem) {
+			continue
+		}
+		sliced = idx
+	}
+	return seq[sliced:]
+}
