@@ -10,7 +10,7 @@ This quick start will guide you through the basic steps to get up and running wi
 
 #### 1. Install
 
-[Download and install](https://phraseapp.com/cli){:target="_blank"} the client for your platform. See our [detailed installation guide](http://docs.phraseapp.com/developers/cli/installation#download) for more information.
+[Download and install](https://phraseapp.com/cli) the client for your platform. See our [detailed installation guide](http://docs.phraseapp.com/developers/cli/installation#download) for more information.
 
 #### 2. Init
 
