@@ -14,12 +14,13 @@ import (
 
 type PushCommand struct {
 	phraseapp.AuthCredentials
+	DebugPush bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PushCommand) Run() error {
 	Authenticate(&cmd.AuthCredentials)
 
-	if cmd.Debug {
+	if cmd.DebugPush {
 		Debug = true
 	}
 
@@ -103,6 +104,10 @@ func (source *Source) Push() error {
 			sharedMessage("push", localeFile)
 		}
 
+		if Debug {
+			fmt.Println(strings.Repeat("-", 10))
+		}
+
 	}
 
 	return nil
@@ -144,6 +149,31 @@ func (source *Source) uploadFile(localeFile *LocaleFile) error {
 	uploadParams, err := source.setUploadParams(localeFile)
 	if err != nil {
 		return err
+	}
+
+	if Debug {
+		fmt.Println("Source file pattern:", source.File)
+		fmt.Println("Actual File Location", uploadParams.File)
+		if uploadParams.LocaleId != nil {
+			fmt.Println("LocaleID/Name", *uploadParams.LocaleId)
+		} else {
+			fmt.Println("LocaleID/Name", nil)
+		}
+
+		if uploadParams.FileFormat != nil {
+			fmt.Println("Format", *uploadParams.FileFormat)
+		} else {
+			fmt.Println("Format", nil)
+		}
+		fmt.Println("Tags", uploadParams.Tags)
+		fmt.Println("Emoji", uploadParams.ConvertEmoji)
+		if uploadParams.UpdateTranslations != nil {
+			fmt.Println("UpdateTranslations", *uploadParams.UpdateTranslations)
+		} else {
+			fmt.Println("UpdateTranslations", nil)
+		}
+		fmt.Println("SkipUnverification", uploadParams.SkipUnverification)
+		fmt.Println("FormatOpts", uploadParams.FormatOptions)
 	}
 
 	aUpload, err := phraseapp.UploadCreate(source.ProjectId, uploadParams)
@@ -243,7 +273,11 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 	// config/locale/<locale_code>.yml -> ["config", "locale", "<locale_code>.yml"]
 	parts := strings.Split(source.File, separator)
 	for _, part := range parts {
+		if part == "." {
+			continue
+		}
 		if !re.MatchString(part) {
+			path = cutPathByPart(path, part)
 			continue
 		}
 
@@ -262,6 +296,9 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 		for i, subMatch := range subMatches {
 			if subMatch != "" {
 				split := strings.Split(subMatch, separator)
+				split = Select(split, func(x string) bool {
+					return x != ""
+				})
 
 				// the match is either from start or end of path
 				// res/values-en/Strings.xml -> en/Strings.xml
@@ -277,6 +314,14 @@ func (source *Source) findTaggedMatches(path string) map[string]string {
 	}
 
 	return taggedMatches
+}
+
+func cutPathByPart(path, part string) string {
+	separator := string(os.PathSeparator)
+	path = strings.Replace(path, part, "", 1)
+	path = strings.Replace(path, separator+separator, separator, 1)
+	path = strings.TrimPrefix(path, separator)
+	return path
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
@@ -328,6 +373,9 @@ func (source *Source) glob() ([]string, error) {
 func (source *Source) recurse() ([]string, error) {
 	files := []string{}
 	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("%s for pattern: %s", err, source.File)
+		}
 		if strings.HasSuffix(f.Name(), source.Extension) {
 			files = append(files, path)
 		}

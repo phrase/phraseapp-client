@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	"fmt"
 	"github.com/dynport/dgtk/cli"
 )
 
@@ -21,7 +20,6 @@ func Run() {
 		os.Exit(0)
 	default:
 		printErr(err)
-		fmt.Println("HERE")
 		os.Exit(1)
 	}
 }

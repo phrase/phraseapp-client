@@ -167,11 +167,11 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 
 	if method == "pull" {
 		remote := localeFile.Message()
-		fmt.Print("Downloaded")
+		fmt.Print("Downloaded ")
 		ct.Foreground(ct.Green, true)
 		fmt.Print(remote)
 		ct.ResetColor()
-		fmt.Print("to")
+		fmt.Print(" to ")
 		ct.Foreground(ct.Green, true)
 		fmt.Print(local, "\n")
 		ct.ResetColor()
@@ -220,4 +220,14 @@ func TakeWhile(seq []string, predicate func(string) bool) []string {
 		take = append(take, elem)
 	}
 	return take
+}
+
+func Select(seq []string, f func(string) bool) []string {
+	newSeq := []string{}
+	for _, s := range seq {
+		if f(s) {
+			newSeq = append(newSeq, s)
+		}
+	}
+	return newSeq
 }

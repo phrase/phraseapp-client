@@ -13,12 +13,13 @@ import (
 
 type PullCommand struct {
 	phraseapp.AuthCredentials
+	DebugPull bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PullCommand) Run() error {
 	Authenticate(&cmd.AuthCredentials)
 
-	if cmd.Debug {
+	if cmd.DebugPull {
 		Debug = true
 	}
 	targets, err := TargetsFromConfig(cmd)
@@ -113,6 +114,9 @@ func (target *Target) Pull() error {
 		} else {
 			sharedMessage("pull", localeToPath)
 		}
+		if Debug {
+			fmt.Println(strings.Repeat("-", 10))
+		}
 	}
 
 	return nil
@@ -177,6 +181,19 @@ func (target *Target) DownloadAndWriteToFile(localeFile *LocaleFile) error {
 		localeId = params.LocaleId
 	} else {
 		localeId = localeFile.Id
+	}
+
+	if Debug {
+		fmt.Println("Target file pattern:", target.File)
+		fmt.Println("Actual file path", localeFile.Path)
+		fmt.Println("LocaleId", localeId)
+		fmt.Println("ProjectId", target.ProjectId)
+		fmt.Println("FileFormat", downloadParams.FileFormat)
+		fmt.Println("ConvertEmoji", downloadParams.ConvertEmoji)
+		fmt.Println("IncludeEmptyTranslations", downloadParams.IncludeEmptyTranslations)
+		fmt.Println("KeepNotranslateTags", downloadParams.KeepNotranslateTags)
+		fmt.Println("Tag", downloadParams.Tag)
+		fmt.Println("FormatOptions", downloadParams.FormatOptions)
 	}
 
 	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
