@@ -228,7 +228,8 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 
-	taggedMatches := source.findTaggedMatches(path)
+	taggedMatches := source.FindTaggedMatches(path)
+
 	name := taggedMatches["locale_name"]
 	rfc := taggedMatches["locale_code"]
 	tag := taggedMatches["tag"]
@@ -262,72 +263,6 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 	lc.Path = absolutePath
 
 	return lc, nil
-}
-
-// path: en.lproj/someTag/Localizable.strings
-// source.File: ./abc/<locale_code>.lproj/<tag>/Localizable.strings
-func (source *Source) findTaggedMatches(path string) map[string]string {
-	re := regexp.MustCompile("<(locale_name|tag|locale_code)>")
-
-	separator := string(os.PathSeparator)
-	taggedMatches := map[string]string{}
-
-	// config/locale/<locale_code>.yml -> ["config", "locale", "<locale_code>.yml"]
-	parts := strings.Split(source.File, separator)
-	for _, part := range parts {
-		if part == "." {
-			continue
-		}
-
-		if !re.MatchString(part) {
-			path = cutPathByPart(path, part)
-			continue
-		}
-
-		// <locale_code>.yml -> (?P<locale_code>.+).yml
-		match := part
-		group := re.FindString(part)
-		if group == "" {
-			continue
-		}
-		// (?P<locale_code>.+)
-		replacer := fmt.Sprintf("(?P%s.+)", group)
-		// (?P<locale_code>.+).lproj
-		match = strings.Replace(match, group, replacer, 1)
-
-		reMatcher := regexp.MustCompile(match)
-		namedMatches := reMatcher.SubexpNames()
-		subMatches := reMatcher.FindStringSubmatch(path)
-		for i, subMatch := range subMatches {
-			if subMatch != "" {
-				// res/<tag>/<locale_code>.lproj/Localizable.strings
-				// res , tag , localeCode.lproj Localizable.strings
-				split := strings.Split(subMatch, separator)
-				split = Select(split, func(x string) bool {
-					return x != ""
-				})
-
-				newMatch := split[0]
-				if strings.HasPrefix(match, replacer) && match != replacer {
-					newMatch = split[len(split)-1]
-				}
-
-				taggedMatches[namedMatches[i]] = newMatch
-			}
-		}
-		fullMatch := taggedMatches[namedMatches[0]]
-		path = cutPathByPart(path, fullMatch)
-	}
-
-	return taggedMatches
-}
-
-func cutPathByPart(path, replacer string) string {
-	separator := string(os.PathSeparator)
-	path = strings.Replace(path, replacer, "", 1)
-	path = strings.Replace(path, separator+separator, separator, 1)
-	path = strings.TrimPrefix(path, separator)
-	return path
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
@@ -555,4 +490,177 @@ func printMessage(msg, stat string) {
 	ct.Foreground(ct.Green, true)
 	fmt.Print(stat)
 	ct.ResetColor()
+}
+
+// Hard parser algorithm... get a coffee..
+type Parser struct {
+	Path          string
+	SourceFile    string
+	Extension     string
+	Tokens        []string
+	LookBack      map[string]string
+	LookAhead     map[string]string
+	BackBuffer    []string
+	ForwardBuffer []string
+}
+
+var separator = string(os.PathSeparator)
+var tagRegex = regexp.MustCompile("<(locale_name|tag|locale_code)>")
+
+func (source *Source) FindTaggedMatches(path string) map[string]string {
+	parser := Parser{
+		Path:       path,
+		SourceFile: source.File,
+		Extension:  source.Extension,
+	}
+	parser.Initialize()
+
+	tagged := map[string]string{}
+	for _, token := range parser.Tokens {
+
+		parser.BackBuffer = parser.Search(
+			[]string{},
+			parser.LookBack,
+			token,
+		)
+
+		parser.ForwardBuffer = parser.Search(
+			[]string{},
+			parser.LookAhead,
+			token,
+		)
+
+		if len(parser.ForwardBuffer) > 0 || len(parser.BackBuffer) > 0 {
+			matches := parser.Eval(token)
+			tagged = updateMatches(tagged, matches)
+		}
+	}
+
+	return tagged
+}
+
+func (parser *Parser) Initialize() {
+	lookAhead := map[string]string{}
+	lookBack := map[string]string{}
+	parts := strings.Split(parser.SourceFile, separator)
+	tokens := []string{}
+	for idx, token := range parts {
+		if token == "." || token == "" {
+			continue
+		}
+
+		if tagRegex.MatchString(token) {
+			lookAhead[token] = ""
+			if len(parts) > idx+1 {
+				lookAhead[token] = parts[idx+1]
+			}
+			lookBack[token] = ""
+			if idx > 0 {
+				if parts[idx-1] != "." {
+					lookBack[token] = parts[idx-1]
+				}
+			}
+		}
+
+		tokens = append(tokens, token)
+	}
+
+	parser.Tokens = tokens
+	parser.LookBack = lookBack
+	parser.LookAhead = lookAhead
+}
+
+func (parser *Parser) Search(buffer []string, lookUp map[string]string, token string) []string {
+	next := lookUp[token]
+	nextRegexp := parser.SearchRegexp(next)
+	if nextRegexp != "" {
+		buffer = append(buffer, nextRegexp)
+		return parser.Search(buffer, lookUp, next)
+	} else {
+		if strings.TrimSpace(next) == parser.Extension {
+			buffer = append(buffer, ".*"+next)
+		} else {
+			buffer = append(buffer, next)
+		}
+	}
+	return buffer
+}
+
+func (parser *Parser) Eval(token string) map[string]string {
+	sanitizedBack := SanitizeBuffer(Reverse(parser.BackBuffer))
+	backString := strings.Join(sanitizedBack, separator)
+
+	sanitizedForward := SanitizeBuffer(parser.ForwardBuffer)
+	forwardString := strings.Join(sanitizedForward, separator)
+
+	token = Sanitize(token)
+	tokenRegexp := parser.SearchRegexp(token)
+	if tokenRegexp != "" {
+		token = tokenRegexp
+	}
+
+	matcherString := strings.Trim(backString+separator+token+separator+forwardString, separator)
+
+	return parser.TagMatches(matcherString)
+}
+
+func (parser *Parser) SearchRegexp(part string) string {
+	group := tagRegex.FindString(part)
+	if group == "" {
+		return ""
+	}
+	replacer := fmt.Sprintf("(?P%s.+)", group)
+	return strings.Replace(part, group, replacer, 1)
+}
+
+func (parser *Parser) TagMatches(matcherString string) map[string]string {
+	tagged := map[string]string{}
+	reMatcher := regexp.MustCompile(matcherString)
+	namedMatches := reMatcher.SubexpNames()
+	subMatches := reMatcher.FindStringSubmatch(parser.Path)
+	for i, subMatch := range subMatches {
+		if subMatch != "" {
+			tagged[namedMatches[i]] = subMatch
+		}
+	}
+	return tagged
+}
+
+func SanitizeBuffer(buffer []string) []string {
+	newBuffer := []string{}
+	for _, token := range buffer {
+		newBuffer = append(newBuffer, Sanitize(token))
+	}
+	return newBuffer
+}
+
+func Sanitize(token string) string {
+	token = strings.Replace(token, "**", ".*", -1)
+	return token
+}
+
+func updateMatches(original, updater map[string]string) map[string]string {
+	localeCode := updater["locale_code"]
+	localeName := updater["locale_name"]
+	tag := updater["tag"]
+
+	if original["locale_code"] == "" {
+		original["locale_code"] = strings.Trim(localeCode, separator)
+	}
+
+	if original["locale_name"] == "" {
+		original["locale_name"] = strings.Trim(localeName, separator)
+	}
+
+	if original["tag"] == "" {
+		original["tag"] = strings.Trim(tag, separator)
+	}
+	return original
+}
+
+func Reverse(seq []string) []string {
+	for i, j := 0, len(seq)-1; i < j; i, j = i+1, j-1 {
+		seq[i], seq[j] = seq[j], seq[i]
+	}
+	return seq
 }
