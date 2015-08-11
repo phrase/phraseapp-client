@@ -159,17 +159,17 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
-	r.RegisterFunc("help", helpCommand, "Help for this client")
+	r.RegisterFunc("info", infoCommand, "Info and verison of this client")
 
 	return r
 }
 
-func helpCommand() error {
-	fmt.Printf("Built at 2015-08-07 17:43:31.134666704 +0200 CEST\n")
+func infoCommand() error {
+	fmt.Printf("Built at 2015-08-11 13:08:26.907070067 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "1.0.0rc1")
-	fmt.Println("PhraseApp API Client revision:", "bf43f845e52f28379296de26f1df16cfbc334e45")
-	fmt.Println("PhraseApp Client revision:", "9deaa4e71d474272e4702ee69a0bbf3d061137f4")
-	fmt.Println("PhraseApp Docs revision:", "308165f6c0bd7d5a824b89656dda7efed29bab4a")
+	fmt.Println("PhraseApp API Client revision:", "6277d4b9df914b6284a2aec7d7729c0749d4b17e")
+	fmt.Println("PhraseApp Client revision:", "f498f7d128c3fea89124011f7c544d66ae709a49")
+	fmt.Println("PhraseApp Docs revision:", "fcb5f1c2658081f4b73dff6bbe7e2beafaaeb7e0")
 	return cli.ErrorHelpRequested
 }
 
@@ -990,7 +990,6 @@ func (cmd *KeyCreate) Run() error {
 	}
 
 	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
-
 	res, err := phraseapp.KeyCreate(cmd.ProjectId, params)
 
 	if err != nil {
