@@ -6,9 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"strings"
+
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"gopkg.in/yaml.v2"
-	"strings"
 )
 
 type PullCommand struct {

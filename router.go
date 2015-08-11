@@ -65,7 +65,7 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("keys/list", &KeysList{ProjectId: projectId}, "List all keys for the given project. Alternatively you can POST requests to /search.")
 
-	r.Register("keys/search", &KeysSearch{ProjectId: projectId}, "List all keys for the given project matching query.")
+	r.Register("keys/search", &KeysSearch{ProjectId: projectId}, "Search keys for the given project matching query.")
 
 	r.Register("keys/tag", &KeysTag{ProjectId: projectId}, "Tags all keys matching query. Same constraints as list.")
 
@@ -159,17 +159,17 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
-	r.RegisterFunc("info", infoCommand, "Info and verison of this client")
+	r.RegisterFunc("help", helpCommand, "Help for this client")
 
 	return r
 }
 
-func infoCommand() error {
-	fmt.Printf("Built at 2015-08-11 13:08:26.907070067 +0200 CEST\n")
+func helpCommand() error {
+	fmt.Printf("Built at 2015-08-11 18:17:36.123405872 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "1.0.0rc1")
-	fmt.Println("PhraseApp API Client revision:", "6277d4b9df914b6284a2aec7d7729c0749d4b17e")
-	fmt.Println("PhraseApp Client revision:", "f498f7d128c3fea89124011f7c544d66ae709a49")
-	fmt.Println("PhraseApp Docs revision:", "fcb5f1c2658081f4b73dff6bbe7e2beafaaeb7e0")
+	fmt.Println("PhraseApp API Client revision:", "5923bd74e2354fb2389296b1093ce8072b43b1d0")
+	fmt.Println("PhraseApp Client revision:", "eb1b9135be8a67016715a7e4dfec329e8381ec8c")
+	fmt.Println("PhraseApp Docs revision:", "25f3b3512a86307d225deb8185c9b227f42ebd0b")
 	return cli.ErrorHelpRequested
 }
 
@@ -990,6 +990,7 @@ func (cmd *KeyCreate) Run() error {
 	}
 
 	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+
 	res, err := phraseapp.KeyCreate(cmd.ProjectId, params)
 
 	if err != nil {
@@ -3336,7 +3337,7 @@ type UploadCreate struct {
 	LocaleId           *string                 `cli:"opt --locale-id"`
 	SkipUnverification *bool                   `cli:"opt --skip-unverification"`
 	SkipUploadTags     *bool                   `cli:"opt --skip-upload-tags"`
-	Tags               []string                `cli:"opt --tags"`
+	Tags               *string                 `cli:"opt --tags"`
 	UpdateTranslations *bool                   `cli:"opt --update-translations"`
 
 	ProjectId string `cli:"arg required"`

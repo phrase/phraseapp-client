@@ -58,7 +58,7 @@ type PushParams struct {
 	FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
 	SkipUnverification *bool                   `yaml:"skip_unverification,omitempty"`
 	SkipUploadTags     *bool                   `yaml:"skip_upload_tags,omitempty"`
-	Tags               []string                `yaml:"tags,omitempty"`
+	Tags               *string                 `yaml:"tags,omitempty"`
 	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
 }
 
@@ -405,7 +405,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	}
 
 	if localeFile.Tag != "" {
-		uploadParams.Tags = []string{localeFile.Tag}
+		uploadParams.Tags = &localeFile.Tag
 	}
 
 	if source.Params == nil {
