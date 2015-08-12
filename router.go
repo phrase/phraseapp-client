@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/cli"
+	"github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -159,17 +159,17 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
-	r.RegisterFunc("info", infoCommand, "Info about client version and revision")
+	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
 
 	return r
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-11 18:17:36.123405872 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-12 15:42:32.879679559 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "1.0.0rc1")
 	fmt.Println("PhraseApp API Client revision:", "5923bd74e2354fb2389296b1093ce8072b43b1d0")
-	fmt.Println("PhraseApp Client revision:", "eb1b9135be8a67016715a7e4dfec329e8381ec8c")
-	fmt.Println("PhraseApp Docs revision:", "25f3b3512a86307d225deb8185c9b227f42ebd0b")
+	fmt.Println("PhraseApp Client revision:", "9e61abbf719b5b067fe4713a6ed59bc782ae158a")
+	fmt.Println("PhraseApp Docs revision:", "6d29a678592c821214d557f6c9b39a36da5cf1e5")
 	return cli.ErrorHelpRequested
 }
 
@@ -3330,15 +3330,14 @@ func (cmd *TranslationsVerify) Run() error {
 type UploadCreate struct {
 	phraseapp.AuthCredentials
 
-	ConvertEmoji       *bool                   `cli:"opt --convert-emoji"`
-	File               string                  `cli:"opt --file"`
-	FileFormat         *string                 `cli:"opt --file-format"`
-	FormatOptions      *map[string]interface{} `cli:"opt --format-options"`
-	LocaleId           *string                 `cli:"opt --locale-id"`
-	SkipUnverification *bool                   `cli:"opt --skip-unverification"`
-	SkipUploadTags     *bool                   `cli:"opt --skip-upload-tags"`
-	Tags               *string                 `cli:"opt --tags"`
-	UpdateTranslations *bool                   `cli:"opt --update-translations"`
+	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
+	File               string  `cli:"opt --file"`
+	FileFormat         *string `cli:"opt --file-format"`
+	LocaleId           *string `cli:"opt --locale-id"`
+	SkipUnverification *bool   `cli:"opt --skip-unverification"`
+	SkipUploadTags     *bool   `cli:"opt --skip-upload-tags"`
+	Tags               *string `cli:"opt --tags"`
+	UpdateTranslations *bool   `cli:"opt --update-translations"`
 
 	ProjectId string `cli:"arg required"`
 }
@@ -3372,10 +3371,6 @@ func (cmd *UploadCreate) Run() error {
 
 	if cmd.FileFormat != nil {
 		params.FileFormat = cmd.FileFormat
-	}
-
-	if cmd.FormatOptions != nil {
-		params.FormatOptions = cmd.FormatOptions
 	}
 
 	if cmd.LocaleId != nil {

@@ -52,14 +52,14 @@ type Source struct {
 }
 
 type PushParams struct {
-	FileFormat         string                  `yaml:"file_format,omitempty"`
-	LocaleId           string                  `yaml:"locale_id,omitempty"`
-	ConvertEmoji       *bool                   `yaml:"convert_emoji,omitempty"`
-	FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
-	SkipUnverification *bool                   `yaml:"skip_unverification,omitempty"`
-	SkipUploadTags     *bool                   `yaml:"skip_upload_tags,omitempty"`
-	Tags               *string                 `yaml:"tags,omitempty"`
-	UpdateTranslations *bool                   `yaml:"update_translations,omitempty"`
+	FileFormat   string `yaml:"file_format,omitempty"`
+	LocaleId     string `yaml:"locale_id,omitempty"`
+	ConvertEmoji *bool  `yaml:"convert_emoji,omitempty"`
+	//FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
+	SkipUnverification *bool   `yaml:"skip_unverification,omitempty"`
+	SkipUploadTags     *bool   `yaml:"skip_upload_tags,omitempty"`
+	Tags               *string `yaml:"tags,omitempty"`
+	UpdateTranslations *bool   `yaml:"update_translations,omitempty"`
 }
 
 func (source *Source) GetLocaleId() string {
@@ -173,7 +173,7 @@ func (source *Source) uploadFile(localeFile *LocaleFile) error {
 			fmt.Println("UpdateTranslations", nil)
 		}
 		fmt.Println("SkipUnverification", uploadParams.SkipUnverification)
-		fmt.Println("FormatOpts", uploadParams.FormatOptions)
+		//		fmt.Println("FormatOpts", uploadParams.FormatOptions)
 	}
 
 	aUpload, err := phraseapp.UploadCreate(source.ProjectId, uploadParams)
@@ -429,10 +429,10 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 		uploadParams.ConvertEmoji = convertEmoji
 	}
 
-	formatOptions := params.FormatOptions
-	if formatOptions != nil {
-		uploadParams.FormatOptions = formatOptions
-	}
+	//	formatOptions := params.FormatOptions
+	//	if formatOptions != nil {
+	//		uploadParams.FormatOptions = formatOptions
+	//	}
 
 	skipUnverification := params.SkipUnverification
 	if skipUnverification != nil {
