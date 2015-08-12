@@ -7,7 +7,8 @@ import (
 	"os/user"
 	"path"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v1"
+
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
