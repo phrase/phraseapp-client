@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/cli"
 )
 
 func main() {

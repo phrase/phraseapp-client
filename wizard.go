@@ -12,9 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/yaml.v1"
-
-	"github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-go/phraseapp"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
+
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const configName = ".phraseapp.yml"

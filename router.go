@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -159,12 +159,12 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
-	r.RegisterFunc("help", helpCommand, "Help for this client")
+	r.RegisterFunc("info", infoCommand, "Info about client version and revision")
 
 	return r
 }
 
-func helpCommand() error {
+func infoCommand() error {
 	fmt.Printf("Built at 2015-08-11 18:17:36.123405872 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "1.0.0rc1")
 	fmt.Println("PhraseApp API Client revision:", "5923bd74e2354fb2389296b1093ce8072b43b1d0")
