@@ -43,5 +43,9 @@ To see all supported options for a command, simple use the `--help` flag:
 
 See our [detailed guides](http://docs.phraseapp.com/developers/cli/) for in-depth instructions on how to use the PhraseApp Client.
 
+## Contributing
+
+This tool and it's source code are auto-generated from templates that run against a API specification file. Therefore we can not accept any pull requests in this repository. Please use the GitHub Issue Tracker to report bugs.
+
 ## Further reading
 * [PhraseApp Client Download Page](https://phraseapp.com/cli)
