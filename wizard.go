@@ -237,7 +237,7 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) {
 }
 
 func defaultFilePath(fileFormat string) (string, error) {
-	formats, err := phraseapp.FormatsList(1, 30)
+	formats, err := client.FormatsList(1, 30)
 	if err != nil {
 		return "", err
 	}
@@ -286,10 +286,13 @@ func pullConfig(data *WizardData) {
 	DisplayWizard(data, next(data), "")
 }
 
+var client *phraseapp.Client
+
 func selectFormat(data *WizardData) {
-	auth := phraseapp.AuthCredentials{Token: data.AccessToken}
-	phraseapp.RegisterAuthCredentials(&auth, nil)
-	formats, err := phraseapp.FormatsList(1, 25)
+	auth := phraseapp.Credentials{Token: data.AccessToken}
+	var err error
+	client, err = phraseapp.NewClient(auth, nil)
+	formats, err := client.FormatsList(1, 25)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -399,7 +402,7 @@ func newProjectStep(data *WizardData) {
 	projectParam := &phraseapp.ProjectParams{}
 	fmt.Scanln(&projectParam.Name)
 
-	res, err := phraseapp.ProjectCreate(projectParam)
+	res, err := client.ProjectCreate(projectParam)
 	if err != nil {
 		success, match_err := regexp.MatchString("401", err.Error())
 		if match_err != nil {
@@ -434,18 +437,21 @@ type ChannelEnd struct {
 }
 
 func selectProjectStep(data *WizardData) {
-	auth := phraseapp.AuthCredentials{Token: data.AccessToken, Host: data.Host}
+	auth := phraseapp.Credentials{Token: data.AccessToken, Host: data.Host}
 	fmt.Println("Please select your project:")
-	phraseapp.RegisterAuthCredentials(&auth, nil)
+	var err error
+	client, err = phraseapp.NewClient(auth, nil)
+	if err != nil {
+		panic(err)
+	}
 	var wg sync.WaitGroup
 	out := make(chan []phraseapp.Project, 1)
 	wg.Add(1)
-	var err error
 	channelEnd := ChannelEnd{}
 	getProjects := func(channelEnd *ChannelEnd) {
 		var projects []*phraseapp.Project
 		// time.Sleep(500 * time.Millisecond)
-		projects, err = phraseapp.ProjectsList(1, 25)
+		projects, err = client.ProjectsList(1, 25)
 		var array []phraseapp.Project
 		for _, res := range projects {
 			array = append(array, *res)

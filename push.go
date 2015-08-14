@@ -14,12 +14,15 @@ import (
 )
 
 type PushCommand struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 	DebugPush bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PushCommand) Run() error {
-	Authenticate(&cmd.AuthCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, nil)
+	if err != nil {
+		return err
+	}
 
 	if cmd.DebugPush {
 		Debug = true
@@ -31,7 +34,7 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	for _, source := range sources {
-		err := source.Push()
+		err := source.Push(client)
 		if err != nil {
 			return err
 		}
@@ -70,12 +73,12 @@ func (source *Source) GetLocaleId() string {
 	return ""
 }
 
-func (source *Source) Push() error {
+func (source *Source) Push(client *phraseapp.Client) error {
 	if strings.TrimSpace(source.File) == "" {
 		return fmt.Errorf("file of source may not be empty")
 	}
 
-	remoteLocales, err := RemoteLocales(source.ProjectId)
+	remoteLocales, err := RemoteLocales(client, source.ProjectId)
 	if err != nil {
 		return err
 	}
@@ -90,7 +93,7 @@ func (source *Source) Push() error {
 		fmt.Println("Uploading", localeFile.RelPath())
 
 		if !localeFile.ExistsRemote {
-			localeDetails, err := source.createLocale(localeFile)
+			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
 				localeFile.Id = localeDetails.Id
 				localeFile.RFC = localeDetails.Code
@@ -98,7 +101,7 @@ func (source *Source) Push() error {
 			}
 		}
 
-		err = source.uploadFile(localeFile)
+		err = source.uploadFile(client, localeFile)
 		if err != nil {
 			return err
 		} else {
@@ -114,7 +117,7 @@ func (source *Source) Push() error {
 	return nil
 }
 
-func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
@@ -132,7 +135,7 @@ func (source *Source) createLocale(localeFile *LocaleFile) (*phraseapp.LocaleDet
 		localeParams.Code = localeFile.RFC
 	}
 
-	localeDetails, err := phraseapp.LocaleCreate(source.ProjectId, localeParams)
+	localeDetails, err := client.LocaleCreate(source.ProjectId, localeParams)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +149,7 @@ func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string 
 	return ""
 }
 
-func (source *Source) uploadFile(localeFile *LocaleFile) error {
+func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile) error {
 	uploadParams, err := source.setUploadParams(localeFile)
 	if err != nil {
 		return err
@@ -177,7 +180,7 @@ func (source *Source) uploadFile(localeFile *LocaleFile) error {
 		//		fmt.Println("FormatOpts", uploadParams.FormatOptions)
 	}
 
-	aUpload, err := phraseapp.UploadCreate(source.ProjectId, uploadParams)
+	aUpload, err := client.UploadCreate(source.ProjectId, uploadParams)
 	if err != nil {
 		return err
 	}

@@ -14,12 +14,16 @@ import (
 )
 
 type PullCommand struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 	DebugPull bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PullCommand) Run() error {
-	Authenticate(&cmd.AuthCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, nil)
+
+	if err != nil {
+		return err
+	}
 
 	if cmd.DebugPull {
 		Debug = true
@@ -30,7 +34,7 @@ func (cmd *PullCommand) Run() error {
 	}
 
 	for _, target := range targets {
-		err := target.Pull()
+		err := target.Pull(client)
 		if err != nil {
 			return err
 		}
@@ -83,7 +87,7 @@ func (t *Target) GetTag() string {
 	return ""
 }
 
-func (target *Target) Pull() error {
+func (target *Target) Pull(client *phraseapp.Client) error {
 	if strings.TrimSpace(target.File) == "" {
 		return fmt.Errorf("file pattern for target may not be empty")
 	}
@@ -93,7 +97,7 @@ func (target *Target) Pull() error {
 		return err
 	}
 
-	target.RemoteLocales, err = RemoteLocales(target.ProjectId)
+	target.RemoteLocales, err = RemoteLocales(client, target.ProjectId)
 	if err != nil {
 		return err
 	}
@@ -110,7 +114,7 @@ func (target *Target) Pull() error {
 			return err
 		}
 
-		err = target.DownloadAndWriteToFile(localeToPath)
+		err = target.DownloadAndWriteToFile(client, localeToPath)
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeToPath.Path)
 		} else {
@@ -174,7 +178,7 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	return validTargets, nil
 }
 
-func (target *Target) DownloadAndWriteToFile(localeFile *LocaleFile) error {
+func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
 	downloadParams := target.setDownloadParams()
 
 	params := target.Params
@@ -198,7 +202,7 @@ func (target *Target) DownloadAndWriteToFile(localeFile *LocaleFile) error {
 		fmt.Println("FormatOptions", downloadParams.FormatOptions)
 	}
 
-	res, err := phraseapp.LocaleDownload(target.ProjectId, localeId, downloadParams)
+	res, err := client.LocaleDownload(target.ProjectId, localeId, downloadParams)
 	if err != nil {
 		return err
 	}

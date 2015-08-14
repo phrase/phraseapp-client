@@ -167,16 +167,16 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-13 16:55:33.486974429 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc9")
+	fmt.Printf("Built at 2015-08-14 15:27:11.825876922 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "3d1142bef0cc318d5cd913e2f944959e8eaddfe7")
-	fmt.Println("PhraseApp Client revision:", "d7a6567bc314e6eca494c72bd909a6f7f3a18961")
+	fmt.Println("PhraseApp Client revision:", "948e7fd1576ee6818ec033130bd080564300a067")
 	fmt.Println("PhraseApp Docs revision:", "8f1d9ef516480148c220f54bd26ed2dd8d947857")
 	return nil
 }
 
 type AuthorizationCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
 	Note      string     `cli:"opt --note"`
@@ -219,9 +219,12 @@ func (cmd *AuthorizationCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.AuthorizationCreate(params)
+	res, err := client.AuthorizationCreate(params)
 
 	if err != nil {
 		return err
@@ -231,7 +234,7 @@ func (cmd *AuthorizationCreate) Run() error {
 }
 
 type AuthorizationDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Id string `cli:"arg required"`
 }
@@ -249,9 +252,12 @@ func (cmd *AuthorizationDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.AuthorizationDelete(cmd.Id)
+	err = client.AuthorizationDelete(cmd.Id)
 
 	if err != nil {
 		return err
@@ -261,7 +267,7 @@ func (cmd *AuthorizationDelete) Run() error {
 }
 
 type AuthorizationShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Id string `cli:"arg required"`
 }
@@ -279,9 +285,12 @@ func (cmd *AuthorizationShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.AuthorizationShow(cmd.Id)
+	res, err := client.AuthorizationShow(cmd.Id)
 
 	if err != nil {
 		return err
@@ -291,7 +300,7 @@ func (cmd *AuthorizationShow) Run() error {
 }
 
 type AuthorizationUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
 	Note      string     `cli:"opt --note"`
@@ -336,9 +345,12 @@ func (cmd *AuthorizationUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.AuthorizationUpdate(cmd.Id, params)
+	res, err := client.AuthorizationUpdate(cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -348,7 +360,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 }
 
 type AuthorizationsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -367,9 +379,12 @@ func (cmd *AuthorizationsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.AuthorizationsList(cmd.Page, cmd.PerPage)
+	res, err := client.AuthorizationsList(cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -379,7 +394,7 @@ func (cmd *AuthorizationsList) Run() error {
 }
 
 type CommentCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Message string `cli:"opt --message"`
 
@@ -415,9 +430,12 @@ func (cmd *CommentCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.CommentCreate(cmd.ProjectId, cmd.KeyId, params)
+	res, err := client.CommentCreate(cmd.ProjectId, cmd.KeyId, params)
 
 	if err != nil {
 		return err
@@ -427,7 +445,7 @@ func (cmd *CommentCreate) Run() error {
 }
 
 type CommentDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -447,9 +465,12 @@ func (cmd *CommentDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.CommentDelete(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentDelete(cmd.ProjectId, cmd.KeyId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -459,7 +480,7 @@ func (cmd *CommentDelete) Run() error {
 }
 
 type CommentMarkCheck struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -479,9 +500,12 @@ func (cmd *CommentMarkCheck) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.CommentMarkCheck(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkCheck(cmd.ProjectId, cmd.KeyId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -491,7 +515,7 @@ func (cmd *CommentMarkCheck) Run() error {
 }
 
 type CommentMarkRead struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -511,9 +535,12 @@ func (cmd *CommentMarkRead) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.CommentMarkRead(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkRead(cmd.ProjectId, cmd.KeyId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -523,7 +550,7 @@ func (cmd *CommentMarkRead) Run() error {
 }
 
 type CommentMarkUnread struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -543,9 +570,12 @@ func (cmd *CommentMarkUnread) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.CommentMarkUnread(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkUnread(cmd.ProjectId, cmd.KeyId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -555,7 +585,7 @@ func (cmd *CommentMarkUnread) Run() error {
 }
 
 type CommentShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	KeyId     string `cli:"arg required"`
@@ -575,9 +605,12 @@ func (cmd *CommentShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.CommentShow(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	res, err := client.CommentShow(cmd.ProjectId, cmd.KeyId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -587,7 +620,7 @@ func (cmd *CommentShow) Run() error {
 }
 
 type CommentUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Message string `cli:"opt --message"`
 
@@ -624,9 +657,12 @@ func (cmd *CommentUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.CommentUpdate(cmd.ProjectId, cmd.KeyId, cmd.Id, params)
+	res, err := client.CommentUpdate(cmd.ProjectId, cmd.KeyId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -636,7 +672,7 @@ func (cmd *CommentUpdate) Run() error {
 }
 
 type CommentsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -658,9 +694,12 @@ func (cmd *CommentsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.CommentsList(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage)
+	res, err := client.CommentsList(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -670,7 +709,7 @@ func (cmd *CommentsList) Run() error {
 }
 
 type ExcludeRuleCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Name string `cli:"opt --name"`
 
@@ -705,9 +744,12 @@ func (cmd *ExcludeRuleCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ExcludeRuleCreate(cmd.ProjectId, params)
+	res, err := client.ExcludeRuleCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -717,7 +759,7 @@ func (cmd *ExcludeRuleCreate) Run() error {
 }
 
 type ExcludeRuleDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -736,9 +778,12 @@ func (cmd *ExcludeRuleDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.ExcludeRuleDelete(cmd.ProjectId, cmd.Id)
+	err = client.ExcludeRuleDelete(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -748,7 +793,7 @@ func (cmd *ExcludeRuleDelete) Run() error {
 }
 
 type ExcludeRuleShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -767,9 +812,12 @@ func (cmd *ExcludeRuleShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ExcludeRuleShow(cmd.ProjectId, cmd.Id)
+	res, err := client.ExcludeRuleShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -779,7 +827,7 @@ func (cmd *ExcludeRuleShow) Run() error {
 }
 
 type ExcludeRuleUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Name string `cli:"opt --name"`
 
@@ -815,9 +863,12 @@ func (cmd *ExcludeRuleUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ExcludeRuleUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.ExcludeRuleUpdate(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -827,7 +878,7 @@ func (cmd *ExcludeRuleUpdate) Run() error {
 }
 
 type ExcludeRulesIndex struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -848,9 +899,12 @@ func (cmd *ExcludeRulesIndex) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ExcludeRulesIndex(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.ExcludeRulesIndex(cmd.ProjectId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -860,7 +914,7 @@ func (cmd *ExcludeRulesIndex) Run() error {
 }
 
 type FormatsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -879,9 +933,12 @@ func (cmd *FormatsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.FormatsList(cmd.Page, cmd.PerPage)
+	res, err := client.FormatsList(cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -891,7 +948,7 @@ func (cmd *FormatsList) Run() error {
 }
 
 type KeyCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	DataType              *string `cli:"opt --data-type"`
 	Description           *string `cli:"opt --description"`
@@ -991,9 +1048,12 @@ func (cmd *KeyCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeyCreate(cmd.ProjectId, params)
+	res, err := client.KeyCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1003,7 +1063,7 @@ func (cmd *KeyCreate) Run() error {
 }
 
 type KeyDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1022,9 +1082,12 @@ func (cmd *KeyDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.KeyDelete(cmd.ProjectId, cmd.Id)
+	err = client.KeyDelete(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1034,7 +1097,7 @@ func (cmd *KeyDelete) Run() error {
 }
 
 type KeyShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1053,9 +1116,12 @@ func (cmd *KeyShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeyShow(cmd.ProjectId, cmd.Id)
+	res, err := client.KeyShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1065,7 +1131,7 @@ func (cmd *KeyShow) Run() error {
 }
 
 type KeyUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	DataType              *string `cli:"opt --data-type"`
 	Description           *string `cli:"opt --description"`
@@ -1166,9 +1232,12 @@ func (cmd *KeyUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeyUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.KeyUpdate(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -1178,7 +1247,7 @@ func (cmd *KeyUpdate) Run() error {
 }
 
 type KeysDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
@@ -1218,9 +1287,12 @@ func (cmd *KeysDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeysDelete(cmd.ProjectId, params)
+	res, err := client.KeysDelete(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1230,7 +1302,7 @@ func (cmd *KeysDelete) Run() error {
 }
 
 type KeysList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
@@ -1283,9 +1355,12 @@ func (cmd *KeysList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeysList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.KeysList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -1295,7 +1370,7 @@ func (cmd *KeysList) Run() error {
 }
 
 type KeysSearch struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
@@ -1348,9 +1423,12 @@ func (cmd *KeysSearch) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeysSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.KeysSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -1360,7 +1438,7 @@ func (cmd *KeysSearch) Run() error {
 }
 
 type KeysTag struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
@@ -1405,9 +1483,12 @@ func (cmd *KeysTag) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeysTag(cmd.ProjectId, params)
+	res, err := client.KeysTag(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1417,7 +1498,7 @@ func (cmd *KeysTag) Run() error {
 }
 
 type KeysUntag struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	LocaleId *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
@@ -1462,9 +1543,12 @@ func (cmd *KeysUntag) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.KeysUntag(cmd.ProjectId, params)
+	res, err := client.KeysUntag(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1474,7 +1558,7 @@ func (cmd *KeysUntag) Run() error {
 }
 
 type LocaleCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Code           string  `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
@@ -1534,9 +1618,12 @@ func (cmd *LocaleCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.LocaleCreate(cmd.ProjectId, params)
+	res, err := client.LocaleCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1546,7 +1633,7 @@ func (cmd *LocaleCreate) Run() error {
 }
 
 type LocaleDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1565,9 +1652,12 @@ func (cmd *LocaleDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.LocaleDelete(cmd.ProjectId, cmd.Id)
+	err = client.LocaleDelete(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1577,7 +1667,7 @@ func (cmd *LocaleDelete) Run() error {
 }
 
 type LocaleDownload struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ConvertEmoji             *bool                   `cli:"opt --convert-emoji"`
 	FileFormat               string                  `cli:"opt --file-format"`
@@ -1638,9 +1728,12 @@ func (cmd *LocaleDownload) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.LocaleDownload(cmd.ProjectId, cmd.Id, params)
+	res, err := client.LocaleDownload(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -1651,7 +1744,7 @@ func (cmd *LocaleDownload) Run() error {
 }
 
 type LocaleShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1670,9 +1763,12 @@ func (cmd *LocaleShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.LocaleShow(cmd.ProjectId, cmd.Id)
+	res, err := client.LocaleShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1682,7 +1778,7 @@ func (cmd *LocaleShow) Run() error {
 }
 
 type LocaleUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Code           string  `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
@@ -1743,9 +1839,12 @@ func (cmd *LocaleUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.LocaleUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.LocaleUpdate(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -1755,7 +1854,7 @@ func (cmd *LocaleUpdate) Run() error {
 }
 
 type LocalesList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1776,9 +1875,12 @@ func (cmd *LocalesList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.LocalesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.LocalesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -1788,7 +1890,7 @@ func (cmd *LocalesList) Run() error {
 }
 
 type OrderConfirm struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1807,9 +1909,12 @@ func (cmd *OrderConfirm) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.OrderConfirm(cmd.ProjectId, cmd.Id)
+	res, err := client.OrderConfirm(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1819,7 +1924,7 @@ func (cmd *OrderConfirm) Run() error {
 }
 
 type OrderCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Category                         string   `cli:"opt --category"`
 	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
@@ -1914,9 +2019,12 @@ func (cmd *OrderCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.OrderCreate(cmd.ProjectId, params)
+	res, err := client.OrderCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -1926,7 +2034,7 @@ func (cmd *OrderCreate) Run() error {
 }
 
 type OrderDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1945,9 +2053,12 @@ func (cmd *OrderDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.OrderDelete(cmd.ProjectId, cmd.Id)
+	err = client.OrderDelete(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1957,7 +2068,7 @@ func (cmd *OrderDelete) Run() error {
 }
 
 type OrderShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -1976,9 +2087,12 @@ func (cmd *OrderShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.OrderShow(cmd.ProjectId, cmd.Id)
+	res, err := client.OrderShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -1988,7 +2102,7 @@ func (cmd *OrderShow) Run() error {
 }
 
 type OrdersList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2009,9 +2123,12 @@ func (cmd *OrdersList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.OrdersList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.OrdersList(cmd.ProjectId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2021,7 +2138,7 @@ func (cmd *OrdersList) Run() error {
 }
 
 type ProjectCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Name                    string `cli:"opt --name"`
 	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
@@ -2059,9 +2176,12 @@ func (cmd *ProjectCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ProjectCreate(params)
+	res, err := client.ProjectCreate(params)
 
 	if err != nil {
 		return err
@@ -2071,7 +2191,7 @@ func (cmd *ProjectCreate) Run() error {
 }
 
 type ProjectDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Id string `cli:"arg required"`
 }
@@ -2089,9 +2209,12 @@ func (cmd *ProjectDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.ProjectDelete(cmd.Id)
+	err = client.ProjectDelete(cmd.Id)
 
 	if err != nil {
 		return err
@@ -2101,7 +2224,7 @@ func (cmd *ProjectDelete) Run() error {
 }
 
 type ProjectShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Id string `cli:"arg required"`
 }
@@ -2119,9 +2242,12 @@ func (cmd *ProjectShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ProjectShow(cmd.Id)
+	res, err := client.ProjectShow(cmd.Id)
 
 	if err != nil {
 		return err
@@ -2131,7 +2257,7 @@ func (cmd *ProjectShow) Run() error {
 }
 
 type ProjectUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Name                    string `cli:"opt --name"`
 	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
@@ -2171,9 +2297,12 @@ func (cmd *ProjectUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ProjectUpdate(cmd.Id, params)
+	res, err := client.ProjectUpdate(cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -2183,7 +2312,7 @@ func (cmd *ProjectUpdate) Run() error {
 }
 
 type ProjectsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2202,9 +2331,12 @@ func (cmd *ProjectsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ProjectsList(cmd.Page, cmd.PerPage)
+	res, err := client.ProjectsList(cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2214,7 +2346,7 @@ func (cmd *ProjectsList) Run() error {
 }
 
 type ShowUser struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 }
 
 func (cmd *ShowUser) Run() error {
@@ -2230,9 +2362,12 @@ func (cmd *ShowUser) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.ShowUser()
+	res, err := client.ShowUser()
 
 	if err != nil {
 		return err
@@ -2242,7 +2377,7 @@ func (cmd *ShowUser) Run() error {
 }
 
 type StyleguideCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Audience           *string `cli:"opt --audience"`
 	Business           *string `cli:"opt --business"`
@@ -2337,9 +2472,12 @@ func (cmd *StyleguideCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.StyleguideCreate(cmd.ProjectId, params)
+	res, err := client.StyleguideCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -2349,7 +2487,7 @@ func (cmd *StyleguideCreate) Run() error {
 }
 
 type StyleguideDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -2368,9 +2506,12 @@ func (cmd *StyleguideDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.StyleguideDelete(cmd.ProjectId, cmd.Id)
+	err = client.StyleguideDelete(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -2380,7 +2521,7 @@ func (cmd *StyleguideDelete) Run() error {
 }
 
 type StyleguideShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -2399,9 +2540,12 @@ func (cmd *StyleguideShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.StyleguideShow(cmd.ProjectId, cmd.Id)
+	res, err := client.StyleguideShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -2411,7 +2555,7 @@ func (cmd *StyleguideShow) Run() error {
 }
 
 type StyleguideUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Audience           *string `cli:"opt --audience"`
 	Business           *string `cli:"opt --business"`
@@ -2507,9 +2651,12 @@ func (cmd *StyleguideUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.StyleguideUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.StyleguideUpdate(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -2519,7 +2666,7 @@ func (cmd *StyleguideUpdate) Run() error {
 }
 
 type StyleguidesList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2540,9 +2687,12 @@ func (cmd *StyleguidesList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.StyleguidesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.StyleguidesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2552,7 +2702,7 @@ func (cmd *StyleguidesList) Run() error {
 }
 
 type TagCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Name string `cli:"opt --name"`
 
@@ -2587,9 +2737,12 @@ func (cmd *TagCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TagCreate(cmd.ProjectId, params)
+	res, err := client.TagCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -2599,7 +2752,7 @@ func (cmd *TagCreate) Run() error {
 }
 
 type TagDelete struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -2618,9 +2771,12 @@ func (cmd *TagDelete) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.TagDelete(cmd.ProjectId, cmd.Name)
+	err = client.TagDelete(cmd.ProjectId, cmd.Name)
 
 	if err != nil {
 		return err
@@ -2630,7 +2786,7 @@ func (cmd *TagDelete) Run() error {
 }
 
 type TagShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -2649,9 +2805,12 @@ func (cmd *TagShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TagShow(cmd.ProjectId, cmd.Name)
+	res, err := client.TagShow(cmd.ProjectId, cmd.Name)
 
 	if err != nil {
 		return err
@@ -2661,7 +2820,7 @@ func (cmd *TagShow) Run() error {
 }
 
 type TagsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2682,9 +2841,12 @@ func (cmd *TagsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TagsList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.TagsList(cmd.ProjectId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2694,7 +2856,7 @@ func (cmd *TagsList) Run() error {
 }
 
 type TranslationCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Content      string  `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
@@ -2754,9 +2916,12 @@ func (cmd *TranslationCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationCreate(cmd.ProjectId, params)
+	res, err := client.TranslationCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -2766,7 +2931,7 @@ func (cmd *TranslationCreate) Run() error {
 }
 
 type TranslationMachineTranslate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -2785,9 +2950,12 @@ func (cmd *TranslationMachineTranslate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	err := phraseapp.TranslationMachineTranslate(cmd.ProjectId, cmd.Id)
+	err = client.TranslationMachineTranslate(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -2797,7 +2965,7 @@ func (cmd *TranslationMachineTranslate) Run() error {
 }
 
 type TranslationShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -2816,9 +2984,12 @@ func (cmd *TranslationShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationShow(cmd.ProjectId, cmd.Id)
+	res, err := client.TranslationShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -2828,7 +2999,7 @@ func (cmd *TranslationShow) Run() error {
 }
 
 type TranslationUpdate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Content      string  `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
@@ -2879,9 +3050,12 @@ func (cmd *TranslationUpdate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.TranslationUpdate(cmd.ProjectId, cmd.Id, params)
 
 	if err != nil {
 		return err
@@ -2891,7 +3065,7 @@ func (cmd *TranslationUpdate) Run() error {
 }
 
 type TranslationsByKey struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -2940,9 +3114,12 @@ func (cmd *TranslationsByKey) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsByKey(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsByKey(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -2952,7 +3129,7 @@ func (cmd *TranslationsByKey) Run() error {
 }
 
 type TranslationsByLocale struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3001,9 +3178,12 @@ func (cmd *TranslationsByLocale) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsByLocale(cmd.ProjectId, cmd.LocaleId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsByLocale(cmd.ProjectId, cmd.LocaleId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3013,7 +3193,7 @@ func (cmd *TranslationsByLocale) Run() error {
 }
 
 type TranslationsExclude struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3058,9 +3238,12 @@ func (cmd *TranslationsExclude) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsExclude(cmd.ProjectId, params)
+	res, err := client.TranslationsExclude(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -3070,7 +3253,7 @@ func (cmd *TranslationsExclude) Run() error {
 }
 
 type TranslationsInclude struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3115,9 +3298,12 @@ func (cmd *TranslationsInclude) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsInclude(cmd.ProjectId, params)
+	res, err := client.TranslationsInclude(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -3127,7 +3313,7 @@ func (cmd *TranslationsInclude) Run() error {
 }
 
 type TranslationsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3175,9 +3361,12 @@ func (cmd *TranslationsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3187,7 +3376,7 @@ func (cmd *TranslationsList) Run() error {
 }
 
 type TranslationsSearch struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3235,9 +3424,12 @@ func (cmd *TranslationsSearch) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3247,7 +3439,7 @@ func (cmd *TranslationsSearch) Run() error {
 }
 
 type TranslationsUnverify struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3292,9 +3484,12 @@ func (cmd *TranslationsUnverify) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsUnverify(cmd.ProjectId, params)
+	res, err := client.TranslationsUnverify(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -3304,7 +3499,7 @@ func (cmd *TranslationsUnverify) Run() error {
 }
 
 type TranslationsVerify struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Order *string `cli:"opt --order"`
 	Q     *string `cli:"opt --query"`
@@ -3349,9 +3544,12 @@ func (cmd *TranslationsVerify) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.TranslationsVerify(cmd.ProjectId, params)
+	res, err := client.TranslationsVerify(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -3361,7 +3559,7 @@ func (cmd *TranslationsVerify) Run() error {
 }
 
 type UploadCreate struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
 	File               string  `cli:"opt --file"`
@@ -3431,9 +3629,12 @@ func (cmd *UploadCreate) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.UploadCreate(cmd.ProjectId, params)
+	res, err := client.UploadCreate(cmd.ProjectId, params)
 
 	if err != nil {
 		return err
@@ -3443,7 +3644,7 @@ func (cmd *UploadCreate) Run() error {
 }
 
 type UploadShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId string `cli:"arg required"`
 	Id        string `cli:"arg required"`
@@ -3462,9 +3663,12 @@ func (cmd *UploadShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.UploadShow(cmd.ProjectId, cmd.Id)
+	res, err := client.UploadShow(cmd.ProjectId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -3474,7 +3678,7 @@ func (cmd *UploadShow) Run() error {
 }
 
 type VersionShow struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	ProjectId     string `cli:"arg required"`
 	TranslationId string `cli:"arg required"`
@@ -3494,9 +3698,12 @@ func (cmd *VersionShow) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.VersionShow(cmd.ProjectId, cmd.TranslationId, cmd.Id)
+	res, err := client.VersionShow(cmd.ProjectId, cmd.TranslationId, cmd.Id)
 
 	if err != nil {
 		return err
@@ -3506,7 +3713,7 @@ func (cmd *VersionShow) Run() error {
 }
 
 type VersionsList struct {
-	phraseapp.AuthCredentials
+	phraseapp.Credentials
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -3528,9 +3735,12 @@ func (cmd *VersionsList) Run() error {
 		return e
 	}
 
-	phraseapp.RegisterAuthCredentials(&cmd.AuthCredentials, defaultCredentials)
+	client, err := phraseapp.NewClient(cmd.Credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
 
-	res, err := phraseapp.VersionsList(cmd.ProjectId, cmd.TranslationId, cmd.Page, cmd.PerPage)
+	res, err := client.VersionsList(cmd.ProjectId, cmd.TranslationId, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err

@@ -145,17 +145,6 @@ func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 	return path, nil
 }
 
-func Authenticate(cmd *phraseapp.AuthCredentials) error {
-	defaultCredentials, err := ConfigDefaultCredentials()
-	if err != nil {
-		return err
-	}
-
-	phraseapp.RegisterAuthCredentials(cmd, defaultCredentials)
-
-	return nil
-}
-
 func printErr(err error) {
 	ct.Foreground(ct.Red, true)
 	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -184,16 +173,16 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 	}
 }
 
-func RemoteLocales(projectId string) ([]*phraseapp.Locale, error) {
+func RemoteLocales(client *phraseapp.Client, projectId string) ([]*phraseapp.Locale, error) {
 	page := 1
-	locales, err := phraseapp.LocalesList(projectId, page, 25)
+	locales, err := client.LocalesList(projectId, page, 25)
 	if err != nil {
 		return nil, err
 	}
 	result := locales
 	for len(locales) == 25 {
 		page = page + 1
-		locales, err = phraseapp.LocalesList(projectId, page, 25)
+		locales, err = client.LocalesList(projectId, page, 25)
 		if err != nil {
 			return nil, err
 		}

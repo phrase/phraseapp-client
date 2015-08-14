@@ -15,7 +15,7 @@ import (
 const configName = ".phraseapp.yml"
 const defaultDir = "./"
 
-func ConfigDefaultCredentials() (*phraseapp.AuthCredentials, error) {
+func ConfigDefaultCredentials() (*phraseapp.Credentials, error) {
 	content, err := ConfigContent()
 	if err != nil {
 		content = "{}"
@@ -99,7 +99,7 @@ type credentialConf struct {
 	}
 }
 
-func parseCredentials(yml string) (*phraseapp.AuthCredentials, error) {
+func parseCredentials(yml string) (*phraseapp.Credentials, error) {
 	var conf *credentialConf
 
 	if err := yaml.Unmarshal([]byte(yml), &conf); err != nil {
@@ -109,7 +109,7 @@ func parseCredentials(yml string) (*phraseapp.AuthCredentials, error) {
 
 	phrase := conf.Phraseapp
 
-	credentials := &phraseapp.AuthCredentials{Token: phrase.AccessToken, Username: phrase.Username, TFA: phrase.TFA, Host: phrase.Host, Debug: phrase.Debug}
+	credentials := &phraseapp.Credentials{Token: phrase.AccessToken, Username: phrase.Username, TFA: phrase.TFA, Host: phrase.Host, Debug: phrase.Debug}
 
 	return credentials, nil
 }
