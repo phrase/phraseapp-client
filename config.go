@@ -15,6 +15,25 @@ import (
 const configName = ".phraseapp.yml"
 const defaultDir = "./"
 
+type Credentials struct {
+	phraseapp.Credentials
+	Username string `cli:"opt --username desc='username used for authentication'"`
+	Token    string `cli:"opt --access-token desc='access token used for authentication'"`
+	TFA      bool   `cli:"opt --tfa desc='use Two-Factor Authentication'"`
+	Host     string `cli:"opt --host desc='Host to send Request to'"`
+	Debug    bool   `cli:"opt --verbose desc='Verbose output'"`
+}
+
+func PhraseAppCredentials(c Credentials) phraseapp.Credentials {
+	return phraseapp.Credentials{
+		Username: c.Username,
+		Token:    c.Token,
+		TFA:      c.TFA,
+		Host:     c.Host,
+		Debug:    c.Debug,
+	}
+}
+
 func ConfigDefaultCredentials() (*phraseapp.Credentials, error) {
 	content, err := ConfigContent()
 	if err != nil {
