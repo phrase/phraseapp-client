@@ -70,7 +70,7 @@ func (cmd *WizardCommand) Run() error {
 type WizardData struct {
 	Host        string `yaml:"host"`
 	AccessToken string `yaml:"access_token"`
-	ProjectId   string `yaml:"project_id"`
+	ProjectID   string `yaml:"project_id"`
 	Format      string `yaml:"file_format"`
 	MainFormat  string `yaml:"-"`
 	Step        string `yaml:"-"`
@@ -92,7 +92,7 @@ type WizardTargets []*WizardPullConfig
 type WizardPushConfig struct {
 	Dir         string            `yaml:"dir,omitempty"`
 	File        string            `yaml:"file,omitempty"`
-	ProjectId   string            `yaml:"project_id,omitempty"`
+	ProjectID   string            `yaml:"project_id,omitempty"`
 	AccessToken string            `yaml:"access_token,omitempty"`
 	Params      *WizardPushParams `yaml:"params,omitempty"`
 }
@@ -100,7 +100,7 @@ type WizardPushConfig struct {
 type WizardPullConfig struct {
 	Dir         string            `yaml:"dir,omitempty"`
 	File        string            `yaml:"file,omitempty"`
-	ProjectId   string            `yaml:"project_id,omitempty"`
+	ProjectID   string            `yaml:"project_id,omitempty"`
 	AccessToken string            `yaml:"access_token,omitempty"`
 	Params      *WizardPullParams `yaml:"params,omitempty"`
 }
@@ -426,7 +426,7 @@ func newProjectStep(data *WizardData) {
 			}
 		}
 	} else {
-		data.ProjectId = res.Id
+		data.ProjectID = res.ID
 		DisplayWizard(data, next(data), "")
 		return
 	}
@@ -487,7 +487,7 @@ func selectProjectStep(data *WizardData) {
 	}
 
 	if len(projects) == 1 {
-		data.ProjectId = projects[0].Id
+		data.ProjectID = projects[0].ID
 		data.MainFormat = projects[0].MainFormat
 		fmt.Printf("You've got one project, \"%s\". Answer \"y\" to select this or \"n\" to create a new project: ", projects[0].Name)
 		var answer string
@@ -496,14 +496,14 @@ func selectProjectStep(data *WizardData) {
 			DisplayWizard(data, next(data), "")
 			return
 		} else {
-			data.ProjectId = ""
+			data.ProjectID = ""
 			data.MainFormat = ""
 			DisplayWizard(data, "newProject", "")
 			return
 		}
 	}
 	for counter, project := range projects {
-		fmt.Printf("%2d. %s (Id: %s)\n", counter+1, project.Name, project.Id)
+		fmt.Printf("%2d. %s (Id: %s)\n", counter+1, project.Name, project.ID)
 	}
 	fmt.Printf("%2d. Create new project\n", len(projects)+1)
 	fmt.Print("Select project: ")
@@ -521,7 +521,7 @@ func selectProjectStep(data *WizardData) {
 	}
 
 	selectedProject := projects[number-1]
-	data.ProjectId = selectedProject.Id
+	data.ProjectID = selectedProject.ID
 	data.MainFormat = selectedProject.MainFormat
 	DisplayWizard(data, next(data), "")
 }

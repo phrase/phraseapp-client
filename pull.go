@@ -46,7 +46,7 @@ type Targets []*Target
 
 type Target struct {
 	File          string      `yaml:"file,omitempty"`
-	ProjectId     string      `yaml:"project_id,omitempty"`
+	ProjectID     string      `yaml:"project_id,omitempty"`
 	AccessToken   string      `yaml:"access_token,omitempty"`
 	FileFormat    string      `yaml:"file_format,omitempty"`
 	Params        *PullParams `yaml:"params,omitempty"`
@@ -55,7 +55,7 @@ type Target struct {
 
 type PullParams struct {
 	FileFormat               string                  `yaml:"file_format,omitempty"`
-	LocaleId                 string                  `yaml:"locale_id,omitempty"`
+	LocaleID                 string                  `yaml:"locale_id,omitempty"`
 	ConvertEmoji             *bool                   `yaml:"convert_emoji,omitempty"`
 	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
 	IncludeEmptyTranslations *bool                   `yaml:"include_empty_translations,omitempty"`
@@ -73,9 +73,9 @@ func (t *Target) GetFormat() string {
 	return ""
 }
 
-func (t *Target) GetLocaleId() string {
+func (t *Target) GetLocaleID() string {
 	if t.Params != nil {
-		return t.Params.LocaleId
+		return t.Params.LocaleID
 	}
 	return ""
 }
@@ -97,12 +97,12 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		return err
 	}
 
-	target.RemoteLocales, err = RemoteLocales(client, target.ProjectId)
+	target.RemoteLocales, err = RemoteLocales(client, target.ProjectID)
 	if err != nil {
 		return err
 	}
 
-	localeFile := &LocaleFile{Id: target.GetLocaleId(), Tag: target.GetTag()}
+	localeFile := &LocaleFile{ID: target.GetLocaleID(), Tag: target.GetTag()}
 	localeToPathMapping, err := pathComponents.ExpandPathsWithLocale(target.RemoteLocales, localeFile)
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	if cmd.Token != "" {
 		token = cmd.Token
 	}
-	projectId := config.Phraseapp.ProjectId
+	projectId := config.Phraseapp.ProjectID
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
@@ -159,8 +159,8 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 		if target == nil {
 			continue
 		}
-		if target.ProjectId == "" {
-			target.ProjectId = projectId
+		if target.ProjectID == "" {
+			target.ProjectID = projectId
 		}
 		if target.AccessToken == "" {
 			target.AccessToken = token
@@ -182,18 +182,18 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 	downloadParams := target.setDownloadParams()
 
 	params := target.Params
-	localeId := ""
-	if params != nil && params.LocaleId != "" {
-		localeId = params.LocaleId
+	localeID := ""
+	if params != nil && params.LocaleID != "" {
+		localeID = params.LocaleID
 	} else {
-		localeId = localeFile.Id
+		localeID = localeFile.ID
 	}
 
 	if Debug {
 		fmt.Println("Target file pattern:", target.File)
 		fmt.Println("Actual file path", localeFile.Path)
-		fmt.Println("LocaleId", localeId)
-		fmt.Println("ProjectId", target.ProjectId)
+		fmt.Println("LocaleID", localeID)
+		fmt.Println("ProjectID", target.ProjectID)
 		fmt.Println("FileFormat", downloadParams.FileFormat)
 		fmt.Println("ConvertEmoji", downloadParams.ConvertEmoji)
 		fmt.Println("IncludeEmptyTranslations", downloadParams.IncludeEmptyTranslations)
@@ -202,7 +202,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		fmt.Println("FormatOptions", downloadParams.FormatOptions)
 	}
 
-	res, err := client.LocaleDownload(target.ProjectId, localeId, downloadParams)
+	res, err := client.LocaleDownload(target.ProjectID, localeID, downloadParams)
 	if err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 type PullConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
-		ProjectId   string `yaml:"project_id"`
+		ProjectID   string `yaml:"project_id"`
 		FileFormat  string `yaml:"file_format,omitempty"`
 		Pull        struct {
 			Targets Targets

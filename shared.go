@@ -15,7 +15,7 @@ var Debug bool
 
 type LocaleFiles []*LocaleFile
 type LocaleFile struct {
-	Path, Name, Id, RFC, Tag, FileFormat string
+	Path, Name, ID, RFC, Tag, FileFormat string
 	ExistsRemote                         bool
 }
 
@@ -57,7 +57,7 @@ func (pc *PathComponents) isValidLocale(locale *phraseapp.Locale) (bool, error) 
 	}
 
 	if pc.isLocaleCodeInPath() && (locale.Code == "") {
-		return false, fmt.Errorf("Locale code is not set for Locale with Id: %s but locale_code is used in file name", locale.Id)
+		return false, fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
 	}
 	return true, nil
 }
@@ -88,8 +88,8 @@ func (localeFile *LocaleFile) Message() string {
 		if localeFile.Name != "" {
 			str = fmt.Sprintf("%s Name: %s", str, localeFile.Name)
 		}
-		if localeFile.Id != "" {
-			str = fmt.Sprintf("%s Id: %s", str, localeFile.Id)
+		if localeFile.ID != "" {
+			str = fmt.Sprintf("%s Id: %s", str, localeFile.ID)
 		}
 		if localeFile.RFC != "" {
 			str = fmt.Sprintf("%s RFC5646: %s", str, localeFile.RFC)
@@ -110,7 +110,7 @@ func (localeFile *LocaleFile) Message() string {
 func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, localeFile *LocaleFile) (LocaleFiles, error) {
 	files := []*LocaleFile{}
 	for _, remoteLocale := range locales {
-		if localeFile.Id != "" && !(remoteLocale.Id == localeFile.Id || remoteLocale.Name == localeFile.Id) {
+		if localeFile.ID != "" && !(remoteLocale.ID == localeFile.ID || remoteLocale.Name == localeFile.ID) {
 			continue
 		}
 		valid, err := pc.isValidLocale(remoteLocale)
@@ -121,7 +121,7 @@ func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, loc
 			continue
 		}
 
-		localeFile := &LocaleFile{Name: remoteLocale.Name, Id: remoteLocale.Id, RFC: remoteLocale.Code, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
+		localeFile := &LocaleFile{Name: remoteLocale.Name, ID: remoteLocale.ID, RFC: remoteLocale.Code, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
 		absPath, err := pc.filePath(localeFile)
 		if err != nil {
 			return nil, err

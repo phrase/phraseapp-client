@@ -7,3 +7,5 @@
 *.iws
 /out/
 .idea_modules/
+
+phraseapp-client

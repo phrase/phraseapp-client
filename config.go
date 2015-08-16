@@ -154,7 +154,7 @@ func parseDefaults(yml string) (phraseapp.DefaultParams, error) {
 type CallArgs struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
-		ProjectId   string `yaml:"project_id"`
+		ProjectID   string `yaml:"project_id"`
 		Page        int
 		PerPage     int
 	}
@@ -171,7 +171,7 @@ func parseCallArgs(yml string) (map[string]string, error) {
 	m := make(map[string]string)
 
 	if callArgs != nil {
-		m["ProjectId"] = callArgs.Phraseapp.ProjectId
+		m["ProjectID"] = callArgs.Phraseapp.ProjectID
 		m["AccessToken"] = callArgs.Phraseapp.AccessToken
 	}
 

@@ -46,7 +46,7 @@ type Sources []*Source
 
 type Source struct {
 	File           string      `yaml:"file,omitempty"`
-	ProjectId      string      `yaml:"project_id,omitempty"`
+	ProjectID      string      `yaml:"project_id,omitempty"`
 	AccessToken    string      `yaml:"access_token,omitempty"`
 	FileFormat     string      `yaml:"file_format,omitempty"`
 	Params         *PushParams `yaml:"params,omitempty"`
@@ -57,7 +57,7 @@ type Source struct {
 
 type PushParams struct {
 	FileFormat   string `yaml:"file_format,omitempty"`
-	LocaleId     string `yaml:"locale_id,omitempty"`
+	LocaleID     string `yaml:"locale_id,omitempty"`
 	ConvertEmoji *bool  `yaml:"convert_emoji,omitempty"`
 	//FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
 	SkipUnverification *bool   `yaml:"skip_unverification,omitempty"`
@@ -66,9 +66,9 @@ type PushParams struct {
 	UpdateTranslations *bool   `yaml:"update_translations,omitempty"`
 }
 
-func (source *Source) GetLocaleId() string {
+func (source *Source) GetLocaleID() string {
 	if source.Params != nil {
-		return source.Params.LocaleId
+		return source.Params.LocaleID
 	}
 	return ""
 }
@@ -78,7 +78,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		return fmt.Errorf("file of source may not be empty")
 	}
 
-	remoteLocales, err := RemoteLocales(client, source.ProjectId)
+	remoteLocales, err := RemoteLocales(client, source.ProjectID)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		if !localeFile.ExistsRemote {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
-				localeFile.Id = localeDetails.Id
+				localeFile.ID = localeDetails.ID
 				localeFile.RFC = localeDetails.Code
 				localeFile.Name = localeDetails.Name
 			}
@@ -135,7 +135,7 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 		localeParams.Code = localeFile.RFC
 	}
 
-	localeDetails, err := client.LocaleCreate(source.ProjectId, localeParams)
+	localeDetails, err := client.LocaleCreate(source.ProjectID, localeParams)
 	if err != nil {
 		return nil, err
 	}
@@ -143,8 +143,8 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 }
 
 func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string {
-	if localeFile.RFC != "" && strings.Contains(source.GetLocaleId(), "<locale_code>") {
-		return strings.Replace(source.GetLocaleId(), "<locale_code>", localeFile.RFC, 1)
+	if localeFile.RFC != "" && strings.Contains(source.GetLocaleID(), "<locale_code>") {
+		return strings.Replace(source.GetLocaleID(), "<locale_code>", localeFile.RFC, 1)
 	}
 	return ""
 }
@@ -158,8 +158,8 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	if Debug {
 		fmt.Println("Source file pattern:", source.File)
 		fmt.Println("Actual File Location", uploadParams.File)
-		if uploadParams.LocaleId != nil {
-			fmt.Println("LocaleID/Name", *uploadParams.LocaleId)
+		if uploadParams.LocaleID != nil {
+			fmt.Println("LocaleID/Name", *uploadParams.LocaleID)
 		} else {
 			fmt.Println("LocaleID/Name", nil)
 		}
@@ -180,7 +180,7 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		//		fmt.Println("FormatOpts", uploadParams.FormatOptions)
 	}
 
-	aUpload, err := client.UploadCreate(source.ProjectId, uploadParams)
+	aUpload, err := client.UploadCreate(source.ProjectID, uploadParams)
 	if err != nil {
 		return err
 	}
@@ -256,7 +256,7 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 		lc.ExistsRemote = true
 		lc.RFC = locale.Code
 		lc.Name = locale.Name
-		lc.Id = locale.Id
+		lc.ID = locale.ID
 	}
 
 	absolutePath, err := filepath.Abs(path)
@@ -271,7 +271,7 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
 	for _, remote := range source.RemoteLocales {
-		if remote.Id == source.GetLocaleId() || remote.Name == source.GetLocaleId() {
+		if remote.ID == source.GetLocaleID() || remote.Name == source.GetLocaleID() {
 			return remote
 		}
 
@@ -364,7 +364,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	if cmd.Token != "" {
 		token = cmd.Token
 	}
-	projectId := config.Phraseapp.ProjectId
+	projectId := config.Phraseapp.ProjectID
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
@@ -378,8 +378,8 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 		if source == nil {
 			continue
 		}
-		if source.ProjectId == "" {
-			source.ProjectId = projectId
+		if source.ProjectID == "" {
+			source.ProjectID = projectId
 		}
 		if source.AccessToken == "" {
 			source.AccessToken = token
@@ -402,10 +402,10 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	uploadParams.File = localeFile.Path
 	uploadParams.FileFormat = &source.FileFormat
 
-	if localeFile.Id != "" {
-		uploadParams.LocaleId = &(localeFile.Id)
+	if localeFile.ID != "" {
+		uploadParams.LocaleID = &(localeFile.ID)
 	} else if localeFile.RFC != "" {
-		uploadParams.LocaleId = &(localeFile.RFC)
+		uploadParams.LocaleID = &(localeFile.RFC)
 	}
 
 	if localeFile.Tag != "" {
@@ -418,9 +418,9 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 
 	params := source.Params
 
-	localeId := params.LocaleId
-	if localeId != "" && !strings.Contains(localeId, "<locale_code>") {
-		uploadParams.LocaleId = &localeId
+	localeID := params.LocaleID
+	if localeID != "" && !strings.Contains(localeID, "<locale_code>") {
+		uploadParams.LocaleID = &localeID
 	}
 
 	format := params.FileFormat
@@ -464,7 +464,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 type PushConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
-		ProjectId   string `yaml:"project_id"`
+		ProjectID   string `yaml:"project_id"`
 		FileFormat  string `yaml:"file_format,omitempty"`
 		Push        struct {
 			Sources *Sources

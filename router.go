@@ -13,7 +13,7 @@ import (
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
 
-	projectId, _ := defaults["ProjectId"]
+	projectID, _ := defaults["ProjectID"]
 
 	r.Register("authorization/create", &AuthorizationCreate{}, "Create a new authorization.")
 
@@ -25,73 +25,73 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("authorizations/list", &AuthorizationsList{}, "List all your authorizations.")
 
-	r.Register("comment/create", &CommentCreate{ProjectId: projectId}, "Create a new comment for a key.")
+	r.Register("comment/create", &CommentCreate{ProjectID: projectID}, "Create a new comment for a key.")
 
-	r.Register("comment/delete", &CommentDelete{ProjectId: projectId}, "Delete an existing comment.")
+	r.Register("comment/delete", &CommentDelete{ProjectID: projectID}, "Delete an existing comment.")
 
-	r.Register("comment/mark/check", &CommentMarkCheck{ProjectId: projectId}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+	r.Register("comment/mark/check", &CommentMarkCheck{ProjectID: projectID}, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
 
-	r.Register("comment/mark/read", &CommentMarkRead{ProjectId: projectId}, "Mark a comment as read.")
+	r.Register("comment/mark/read", &CommentMarkRead{ProjectID: projectID}, "Mark a comment as read.")
 
-	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectId: projectId}, "Mark a comment as unread.")
+	r.Register("comment/mark/unread", &CommentMarkUnread{ProjectID: projectID}, "Mark a comment as unread.")
 
-	r.Register("comment/show", &CommentShow{ProjectId: projectId}, "Get details on a single comment.")
+	r.Register("comment/show", &CommentShow{ProjectID: projectID}, "Get details on a single comment.")
 
-	r.Register("comment/update", &CommentUpdate{ProjectId: projectId}, "Update an existing comment.")
+	r.Register("comment/update", &CommentUpdate{ProjectID: projectID}, "Update an existing comment.")
 
-	r.Register("comments/list", &CommentsList{ProjectId: projectId}, "List all comments for a key.")
+	r.Register("comments/list", &CommentsList{ProjectID: projectID}, "List all comments for a key.")
 
-	r.Register("exclude_rule/create", &ExcludeRuleCreate{ProjectId: projectId}, "Create a new blacklisted key.")
+	r.Register("exclude_rule/create", &ExcludeRuleCreate{ProjectID: projectID}, "Create a new blacklisted key.")
 
-	r.Register("exclude_rule/delete", &ExcludeRuleDelete{ProjectId: projectId}, "Delete an existing blacklisted key.")
+	r.Register("exclude_rule/delete", &ExcludeRuleDelete{ProjectID: projectID}, "Delete an existing blacklisted key.")
 
-	r.Register("exclude_rule/show", &ExcludeRuleShow{ProjectId: projectId}, "Get details on a single blacklisted key for a given project.")
+	r.Register("exclude_rule/show", &ExcludeRuleShow{ProjectID: projectID}, "Get details on a single blacklisted key for a given project.")
 
-	r.Register("exclude_rule/update", &ExcludeRuleUpdate{ProjectId: projectId}, "Update an existing blacklisted key.")
+	r.Register("exclude_rule/update", &ExcludeRuleUpdate{ProjectID: projectID}, "Update an existing blacklisted key.")
 
-	r.Register("exclude_rules/index", &ExcludeRulesIndex{ProjectId: projectId}, "List all blacklisted keys for the given project.")
+	r.Register("exclude_rules/index", &ExcludeRulesIndex{ProjectID: projectID}, "List all blacklisted keys for the given project.")
 
 	r.Register("formats/list", &FormatsList{}, "Get a handy list of all localization file formats supported in PhraseApp.")
 
-	r.Register("key/create", &KeyCreate{ProjectId: projectId}, "Create a new key.")
+	r.Register("key/create", &KeyCreate{ProjectID: projectID}, "Create a new key.")
 
-	r.Register("key/delete", &KeyDelete{ProjectId: projectId}, "Delete an existing key.")
+	r.Register("key/delete", &KeyDelete{ProjectID: projectID}, "Delete an existing key.")
 
-	r.Register("key/show", &KeyShow{ProjectId: projectId}, "Get details on a single key for a given project.")
+	r.Register("key/show", &KeyShow{ProjectID: projectID}, "Get details on a single key for a given project.")
 
-	r.Register("key/update", &KeyUpdate{ProjectId: projectId}, "Update an existing key.")
+	r.Register("key/update", &KeyUpdate{ProjectID: projectID}, "Update an existing key.")
 
-	r.Register("keys/delete", &KeysDelete{ProjectId: projectId}, "Delete all keys matching query. Same constraints as list.")
+	r.Register("keys/delete", &KeysDelete{ProjectID: projectID}, "Delete all keys matching query. Same constraints as list.")
 
-	r.Register("keys/list", &KeysList{ProjectId: projectId}, "List all keys for the given project. Alternatively you can POST requests to /search.")
+	r.Register("keys/list", &KeysList{ProjectID: projectID}, "List all keys for the given project. Alternatively you can POST requests to /search.")
 
-	r.Register("keys/search", &KeysSearch{ProjectId: projectId}, "Search keys for the given project matching query.")
+	r.Register("keys/search", &KeysSearch{ProjectID: projectID}, "Search keys for the given project matching query.")
 
-	r.Register("keys/tag", &KeysTag{ProjectId: projectId}, "Tags all keys matching query. Same constraints as list.")
+	r.Register("keys/tag", &KeysTag{ProjectID: projectID}, "Tags all keys matching query. Same constraints as list.")
 
-	r.Register("keys/untag", &KeysUntag{ProjectId: projectId}, "Removes specified tags from keys matching query.")
+	r.Register("keys/untag", &KeysUntag{ProjectID: projectID}, "Removes specified tags from keys matching query.")
 
-	r.Register("locale/create", &LocaleCreate{ProjectId: projectId}, "Create a new locale.")
+	r.Register("locale/create", &LocaleCreate{ProjectID: projectID}, "Create a new locale.")
 
-	r.Register("locale/delete", &LocaleDelete{ProjectId: projectId}, "Delete an existing locale.")
+	r.Register("locale/delete", &LocaleDelete{ProjectID: projectID}, "Delete an existing locale.")
 
-	r.Register("locale/download", &LocaleDownload{ProjectId: projectId}, "Download a locale in a specific file format.")
+	r.Register("locale/download", &LocaleDownload{ProjectID: projectID}, "Download a locale in a specific file format.")
 
-	r.Register("locale/show", &LocaleShow{ProjectId: projectId}, "Get details on a single locale for a given project.")
+	r.Register("locale/show", &LocaleShow{ProjectID: projectID}, "Get details on a single locale for a given project.")
 
-	r.Register("locale/update", &LocaleUpdate{ProjectId: projectId}, "Update an existing locale.")
+	r.Register("locale/update", &LocaleUpdate{ProjectID: projectID}, "Update an existing locale.")
 
-	r.Register("locales/list", &LocalesList{ProjectId: projectId}, "List all locales for the given project.")
+	r.Register("locales/list", &LocalesList{ProjectID: projectID}, "List all locales for the given project.")
 
-	r.Register("order/confirm", &OrderConfirm{ProjectId: projectId}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+	r.Register("order/confirm", &OrderConfirm{ProjectID: projectID}, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
 
-	r.Register("order/create", &OrderCreate{ProjectId: projectId}, "Create a new order. Access token scope must include <code>orders.create</code>.")
+	r.Register("order/create", &OrderCreate{ProjectID: projectID}, "Create a new order. Access token scope must include <code>orders.create</code>.")
 
-	r.Register("order/delete", &OrderDelete{ProjectId: projectId}, "Cancel an existing order. Must not yet be confirmed.")
+	r.Register("order/delete", &OrderDelete{ProjectID: projectID}, "Cancel an existing order. Must not yet be confirmed.")
 
-	r.Register("order/show", &OrderShow{ProjectId: projectId}, "Get details on a single order.")
+	r.Register("order/show", &OrderShow{ProjectID: projectID}, "Get details on a single order.")
 
-	r.Register("orders/list", &OrdersList{ProjectId: projectId}, "List all orders for the given project.")
+	r.Register("orders/list", &OrdersList{ProjectID: projectID}, "List all orders for the given project.")
 
 	r.Register("project/create", &ProjectCreate{}, "Create a new project.")
 
@@ -105,55 +105,55 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("show/user", &ShowUser{}, "Show details for current User.")
 
-	r.Register("styleguide/create", &StyleguideCreate{ProjectId: projectId}, "Create a new style guide.")
+	r.Register("styleguide/create", &StyleguideCreate{ProjectID: projectID}, "Create a new style guide.")
 
-	r.Register("styleguide/delete", &StyleguideDelete{ProjectId: projectId}, "Delete an existing style guide.")
+	r.Register("styleguide/delete", &StyleguideDelete{ProjectID: projectID}, "Delete an existing style guide.")
 
-	r.Register("styleguide/show", &StyleguideShow{ProjectId: projectId}, "Get details on a single style guide.")
+	r.Register("styleguide/show", &StyleguideShow{ProjectID: projectID}, "Get details on a single style guide.")
 
-	r.Register("styleguide/update", &StyleguideUpdate{ProjectId: projectId}, "Update an existing style guide.")
+	r.Register("styleguide/update", &StyleguideUpdate{ProjectID: projectID}, "Update an existing style guide.")
 
-	r.Register("styleguides/list", &StyleguidesList{ProjectId: projectId}, "List all styleguides for the given project.")
+	r.Register("styleguides/list", &StyleguidesList{ProjectID: projectID}, "List all styleguides for the given project.")
 
-	r.Register("tag/create", &TagCreate{ProjectId: projectId}, "Create a new tag.")
+	r.Register("tag/create", &TagCreate{ProjectID: projectID}, "Create a new tag.")
 
-	r.Register("tag/delete", &TagDelete{ProjectId: projectId}, "Delete an existing tag.")
+	r.Register("tag/delete", &TagDelete{ProjectID: projectID}, "Delete an existing tag.")
 
-	r.Register("tag/show", &TagShow{ProjectId: projectId}, "Get details and progress information on a single tag for a given project.")
+	r.Register("tag/show", &TagShow{ProjectID: projectID}, "Get details and progress information on a single tag for a given project.")
 
-	r.Register("tags/list", &TagsList{ProjectId: projectId}, "List all tags for the given project.")
+	r.Register("tags/list", &TagsList{ProjectID: projectID}, "List all tags for the given project.")
 
-	r.Register("translation/create", &TranslationCreate{ProjectId: projectId}, "Create a translation.")
+	r.Register("translation/create", &TranslationCreate{ProjectID: projectID}, "Create a translation.")
 
-	r.Register("translation/machine_translate", &TranslationMachineTranslate{ProjectId: projectId}, "Update a translation with machine translation")
+	r.Register("translation/machine_translate", &TranslationMachineTranslate{ProjectID: projectID}, "Update a translation with machine translation")
 
-	r.Register("translation/show", &TranslationShow{ProjectId: projectId}, "Get details on a single translation.")
+	r.Register("translation/show", &TranslationShow{ProjectID: projectID}, "Get details on a single translation.")
 
-	r.Register("translation/update", &TranslationUpdate{ProjectId: projectId}, "Update an existing translation.")
+	r.Register("translation/update", &TranslationUpdate{ProjectID: projectID}, "Update an existing translation.")
 
-	r.Register("translations/by_key", &TranslationsByKey{ProjectId: projectId}, "List translations for a specific key.")
+	r.Register("translations/by_key", &TranslationsByKey{ProjectID: projectID}, "List translations for a specific key.")
 
-	r.Register("translations/by_locale", &TranslationsByLocale{ProjectId: projectId}, "List translations for a specific locale.")
+	r.Register("translations/by_locale", &TranslationsByLocale{ProjectID: projectID}, "List translations for a specific locale.")
 
-	r.Register("translations/exclude", &TranslationsExclude{ProjectId: projectId}, "Exclude translations matching query from locale export.")
+	r.Register("translations/exclude", &TranslationsExclude{ProjectID: projectID}, "Exclude translations matching query from locale export.")
 
-	r.Register("translations/include", &TranslationsInclude{ProjectId: projectId}, "Include translations matching query in locale export.")
+	r.Register("translations/include", &TranslationsInclude{ProjectID: projectID}, "Include translations matching query in locale export.")
 
-	r.Register("translations/list", &TranslationsList{ProjectId: projectId}, "List translations for the given project. Alternatively, POST request to /search")
+	r.Register("translations/list", &TranslationsList{ProjectID: projectID}, "List translations for the given project. Alternatively, POST request to /search")
 
-	r.Register("translations/search", &TranslationsSearch{ProjectId: projectId}, "List translations for the given project if you exceed GET request limitations on translations list.")
+	r.Register("translations/search", &TranslationsSearch{ProjectID: projectID}, "List translations for the given project if you exceed GET request limitations on translations list.")
 
-	r.Register("translations/unverify", &TranslationsUnverify{ProjectId: projectId}, "Mark translations matching query as unverified.")
+	r.Register("translations/unverify", &TranslationsUnverify{ProjectID: projectID}, "Mark translations matching query as unverified.")
 
-	r.Register("translations/verify", &TranslationsVerify{ProjectId: projectId}, "Verify translations matching query.")
+	r.Register("translations/verify", &TranslationsVerify{ProjectID: projectID}, "Verify translations matching query.")
 
-	r.Register("upload/create", &UploadCreate{ProjectId: projectId}, "Upload a new language file. Creates necessary resources in your project.")
+	r.Register("upload/create", &UploadCreate{ProjectID: projectID}, "Upload a new language file. Creates necessary resources in your project.")
 
-	r.Register("upload/show", &UploadShow{ProjectId: projectId}, "View details and summary for a single upload.")
+	r.Register("upload/show", &UploadShow{ProjectID: projectID}, "View details and summary for a single upload.")
 
-	r.Register("version/show", &VersionShow{ProjectId: projectId}, "Get details on a single version.")
+	r.Register("version/show", &VersionShow{ProjectID: projectID}, "Get details on a single version.")
 
-	r.Register("versions/list", &VersionsList{ProjectId: projectId}, "List all versions for the given translation.")
+	r.Register("versions/list", &VersionsList{ProjectID: projectID}, "List all versions for the given translation.")
 
 	r.Register("pull", &PullCommand{}, "Download locales from your PhraseApp project.")
 
@@ -167,10 +167,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-15 18:16:11.588109497 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-16 17:15:01.581475159 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "9572900b3804cebbe97e16355b24ea2f1e52d975")
-	fmt.Println("PhraseApp Client revision:", "eeda6255361fc76cb306baee14041cc39a39ef34")
+	fmt.Println("PhraseApp API Client revision:", "7f3d515c867319d03348ac04e4a7732894986ec4")
+	fmt.Println("PhraseApp Client revision:", "bf51528f5db94a5666b63114b5c99e5a82bf6d94")
 	fmt.Println("PhraseApp Docs revision:", "8f1d9ef516480148c220f54bd26ed2dd8d947857")
 	return nil
 }
@@ -237,7 +237,7 @@ func (cmd *AuthorizationCreate) Run() error {
 type AuthorizationDelete struct {
 	Credentials
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationDelete) Run() error {
@@ -259,7 +259,7 @@ func (cmd *AuthorizationDelete) Run() error {
 		return err
 	}
 
-	err = client.AuthorizationDelete(cmd.Id)
+	err = client.AuthorizationDelete(cmd.ID)
 
 	if err != nil {
 		return err
@@ -271,7 +271,7 @@ func (cmd *AuthorizationDelete) Run() error {
 type AuthorizationShow struct {
 	Credentials
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationShow) Run() error {
@@ -293,7 +293,7 @@ func (cmd *AuthorizationShow) Run() error {
 		return err
 	}
 
-	res, err := client.AuthorizationShow(cmd.Id)
+	res, err := client.AuthorizationShow(cmd.ID)
 
 	if err != nil {
 		return err
@@ -309,7 +309,7 @@ type AuthorizationUpdate struct {
 	Note      string     `cli:"opt --note"`
 	Scopes    []string   `cli:"opt --scopes"`
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *AuthorizationUpdate) Run() error {
@@ -354,7 +354,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.AuthorizationUpdate(cmd.Id, params)
+	res, err := client.AuthorizationUpdate(cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -403,8 +403,8 @@ type CommentCreate struct {
 
 	Message string `cli:"opt --message"`
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
 }
 
 func (cmd *CommentCreate) Run() error {
@@ -441,7 +441,7 @@ func (cmd *CommentCreate) Run() error {
 		return err
 	}
 
-	res, err := client.CommentCreate(cmd.ProjectId, cmd.KeyId, params)
+	res, err := client.CommentCreate(cmd.ProjectID, cmd.KeyID, params)
 
 	if err != nil {
 		return err
@@ -453,9 +453,9 @@ func (cmd *CommentCreate) Run() error {
 type CommentDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentDelete) Run() error {
@@ -477,7 +477,7 @@ func (cmd *CommentDelete) Run() error {
 		return err
 	}
 
-	err = client.CommentDelete(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentDelete(cmd.ProjectID, cmd.KeyID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -489,9 +489,9 @@ func (cmd *CommentDelete) Run() error {
 type CommentMarkCheck struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentMarkCheck) Run() error {
@@ -513,7 +513,7 @@ func (cmd *CommentMarkCheck) Run() error {
 		return err
 	}
 
-	err = client.CommentMarkCheck(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkCheck(cmd.ProjectID, cmd.KeyID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -525,9 +525,9 @@ func (cmd *CommentMarkCheck) Run() error {
 type CommentMarkRead struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentMarkRead) Run() error {
@@ -549,7 +549,7 @@ func (cmd *CommentMarkRead) Run() error {
 		return err
 	}
 
-	err = client.CommentMarkRead(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkRead(cmd.ProjectID, cmd.KeyID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -561,9 +561,9 @@ func (cmd *CommentMarkRead) Run() error {
 type CommentMarkUnread struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentMarkUnread) Run() error {
@@ -585,7 +585,7 @@ func (cmd *CommentMarkUnread) Run() error {
 		return err
 	}
 
-	err = client.CommentMarkUnread(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	err = client.CommentMarkUnread(cmd.ProjectID, cmd.KeyID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -597,9 +597,9 @@ func (cmd *CommentMarkUnread) Run() error {
 type CommentShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentShow) Run() error {
@@ -621,7 +621,7 @@ func (cmd *CommentShow) Run() error {
 		return err
 	}
 
-	res, err := client.CommentShow(cmd.ProjectId, cmd.KeyId, cmd.Id)
+	res, err := client.CommentShow(cmd.ProjectID, cmd.KeyID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -635,9 +635,9 @@ type CommentUpdate struct {
 
 	Message string `cli:"opt --message"`
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *CommentUpdate) Run() error {
@@ -674,7 +674,7 @@ func (cmd *CommentUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.CommentUpdate(cmd.ProjectId, cmd.KeyId, cmd.Id, params)
+	res, err := client.CommentUpdate(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -689,8 +689,8 @@ type CommentsList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
 }
 
 func (cmd *CommentsList) Run() error {
@@ -712,7 +712,7 @@ func (cmd *CommentsList) Run() error {
 		return err
 	}
 
-	res, err := client.CommentsList(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage)
+	res, err := client.CommentsList(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -726,7 +726,7 @@ type ExcludeRuleCreate struct {
 
 	Name string `cli:"opt --name"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *ExcludeRuleCreate) Run() error {
@@ -763,7 +763,7 @@ func (cmd *ExcludeRuleCreate) Run() error {
 		return err
 	}
 
-	res, err := client.ExcludeRuleCreate(cmd.ProjectId, params)
+	res, err := client.ExcludeRuleCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -775,8 +775,8 @@ func (cmd *ExcludeRuleCreate) Run() error {
 type ExcludeRuleDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *ExcludeRuleDelete) Run() error {
@@ -798,7 +798,7 @@ func (cmd *ExcludeRuleDelete) Run() error {
 		return err
 	}
 
-	err = client.ExcludeRuleDelete(cmd.ProjectId, cmd.Id)
+	err = client.ExcludeRuleDelete(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -810,8 +810,8 @@ func (cmd *ExcludeRuleDelete) Run() error {
 type ExcludeRuleShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *ExcludeRuleShow) Run() error {
@@ -833,7 +833,7 @@ func (cmd *ExcludeRuleShow) Run() error {
 		return err
 	}
 
-	res, err := client.ExcludeRuleShow(cmd.ProjectId, cmd.Id)
+	res, err := client.ExcludeRuleShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -847,8 +847,8 @@ type ExcludeRuleUpdate struct {
 
 	Name string `cli:"opt --name"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *ExcludeRuleUpdate) Run() error {
@@ -885,7 +885,7 @@ func (cmd *ExcludeRuleUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.ExcludeRuleUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.ExcludeRuleUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -900,7 +900,7 @@ type ExcludeRulesIndex struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *ExcludeRulesIndex) Run() error {
@@ -922,7 +922,7 @@ func (cmd *ExcludeRulesIndex) Run() error {
 		return err
 	}
 
-	res, err := client.ExcludeRulesIndex(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.ExcludeRulesIndex(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -984,7 +984,7 @@ type KeyCreate struct {
 	Unformatted           *bool   `cli:"opt --unformatted"`
 	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeyCreate) Run() error {
@@ -1073,7 +1073,7 @@ func (cmd *KeyCreate) Run() error {
 		return err
 	}
 
-	res, err := client.KeyCreate(cmd.ProjectId, params)
+	res, err := client.KeyCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -1085,8 +1085,8 @@ func (cmd *KeyCreate) Run() error {
 type KeyDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *KeyDelete) Run() error {
@@ -1108,7 +1108,7 @@ func (cmd *KeyDelete) Run() error {
 		return err
 	}
 
-	err = client.KeyDelete(cmd.ProjectId, cmd.Id)
+	err = client.KeyDelete(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1120,8 +1120,8 @@ func (cmd *KeyDelete) Run() error {
 type KeyShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *KeyShow) Run() error {
@@ -1143,7 +1143,7 @@ func (cmd *KeyShow) Run() error {
 		return err
 	}
 
-	res, err := client.KeyShow(cmd.ProjectId, cmd.Id)
+	res, err := client.KeyShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1170,8 +1170,8 @@ type KeyUpdate struct {
 	Unformatted           *bool   `cli:"opt --unformatted"`
 	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *KeyUpdate) Run() error {
@@ -1260,7 +1260,7 @@ func (cmd *KeyUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.KeyUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.KeyUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1272,10 +1272,10 @@ func (cmd *KeyUpdate) Run() error {
 type KeysDelete struct {
 	Credentials
 
-	LocaleId *string `cli:"opt --locale-id"`
+	LocaleID *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeysDelete) Run() error {
@@ -1297,8 +1297,8 @@ func (cmd *KeysDelete) Run() error {
 		}
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.Q != nil {
@@ -1316,7 +1316,7 @@ func (cmd *KeysDelete) Run() error {
 		return err
 	}
 
-	res, err := client.KeysDelete(cmd.ProjectId, params)
+	res, err := client.KeysDelete(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -1328,7 +1328,7 @@ func (cmd *KeysDelete) Run() error {
 type KeysList struct {
 	Credentials
 
-	LocaleId *string `cli:"opt --locale-id"`
+	LocaleID *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
 	Q        *string `cli:"opt --query"`
 	Sort     *string `cli:"opt --sort"`
@@ -1336,7 +1336,7 @@ type KeysList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeysList) Run() error {
@@ -1358,8 +1358,8 @@ func (cmd *KeysList) Run() error {
 		}
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.Order != nil {
@@ -1385,7 +1385,7 @@ func (cmd *KeysList) Run() error {
 		return err
 	}
 
-	res, err := client.KeysList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.KeysList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -1397,7 +1397,7 @@ func (cmd *KeysList) Run() error {
 type KeysSearch struct {
 	Credentials
 
-	LocaleId *string `cli:"opt --locale-id"`
+	LocaleID *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
 	Q        *string `cli:"opt --query"`
 	Sort     *string `cli:"opt --sort"`
@@ -1405,7 +1405,7 @@ type KeysSearch struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeysSearch) Run() error {
@@ -1427,8 +1427,8 @@ func (cmd *KeysSearch) Run() error {
 		}
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.Order != nil {
@@ -1454,7 +1454,7 @@ func (cmd *KeysSearch) Run() error {
 		return err
 	}
 
-	res, err := client.KeysSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.KeysSearch(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -1466,11 +1466,11 @@ func (cmd *KeysSearch) Run() error {
 type KeysTag struct {
 	Credentials
 
-	LocaleId *string `cli:"opt --locale-id"`
+	LocaleID *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
 	Tags     string  `cli:"opt --tags"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeysTag) Run() error {
@@ -1492,8 +1492,8 @@ func (cmd *KeysTag) Run() error {
 		}
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.Q != nil {
@@ -1515,7 +1515,7 @@ func (cmd *KeysTag) Run() error {
 		return err
 	}
 
-	res, err := client.KeysTag(cmd.ProjectId, params)
+	res, err := client.KeysTag(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -1527,11 +1527,11 @@ func (cmd *KeysTag) Run() error {
 type KeysUntag struct {
 	Credentials
 
-	LocaleId *string `cli:"opt --locale-id"`
+	LocaleID *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query"`
 	Tags     string  `cli:"opt --tags"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *KeysUntag) Run() error {
@@ -1553,8 +1553,8 @@ func (cmd *KeysUntag) Run() error {
 		}
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.Q != nil {
@@ -1576,7 +1576,7 @@ func (cmd *KeysUntag) Run() error {
 		return err
 	}
 
-	res, err := client.KeysUntag(cmd.ProjectId, params)
+	res, err := client.KeysUntag(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -1593,9 +1593,9 @@ type LocaleCreate struct {
 	Main           *bool   `cli:"opt --main"`
 	Name           string  `cli:"opt --name"`
 	Rtl            *bool   `cli:"opt --rtl"`
-	SourceLocaleId *string `cli:"opt --source-locale-id"`
+	SourceLocaleID *string `cli:"opt --source-locale-id"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *LocaleCreate) Run() error {
@@ -1637,8 +1637,8 @@ func (cmd *LocaleCreate) Run() error {
 		params.Rtl = cmd.Rtl
 	}
 
-	if cmd.SourceLocaleId != nil {
-		params.SourceLocaleId = cmd.SourceLocaleId
+	if cmd.SourceLocaleID != nil {
+		params.SourceLocaleID = cmd.SourceLocaleID
 	}
 
 	defaultCredentials, e := ConfigDefaultCredentials()
@@ -1652,7 +1652,7 @@ func (cmd *LocaleCreate) Run() error {
 		return err
 	}
 
-	res, err := client.LocaleCreate(cmd.ProjectId, params)
+	res, err := client.LocaleCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -1664,8 +1664,8 @@ func (cmd *LocaleCreate) Run() error {
 type LocaleDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *LocaleDelete) Run() error {
@@ -1687,7 +1687,7 @@ func (cmd *LocaleDelete) Run() error {
 		return err
 	}
 
-	err = client.LocaleDelete(cmd.ProjectId, cmd.Id)
+	err = client.LocaleDelete(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1706,8 +1706,8 @@ type LocaleDownload struct {
 	KeepNotranslateTags      *bool                   `cli:"opt --keep-notranslate-tags"`
 	Tag                      *string                 `cli:"opt --tag"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *LocaleDownload) Run() error {
@@ -1764,7 +1764,7 @@ func (cmd *LocaleDownload) Run() error {
 		return err
 	}
 
-	res, err := client.LocaleDownload(cmd.ProjectId, cmd.Id, params)
+	res, err := client.LocaleDownload(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1777,8 +1777,8 @@ func (cmd *LocaleDownload) Run() error {
 type LocaleShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *LocaleShow) Run() error {
@@ -1800,7 +1800,7 @@ func (cmd *LocaleShow) Run() error {
 		return err
 	}
 
-	res, err := client.LocaleShow(cmd.ProjectId, cmd.Id)
+	res, err := client.LocaleShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1817,10 +1817,10 @@ type LocaleUpdate struct {
 	Main           *bool   `cli:"opt --main"`
 	Name           string  `cli:"opt --name"`
 	Rtl            *bool   `cli:"opt --rtl"`
-	SourceLocaleId *string `cli:"opt --source-locale-id"`
+	SourceLocaleID *string `cli:"opt --source-locale-id"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *LocaleUpdate) Run() error {
@@ -1862,8 +1862,8 @@ func (cmd *LocaleUpdate) Run() error {
 		params.Rtl = cmd.Rtl
 	}
 
-	if cmd.SourceLocaleId != nil {
-		params.SourceLocaleId = cmd.SourceLocaleId
+	if cmd.SourceLocaleID != nil {
+		params.SourceLocaleID = cmd.SourceLocaleID
 	}
 
 	defaultCredentials, e := ConfigDefaultCredentials()
@@ -1877,7 +1877,7 @@ func (cmd *LocaleUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.LocaleUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.LocaleUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1892,7 +1892,7 @@ type LocalesList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *LocalesList) Run() error {
@@ -1914,7 +1914,7 @@ func (cmd *LocalesList) Run() error {
 		return err
 	}
 
-	res, err := client.LocalesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -1926,8 +1926,8 @@ func (cmd *LocalesList) Run() error {
 type OrderConfirm struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *OrderConfirm) Run() error {
@@ -1949,7 +1949,7 @@ func (cmd *OrderConfirm) Run() error {
 		return err
 	}
 
-	res, err := client.OrderConfirm(cmd.ProjectId, cmd.Id)
+	res, err := client.OrderConfirm(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1968,14 +1968,14 @@ type OrderCreate struct {
 	Message                          *string  `cli:"opt --message"`
 	Priority                         *bool    `cli:"opt --priority"`
 	Quality                          *bool    `cli:"opt --quality"`
-	SourceLocaleId                   string   `cli:"opt --source-locale-id"`
-	StyleguideId                     *string  `cli:"opt --styleguide-id"`
+	SourceLocaleID                   string   `cli:"opt --source-locale-id"`
+	StyleguideID                     *string  `cli:"opt --styleguide-id"`
 	Tag                              *string  `cli:"opt --tag"`
-	TargetLocaleIds                  []string `cli:"opt --target-locale-ids"`
+	TargetLocaleIDs                  []string `cli:"opt --target-locale-ids"`
 	TranslationType                  string   `cli:"opt --translation-type"`
 	UnverifyTranslationsUponDelivery *bool    `cli:"opt --unverify-translations-upon-delivery"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *OrderCreate) Run() error {
@@ -2025,20 +2025,20 @@ func (cmd *OrderCreate) Run() error {
 		params.Quality = cmd.Quality
 	}
 
-	if cmd.SourceLocaleId != "" {
-		params.SourceLocaleId = cmd.SourceLocaleId
+	if cmd.SourceLocaleID != "" {
+		params.SourceLocaleID = cmd.SourceLocaleID
 	}
 
-	if cmd.StyleguideId != nil {
-		params.StyleguideId = cmd.StyleguideId
+	if cmd.StyleguideID != nil {
+		params.StyleguideID = cmd.StyleguideID
 	}
 
 	if cmd.Tag != nil {
 		params.Tag = cmd.Tag
 	}
 
-	if cmd.TargetLocaleIds != nil {
-		params.TargetLocaleIds = cmd.TargetLocaleIds
+	if cmd.TargetLocaleIDs != nil {
+		params.TargetLocaleIDs = cmd.TargetLocaleIDs
 	}
 
 	if cmd.TranslationType != "" {
@@ -2060,7 +2060,7 @@ func (cmd *OrderCreate) Run() error {
 		return err
 	}
 
-	res, err := client.OrderCreate(cmd.ProjectId, params)
+	res, err := client.OrderCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -2072,8 +2072,8 @@ func (cmd *OrderCreate) Run() error {
 type OrderDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *OrderDelete) Run() error {
@@ -2095,7 +2095,7 @@ func (cmd *OrderDelete) Run() error {
 		return err
 	}
 
-	err = client.OrderDelete(cmd.ProjectId, cmd.Id)
+	err = client.OrderDelete(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -2107,8 +2107,8 @@ func (cmd *OrderDelete) Run() error {
 type OrderShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *OrderShow) Run() error {
@@ -2130,7 +2130,7 @@ func (cmd *OrderShow) Run() error {
 		return err
 	}
 
-	res, err := client.OrderShow(cmd.ProjectId, cmd.Id)
+	res, err := client.OrderShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -2145,7 +2145,7 @@ type OrdersList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *OrdersList) Run() error {
@@ -2167,7 +2167,7 @@ func (cmd *OrdersList) Run() error {
 		return err
 	}
 
-	res, err := client.OrdersList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.OrdersList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2233,7 +2233,7 @@ func (cmd *ProjectCreate) Run() error {
 type ProjectDelete struct {
 	Credentials
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *ProjectDelete) Run() error {
@@ -2255,7 +2255,7 @@ func (cmd *ProjectDelete) Run() error {
 		return err
 	}
 
-	err = client.ProjectDelete(cmd.Id)
+	err = client.ProjectDelete(cmd.ID)
 
 	if err != nil {
 		return err
@@ -2267,7 +2267,7 @@ func (cmd *ProjectDelete) Run() error {
 type ProjectShow struct {
 	Credentials
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *ProjectShow) Run() error {
@@ -2289,7 +2289,7 @@ func (cmd *ProjectShow) Run() error {
 		return err
 	}
 
-	res, err := client.ProjectShow(cmd.Id)
+	res, err := client.ProjectShow(cmd.ID)
 
 	if err != nil {
 		return err
@@ -2304,7 +2304,7 @@ type ProjectUpdate struct {
 	Name                    string `cli:"opt --name"`
 	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
 
-	Id string `cli:"arg required"`
+	ID string `cli:"arg required"`
 }
 
 func (cmd *ProjectUpdate) Run() error {
@@ -2345,7 +2345,7 @@ func (cmd *ProjectUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.ProjectUpdate(cmd.Id, params)
+	res, err := client.ProjectUpdate(cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2438,7 +2438,7 @@ type StyleguideCreate struct {
 	Title              string  `cli:"opt --title"`
 	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *StyleguideCreate) Run() error {
@@ -2523,7 +2523,7 @@ func (cmd *StyleguideCreate) Run() error {
 		return err
 	}
 
-	res, err := client.StyleguideCreate(cmd.ProjectId, params)
+	res, err := client.StyleguideCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -2535,8 +2535,8 @@ func (cmd *StyleguideCreate) Run() error {
 type StyleguideDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *StyleguideDelete) Run() error {
@@ -2558,7 +2558,7 @@ func (cmd *StyleguideDelete) Run() error {
 		return err
 	}
 
-	err = client.StyleguideDelete(cmd.ProjectId, cmd.Id)
+	err = client.StyleguideDelete(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -2570,8 +2570,8 @@ func (cmd *StyleguideDelete) Run() error {
 type StyleguideShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *StyleguideShow) Run() error {
@@ -2593,7 +2593,7 @@ func (cmd *StyleguideShow) Run() error {
 		return err
 	}
 
-	res, err := client.StyleguideShow(cmd.ProjectId, cmd.Id)
+	res, err := client.StyleguideShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -2619,8 +2619,8 @@ type StyleguideUpdate struct {
 	Title              string  `cli:"opt --title"`
 	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *StyleguideUpdate) Run() error {
@@ -2705,7 +2705,7 @@ func (cmd *StyleguideUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.StyleguideUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.StyleguideUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2720,7 +2720,7 @@ type StyleguidesList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *StyleguidesList) Run() error {
@@ -2742,7 +2742,7 @@ func (cmd *StyleguidesList) Run() error {
 		return err
 	}
 
-	res, err := client.StyleguidesList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.StyleguidesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2756,7 +2756,7 @@ type TagCreate struct {
 
 	Name string `cli:"opt --name"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TagCreate) Run() error {
@@ -2793,7 +2793,7 @@ func (cmd *TagCreate) Run() error {
 		return err
 	}
 
-	res, err := client.TagCreate(cmd.ProjectId, params)
+	res, err := client.TagCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -2805,7 +2805,7 @@ func (cmd *TagCreate) Run() error {
 type TagDelete struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
 }
 
@@ -2828,7 +2828,7 @@ func (cmd *TagDelete) Run() error {
 		return err
 	}
 
-	err = client.TagDelete(cmd.ProjectId, cmd.Name)
+	err = client.TagDelete(cmd.ProjectID, cmd.Name)
 
 	if err != nil {
 		return err
@@ -2840,7 +2840,7 @@ func (cmd *TagDelete) Run() error {
 type TagShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
 }
 
@@ -2863,7 +2863,7 @@ func (cmd *TagShow) Run() error {
 		return err
 	}
 
-	res, err := client.TagShow(cmd.ProjectId, cmd.Name)
+	res, err := client.TagShow(cmd.ProjectID, cmd.Name)
 
 	if err != nil {
 		return err
@@ -2878,7 +2878,7 @@ type TagsList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TagsList) Run() error {
@@ -2900,7 +2900,7 @@ func (cmd *TagsList) Run() error {
 		return err
 	}
 
-	res, err := client.TagsList(cmd.ProjectId, cmd.Page, cmd.PerPage)
+	res, err := client.TagsList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -2914,12 +2914,12 @@ type TranslationCreate struct {
 
 	Content      string  `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
-	KeyId        string  `cli:"opt --key-id"`
-	LocaleId     string  `cli:"opt --locale-id"`
+	KeyID        string  `cli:"opt --key-id"`
+	LocaleID     string  `cli:"opt --locale-id"`
 	PluralSuffix *string `cli:"opt --plural-suffix"`
 	Unverified   *bool   `cli:"opt --unverified"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationCreate) Run() error {
@@ -2949,12 +2949,12 @@ func (cmd *TranslationCreate) Run() error {
 		params.Excluded = cmd.Excluded
 	}
 
-	if cmd.KeyId != "" {
-		params.KeyId = cmd.KeyId
+	if cmd.KeyID != "" {
+		params.KeyID = cmd.KeyID
 	}
 
-	if cmd.LocaleId != "" {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != "" {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.PluralSuffix != nil {
@@ -2976,7 +2976,7 @@ func (cmd *TranslationCreate) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationCreate(cmd.ProjectId, params)
+	res, err := client.TranslationCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -2988,8 +2988,8 @@ func (cmd *TranslationCreate) Run() error {
 type TranslationMachineTranslate struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *TranslationMachineTranslate) Run() error {
@@ -3011,7 +3011,7 @@ func (cmd *TranslationMachineTranslate) Run() error {
 		return err
 	}
 
-	err = client.TranslationMachineTranslate(cmd.ProjectId, cmd.Id)
+	err = client.TranslationMachineTranslate(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -3023,8 +3023,8 @@ func (cmd *TranslationMachineTranslate) Run() error {
 type TranslationShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *TranslationShow) Run() error {
@@ -3046,7 +3046,7 @@ func (cmd *TranslationShow) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationShow(cmd.ProjectId, cmd.Id)
+	res, err := client.TranslationShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -3063,8 +3063,8 @@ type TranslationUpdate struct {
 	PluralSuffix *string `cli:"opt --plural-suffix"`
 	Unverified   *bool   `cli:"opt --unverified"`
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *TranslationUpdate) Run() error {
@@ -3113,7 +3113,7 @@ func (cmd *TranslationUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationUpdate(cmd.ProjectId, cmd.Id, params)
+	res, err := client.TranslationUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3132,8 +3132,8 @@ type TranslationsByKey struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
-	KeyId     string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	KeyID     string `cli:"arg required"`
 }
 
 func (cmd *TranslationsByKey) Run() error {
@@ -3178,7 +3178,7 @@ func (cmd *TranslationsByKey) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsByKey(cmd.ProjectId, cmd.KeyId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsByKey(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3197,8 +3197,8 @@ type TranslationsByLocale struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
-	LocaleId  string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	LocaleID  string `cli:"arg required"`
 }
 
 func (cmd *TranslationsByLocale) Run() error {
@@ -3243,7 +3243,7 @@ func (cmd *TranslationsByLocale) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsByLocale(cmd.ProjectId, cmd.LocaleId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsByLocale(cmd.ProjectID, cmd.LocaleID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3259,7 +3259,7 @@ type TranslationsExclude struct {
 	Q     *string `cli:"opt --query"`
 	Sort  *string `cli:"opt --sort"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsExclude) Run() error {
@@ -3304,7 +3304,7 @@ func (cmd *TranslationsExclude) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsExclude(cmd.ProjectId, params)
+	res, err := client.TranslationsExclude(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -3320,7 +3320,7 @@ type TranslationsInclude struct {
 	Q     *string `cli:"opt --query"`
 	Sort  *string `cli:"opt --sort"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsInclude) Run() error {
@@ -3365,7 +3365,7 @@ func (cmd *TranslationsInclude) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsInclude(cmd.ProjectId, params)
+	res, err := client.TranslationsInclude(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -3384,7 +3384,7 @@ type TranslationsList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsList) Run() error {
@@ -3429,7 +3429,7 @@ func (cmd *TranslationsList) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsList(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3448,7 +3448,7 @@ type TranslationsSearch struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsSearch) Run() error {
@@ -3493,7 +3493,7 @@ func (cmd *TranslationsSearch) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsSearch(cmd.ProjectId, cmd.Page, cmd.PerPage, params)
+	res, err := client.TranslationsSearch(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -3509,7 +3509,7 @@ type TranslationsUnverify struct {
 	Q     *string `cli:"opt --query"`
 	Sort  *string `cli:"opt --sort"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsUnverify) Run() error {
@@ -3554,7 +3554,7 @@ func (cmd *TranslationsUnverify) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsUnverify(cmd.ProjectId, params)
+	res, err := client.TranslationsUnverify(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -3570,7 +3570,7 @@ type TranslationsVerify struct {
 	Q     *string `cli:"opt --query"`
 	Sort  *string `cli:"opt --sort"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *TranslationsVerify) Run() error {
@@ -3615,7 +3615,7 @@ func (cmd *TranslationsVerify) Run() error {
 		return err
 	}
 
-	res, err := client.TranslationsVerify(cmd.ProjectId, params)
+	res, err := client.TranslationsVerify(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -3630,13 +3630,13 @@ type UploadCreate struct {
 	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
 	File               string  `cli:"opt --file"`
 	FileFormat         *string `cli:"opt --file-format"`
-	LocaleId           *string `cli:"opt --locale-id"`
+	LocaleID           *string `cli:"opt --locale-id"`
 	SkipUnverification *bool   `cli:"opt --skip-unverification"`
 	SkipUploadTags     *bool   `cli:"opt --skip-upload-tags"`
 	Tags               *string `cli:"opt --tags"`
 	UpdateTranslations *bool   `cli:"opt --update-translations"`
 
-	ProjectId string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
 }
 
 func (cmd *UploadCreate) Run() error {
@@ -3670,8 +3670,8 @@ func (cmd *UploadCreate) Run() error {
 		params.FileFormat = cmd.FileFormat
 	}
 
-	if cmd.LocaleId != nil {
-		params.LocaleId = cmd.LocaleId
+	if cmd.LocaleID != nil {
+		params.LocaleID = cmd.LocaleID
 	}
 
 	if cmd.SkipUnverification != nil {
@@ -3701,7 +3701,7 @@ func (cmd *UploadCreate) Run() error {
 		return err
 	}
 
-	res, err := client.UploadCreate(cmd.ProjectId, params)
+	res, err := client.UploadCreate(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
@@ -3713,8 +3713,8 @@ func (cmd *UploadCreate) Run() error {
 type UploadShow struct {
 	Credentials
 
-	ProjectId string `cli:"arg required"`
-	Id        string `cli:"arg required"`
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func (cmd *UploadShow) Run() error {
@@ -3736,7 +3736,7 @@ func (cmd *UploadShow) Run() error {
 		return err
 	}
 
-	res, err := client.UploadShow(cmd.ProjectId, cmd.Id)
+	res, err := client.UploadShow(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -3748,9 +3748,9 @@ func (cmd *UploadShow) Run() error {
 type VersionShow struct {
 	Credentials
 
-	ProjectId     string `cli:"arg required"`
-	TranslationId string `cli:"arg required"`
-	Id            string `cli:"arg required"`
+	ProjectID     string `cli:"arg required"`
+	TranslationID string `cli:"arg required"`
+	ID            string `cli:"arg required"`
 }
 
 func (cmd *VersionShow) Run() error {
@@ -3772,7 +3772,7 @@ func (cmd *VersionShow) Run() error {
 		return err
 	}
 
-	res, err := client.VersionShow(cmd.ProjectId, cmd.TranslationId, cmd.Id)
+	res, err := client.VersionShow(cmd.ProjectID, cmd.TranslationID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -3787,8 +3787,8 @@ type VersionsList struct {
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
-	ProjectId     string `cli:"arg required"`
-	TranslationId string `cli:"arg required"`
+	ProjectID     string `cli:"arg required"`
+	TranslationID string `cli:"arg required"`
 }
 
 func (cmd *VersionsList) Run() error {
@@ -3810,7 +3810,7 @@ func (cmd *VersionsList) Run() error {
 		return err
 	}
 
-	res, err := client.VersionsList(cmd.ProjectId, cmd.TranslationId, cmd.Page, cmd.PerPage)
+	res, err := client.VersionsList(cmd.ProjectID, cmd.TranslationID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
