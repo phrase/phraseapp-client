@@ -24,13 +24,40 @@ type Credentials struct {
 	Debug    bool   `cli:"opt --verbose -v desc='Verbose output'"`
 }
 
-func ClientFromCmdCredentials(cred Credentials) (*phraseapp.Client, error) {
+func ConfigCallArgs() (map[string]string, error) {
+	content, err := ConfigContent()
+	if err != nil {
+		content = "{}"
+	}
+
+	return parseCallArgs(content)
+}
+
+func parseCallArgs(yml string) (map[string]string, error) {
+	var callArgs *CallArgs
+
+	err := yaml.Unmarshal([]byte(yml), &callArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]string)
+
+	if callArgs != nil {
+		m["ProjectID"] = callArgs.Phraseapp.ProjectID
+		m["AccessToken"] = callArgs.Phraseapp.AccessToken
+	}
+
+	return m, nil
+}
+
+func ClientFromCmdCredentials(c Credentials) (*phraseapp.Client, error) {
 	defaultCredentials, e := ConfigDefaultCredentials()
 	if e != nil {
 		return nil, e
 	}
 
-	return phraseapp.NewClient(PhraseAppCredentials(cred), defaultCredentials)
+	return phraseapp.NewClient(PhraseAppCredentials(c), defaultCredentials)
 }
 
 func PhraseAppCredentials(c Credentials) phraseapp.Credentials {
@@ -61,18 +88,8 @@ func ConfigDefaultParams() (phraseapp.DefaultParams, error) {
 	return parseDefaults(content)
 }
 
-func ConfigCallArgs() (map[string]string, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		content = "{}"
-	}
-
-	return parseCallArgs(content)
-}
-
-// Paths and content
 func ConfigContent() (string, error) {
-	path, err := phraseConfigPath()
+	path, err := configPath()
 	if err != nil {
 		return "", err
 	}
@@ -84,7 +101,14 @@ func ConfigContent() (string, error) {
 	return string(bytes), nil
 }
 
-func phraseConfigPath() (string, error) {
+func configPath() (string, error) {
+	if envConfig := os.Getenv("PHRASEAPP_CONFIG"); envConfig != "" {
+		possiblePath := path.Join(envConfig)
+		if _, err := os.Stat(possiblePath); err == nil {
+			return possiblePath, nil
+		}
+	}
+
 	callerPath, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -167,22 +191,4 @@ type CallArgs struct {
 		Page        int
 		PerPage     int
 	}
-}
-
-func parseCallArgs(yml string) (map[string]string, error) {
-	var callArgs *CallArgs
-
-	err := yaml.Unmarshal([]byte(yml), &callArgs)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make(map[string]string)
-
-	if callArgs != nil {
-		m["ProjectID"] = callArgs.Phraseapp.ProjectID
-		m["AccessToken"] = callArgs.Phraseapp.AccessToken
-	}
-
-	return m, nil
 }
