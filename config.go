@@ -17,11 +17,11 @@ const defaultDir = "./"
 
 type Credentials struct {
 	phraseapp.Credentials
-	Username string `cli:"opt --username desc='username used for authentication'"`
-	Token    string `cli:"opt --access-token desc='access token used for authentication'"`
+	Username string `cli:"opt --username -u desc='username used for authentication'"`
+	Token    string `cli:"opt --access-token -t desc='access token used for authentication'"`
 	TFA      bool   `cli:"opt --tfa desc='use Two-Factor Authentication'"`
 	Host     string `cli:"opt --host desc='Host to send Request to'"`
-	Debug    bool   `cli:"opt --verbose desc='Verbose output'"`
+	Debug    bool   `cli:"opt --verbose -v desc='Verbose output'"`
 }
 
 func ClientFromCmdCredentials(cred Credentials) (*phraseapp.Client, error) {

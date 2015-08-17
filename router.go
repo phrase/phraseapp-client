@@ -167,10 +167,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-17 10:12:39.846095016 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc10")
-	fmt.Println("PhraseApp API Client revision:", "38db23c2a132a41187e82b4c9859cdc5cb013565")
-	fmt.Println("PhraseApp Client revision:", "a2c68fb394aabd1e72215ff0def9bdfcc962f1ca")
+	fmt.Printf("Built at 2015-08-17 15:59:55.394276186 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
+	fmt.Println("PhraseApp API Client revision:", "e0b9fbabbe938d61b4f9dcf6b0fa5f7b833dc7fc")
+	fmt.Println("PhraseApp Client revision:", "0abd61ace1bdcaa2f7c769650ca19e3550e561b7")
 	fmt.Println("PhraseApp Docs revision:", "8f1d9ef516480148c220f54bd26ed2dd8d947857")
 	return nil
 }
@@ -1273,7 +1273,7 @@ type KeysDelete struct {
 	Credentials
 
 	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query"`
+	Q        *string `cli:"opt --query -q"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -1330,7 +1330,7 @@ type KeysList struct {
 
 	LocaleID *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
-	Q        *string `cli:"opt --query"`
+	Q        *string `cli:"opt --query -q"`
 	Sort     *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -1399,7 +1399,7 @@ type KeysSearch struct {
 
 	LocaleID *string `cli:"opt --locale-id"`
 	Order    *string `cli:"opt --order"`
-	Q        *string `cli:"opt --query"`
+	Q        *string `cli:"opt --query -q"`
 	Sort     *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -1467,7 +1467,7 @@ type KeysTag struct {
 	Credentials
 
 	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query"`
+	Q        *string `cli:"opt --query -q"`
 	Tags     string  `cli:"opt --tags"`
 
 	ProjectID string `cli:"arg required"`
@@ -1528,7 +1528,7 @@ type KeysUntag struct {
 	Credentials
 
 	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query"`
+	Q        *string `cli:"opt --query -q"`
 	Tags     string  `cli:"opt --tags"`
 
 	ProjectID string `cli:"arg required"`
@@ -3126,7 +3126,7 @@ type TranslationsByKey struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -3191,7 +3191,7 @@ type TranslationsByLocale struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -3256,7 +3256,7 @@ type TranslationsExclude struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	ProjectID string `cli:"arg required"`
@@ -3317,7 +3317,7 @@ type TranslationsInclude struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	ProjectID string `cli:"arg required"`
@@ -3378,7 +3378,7 @@ type TranslationsList struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -3442,7 +3442,7 @@ type TranslationsSearch struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	Page    int `cli:"opt --page default=1"`
@@ -3506,7 +3506,7 @@ type TranslationsUnverify struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	ProjectID string `cli:"arg required"`
@@ -3567,7 +3567,7 @@ type TranslationsVerify struct {
 	Credentials
 
 	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query"`
+	Q     *string `cli:"opt --query -q"`
 	Sort  *string `cli:"opt --sort"`
 
 	ProjectID string `cli:"arg required"`
