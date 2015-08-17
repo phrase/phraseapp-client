@@ -14,12 +14,12 @@ import (
 )
 
 type PushCommand struct {
-	phraseapp.Credentials
+	Credentials
 	DebugPush bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PushCommand) Run() error {
-	client, err := phraseapp.NewClient(cmd.Credentials, nil)
+	client, err := ClientFromCmdCredentials(cmd.Credentials)
 	if err != nil {
 		return err
 	}

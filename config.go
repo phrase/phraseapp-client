@@ -24,6 +24,15 @@ type Credentials struct {
 	Debug    bool   `cli:"opt --verbose desc='Verbose output'"`
 }
 
+func ClientFromCmdCredentials(cred Credentials) (*phraseapp.Client, error) {
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return nil, e
+	}
+
+	return phraseapp.NewClient(PhraseAppCredentials(cred), defaultCredentials)
+}
+
 func PhraseAppCredentials(c Credentials) phraseapp.Credentials {
 	return phraseapp.Credentials{
 		Username: c.Username,
