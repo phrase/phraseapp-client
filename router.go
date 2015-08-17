@@ -167,10 +167,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-17 15:59:55.394276186 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-17 16:25:27.356327515 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "e0b9fbabbe938d61b4f9dcf6b0fa5f7b833dc7fc")
-	fmt.Println("PhraseApp Client revision:", "0abd61ace1bdcaa2f7c769650ca19e3550e561b7")
+	fmt.Println("PhraseApp API Client revision:", "5ff7be9254698b681fff77341d9a2053f564be11")
+	fmt.Println("PhraseApp Client revision:", "8d0bcefebd4ba8faec316ee82a01ca0790082905")
 	fmt.Println("PhraseApp Docs revision:", "8f1d9ef516480148c220f54bd26ed2dd8d947857")
 	return nil
 }
@@ -1699,11 +1699,11 @@ func (cmd *LocaleDelete) Run() error {
 type LocaleDownload struct {
 	Credentials
 
-	ConvertEmoji             *bool                   `cli:"opt --convert-emoji"`
+	ConvertEmoji             bool                    `cli:"opt --convert-emoji"`
 	FileFormat               string                  `cli:"opt --file-format"`
 	FormatOptions            *map[string]interface{} `cli:"opt --format-options"`
-	IncludeEmptyTranslations *bool                   `cli:"opt --include-empty-translations"`
-	KeepNotranslateTags      *bool                   `cli:"opt --keep-notranslate-tags"`
+	IncludeEmptyTranslations bool                    `cli:"opt --include-empty-translations"`
+	KeepNotranslateTags      bool                    `cli:"opt --keep-notranslate-tags"`
 	Tag                      *string                 `cli:"opt --tag"`
 
 	ProjectID string `cli:"arg required"`
@@ -1729,9 +1729,7 @@ func (cmd *LocaleDownload) Run() error {
 		}
 	}
 
-	if cmd.ConvertEmoji != nil {
-		params.ConvertEmoji = cmd.ConvertEmoji
-	}
+	params.ConvertEmoji = cmd.ConvertEmoji
 
 	if cmd.FileFormat != "" {
 		params.FileFormat = cmd.FileFormat
@@ -1741,13 +1739,9 @@ func (cmd *LocaleDownload) Run() error {
 		params.FormatOptions = cmd.FormatOptions
 	}
 
-	if cmd.IncludeEmptyTranslations != nil {
-		params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
-	}
+	params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
 
-	if cmd.KeepNotranslateTags != nil {
-		params.KeepNotranslateTags = cmd.KeepNotranslateTags
-	}
+	params.KeepNotranslateTags = cmd.KeepNotranslateTags
 
 	if cmd.Tag != nil {
 		params.Tag = cmd.Tag

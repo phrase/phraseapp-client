@@ -55,10 +55,10 @@ type Target struct {
 type PullParams struct {
 	FileFormat               string                  `yaml:"file_format,omitempty"`
 	LocaleID                 string                  `yaml:"locale_id,omitempty"`
-	ConvertEmoji             *bool                   `yaml:"convert_emoji,omitempty"`
+	ConvertEmoji             bool                    `yaml:"convert_emoji,omitempty"`
 	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
-	IncludeEmptyTranslations *bool                   `yaml:"include_empty_translations,omitempty"`
-	KeepNotranslateTags      *bool                   `yaml:"keep_notranslate_tags,omitempty"`
+	IncludeEmptyTranslations bool                    `yaml:"include_empty_translations,omitempty"`
+	KeepNotranslateTags      bool                    `yaml:"keep_notranslate_tags,omitempty"`
 	Tag                      string                  `yaml:"tag,omitempty"`
 }
 
@@ -228,25 +228,16 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 		downloadParams.FileFormat = format
 	}
 
-	convertEmoji := params.ConvertEmoji
-	if convertEmoji != nil {
-		downloadParams.ConvertEmoji = convertEmoji
-	}
+	downloadParams.ConvertEmoji = params.ConvertEmoji
 
 	formatOptions := params.FormatOptions
 	if formatOptions != nil {
 		downloadParams.FormatOptions = formatOptions
 	}
 
-	includeEmptyTranslations := params.IncludeEmptyTranslations
-	if includeEmptyTranslations != nil {
-		downloadParams.IncludeEmptyTranslations = includeEmptyTranslations
-	}
+	downloadParams.IncludeEmptyTranslations = params.IncludeEmptyTranslations
 
-	keepNotranslateTags := params.KeepNotranslateTags
-	if keepNotranslateTags != nil {
-		downloadParams.KeepNotranslateTags = keepNotranslateTags
-	}
+	downloadParams.KeepNotranslateTags = params.KeepNotranslateTags
 
 	tag := params.Tag
 	if tag != "" {
