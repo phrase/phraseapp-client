@@ -119,18 +119,18 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
-		localeParams.Name = localeFile.Name
-	} else {
-		localeParams.Name = localeFile.RFC
+		localeParams.Name = &localeFile.Name
+	} else if localeFile.RFC != "" {
+		localeParams.Name = &localeFile.RFC
 	}
 
 	localeName := source.replacePlaceholderInParams(localeFile)
 	if localeName != localeFile.RFC {
-		localeParams.Name = localeName
+		localeParams.Name = &localeName
 	}
 
 	if localeFile.RFC != "" {
-		localeParams.Code = localeFile.RFC
+		localeParams.Code = &localeFile.RFC
 	}
 
 	localeDetails, err := client.LocaleCreate(source.ProjectID, localeParams)
@@ -397,7 +397,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 
 func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
 	uploadParams := new(phraseapp.LocaleFileImportParams)
-	uploadParams.File = localeFile.Path
+	uploadParams.File = &localeFile.Path
 	uploadParams.FileFormat = &source.FileFormat
 
 	if localeFile.ID != "" {

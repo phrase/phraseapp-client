@@ -215,7 +215,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 
 func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
-	downloadParams.FileFormat = target.FileFormat
+	downloadParams.FileFormat = &target.FileFormat
 
 	params := target.Params
 
@@ -225,7 +225,7 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 
 	format := params.FileFormat
 	if format != "" {
-		downloadParams.FileFormat = format
+		downloadParams.FileFormat = &format
 	}
 
 	downloadParams.ConvertEmoji = params.ConvertEmoji

@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 13:41:29.049016166 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc16")
+	fmt.Printf("Built at 2015-08-18 14:25:17.887632858 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "7142c108f8454aebe2ba81de853ea5f9e1ed1d70")
-	fmt.Println("PhraseApp Client revision:", "ce5454f5b4ad18531fdee0256b7826d7770a4c23")
-	fmt.Println("PhraseApp Docs revision:", "c0f594c851af1a97e832c193a13574e624ab3e25")
+	fmt.Println("PhraseApp Client revision:", "fd0e7247d4c251ca91e0ce6fba53a66569bb033d")
+	fmt.Println("PhraseApp Docs revision:", "c79e61233d7bca0a1b883a0b81a600348848ceb0")
 	return nil
 }
 
@@ -179,7 +179,7 @@ type AuthorizationCreate struct {
 	Credentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
-	Note      string     `cli:"opt --note"`
+	Note      *string    `cli:"opt --note"`
 	Scopes    []string   `cli:"opt --scopes"`
 }
 
@@ -206,7 +206,7 @@ func (cmd *AuthorizationCreate) Run() error {
 		params.ExpiresAt = cmd.ExpiresAt
 	}
 
-	if cmd.Note != "" {
+	if cmd.Note != nil {
 		params.Note = cmd.Note
 	}
 
@@ -306,7 +306,7 @@ type AuthorizationUpdate struct {
 	Credentials
 
 	ExpiresAt *time.Time `cli:"opt --expires-at"`
-	Note      string     `cli:"opt --note"`
+	Note      *string    `cli:"opt --note"`
 	Scopes    []string   `cli:"opt --scopes"`
 
 	ID string `cli:"arg required"`
@@ -335,7 +335,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 		params.ExpiresAt = cmd.ExpiresAt
 	}
 
-	if cmd.Note != "" {
+	if cmd.Note != nil {
 		params.Note = cmd.Note
 	}
 
@@ -401,7 +401,7 @@ func (cmd *AuthorizationsList) Run() error {
 type BlacklistedKeyCreate struct {
 	Credentials
 
-	Name string `cli:"opt --name"`
+	Name *string `cli:"opt --name"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -425,7 +425,7 @@ func (cmd *BlacklistedKeyCreate) Run() error {
 		}
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -522,7 +522,7 @@ func (cmd *BlacklistedKeyShow) Run() error {
 type BlacklistedKeyUpdate struct {
 	Credentials
 
-	Name string `cli:"opt --name"`
+	Name *string `cli:"opt --name"`
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -547,7 +547,7 @@ func (cmd *BlacklistedKeyUpdate) Run() error {
 		}
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -611,7 +611,7 @@ func (cmd *BlacklistedKeysList) Run() error {
 type CommentCreate struct {
 	Credentials
 
-	Message string `cli:"opt --message"`
+	Message *string `cli:"opt --message"`
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -636,7 +636,7 @@ func (cmd *CommentCreate) Run() error {
 		}
 	}
 
-	if cmd.Message != "" {
+	if cmd.Message != nil {
 		params.Message = cmd.Message
 	}
 
@@ -843,7 +843,7 @@ func (cmd *CommentShow) Run() error {
 type CommentUpdate struct {
 	Credentials
 
-	Message string `cli:"opt --message"`
+	Message *string `cli:"opt --message"`
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -869,7 +869,7 @@ func (cmd *CommentUpdate) Run() error {
 		}
 	}
 
-	if cmd.Message != "" {
+	if cmd.Message != nil {
 		params.Message = cmd.Message
 	}
 
@@ -974,7 +974,7 @@ type KeyCreate struct {
 	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
 	LocalizedFormatString *string `cli:"opt --localized-format-string"`
 	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
-	Name                  string  `cli:"opt --name"`
+	Name                  *string `cli:"opt --name"`
 	NamePlural            *string `cli:"opt --name-plural"`
 	OriginalFile          *string `cli:"opt --original-file"`
 	Plural                *bool   `cli:"opt --plural"`
@@ -1026,7 +1026,7 @@ func (cmd *KeyCreate) Run() error {
 		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -1160,7 +1160,7 @@ type KeyUpdate struct {
 	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
 	LocalizedFormatString *string `cli:"opt --localized-format-string"`
 	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
-	Name                  string  `cli:"opt --name"`
+	Name                  *string `cli:"opt --name"`
 	NamePlural            *string `cli:"opt --name-plural"`
 	OriginalFile          *string `cli:"opt --original-file"`
 	Plural                *bool   `cli:"opt --plural"`
@@ -1213,7 +1213,7 @@ func (cmd *KeyUpdate) Run() error {
 		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -1468,7 +1468,7 @@ type KeysTag struct {
 
 	LocaleID *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query -q"`
-	Tags     string  `cli:"opt --tags"`
+	Tags     *string `cli:"opt --tags"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -1500,7 +1500,7 @@ func (cmd *KeysTag) Run() error {
 		params.Q = cmd.Q
 	}
 
-	if cmd.Tags != "" {
+	if cmd.Tags != nil {
 		params.Tags = cmd.Tags
 	}
 
@@ -1529,7 +1529,7 @@ type KeysUntag struct {
 
 	LocaleID *string `cli:"opt --locale-id"`
 	Q        *string `cli:"opt --query -q"`
-	Tags     string  `cli:"opt --tags"`
+	Tags     *string `cli:"opt --tags"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -1561,7 +1561,7 @@ func (cmd *KeysUntag) Run() error {
 		params.Q = cmd.Q
 	}
 
-	if cmd.Tags != "" {
+	if cmd.Tags != nil {
 		params.Tags = cmd.Tags
 	}
 
@@ -1588,10 +1588,10 @@ func (cmd *KeysUntag) Run() error {
 type LocaleCreate struct {
 	Credentials
 
-	Code           string  `cli:"opt --code"`
+	Code           *string `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
 	Main           *bool   `cli:"opt --main"`
-	Name           string  `cli:"opt --name"`
+	Name           *string `cli:"opt --name"`
 	Rtl            *bool   `cli:"opt --rtl"`
 	SourceLocaleID *string `cli:"opt --source-locale-id"`
 
@@ -1617,7 +1617,7 @@ func (cmd *LocaleCreate) Run() error {
 		}
 	}
 
-	if cmd.Code != "" {
+	if cmd.Code != nil {
 		params.Code = cmd.Code
 	}
 
@@ -1629,7 +1629,7 @@ func (cmd *LocaleCreate) Run() error {
 		params.Main = cmd.Main
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -1701,7 +1701,7 @@ type LocaleDownload struct {
 
 	ConvertEmoji               bool                    `cli:"opt --convert-emoji"`
 	Encoding                   *string                 `cli:"opt --encoding"`
-	FileFormat                 string                  `cli:"opt --file-format"`
+	FileFormat                 *string                 `cli:"opt --file-format"`
 	FormatOptions              *map[string]interface{} `cli:"opt --format-options"`
 	IncludeEmptyTranslations   bool                    `cli:"opt --include-empty-translations"`
 	KeepNotranslateTags        bool                    `cli:"opt --keep-notranslate-tags"`
@@ -1737,7 +1737,7 @@ func (cmd *LocaleDownload) Run() error {
 		params.Encoding = cmd.Encoding
 	}
 
-	if cmd.FileFormat != "" {
+	if cmd.FileFormat != nil {
 		params.FileFormat = cmd.FileFormat
 	}
 
@@ -1814,10 +1814,10 @@ func (cmd *LocaleShow) Run() error {
 type LocaleUpdate struct {
 	Credentials
 
-	Code           string  `cli:"opt --code"`
+	Code           *string `cli:"opt --code"`
 	Default        *bool   `cli:"opt --default"`
 	Main           *bool   `cli:"opt --main"`
-	Name           string  `cli:"opt --name"`
+	Name           *string `cli:"opt --name"`
 	Rtl            *bool   `cli:"opt --rtl"`
 	SourceLocaleID *string `cli:"opt --source-locale-id"`
 
@@ -1844,7 +1844,7 @@ func (cmd *LocaleUpdate) Run() error {
 		}
 	}
 
-	if cmd.Code != "" {
+	if cmd.Code != nil {
 		params.Code = cmd.Code
 	}
 
@@ -1856,7 +1856,7 @@ func (cmd *LocaleUpdate) Run() error {
 		params.Main = cmd.Main
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -1963,19 +1963,19 @@ func (cmd *OrderConfirm) Run() error {
 type OrderCreate struct {
 	Credentials
 
-	Category                         string   `cli:"opt --category"`
-	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
-	IncludeUnverifiedTranslations    *bool    `cli:"opt --include-unverified-translations"`
-	Lsp                              string   `cli:"opt --lsp"`
-	Message                          *string  `cli:"opt --message"`
-	Priority                         *bool    `cli:"opt --priority"`
-	Quality                          *bool    `cli:"opt --quality"`
-	SourceLocaleID                   string   `cli:"opt --source-locale-id"`
-	StyleguideID                     *string  `cli:"opt --styleguide-id"`
-	Tag                              *string  `cli:"opt --tag"`
-	TargetLocaleIDs                  []string `cli:"opt --target-locale-ids"`
-	TranslationType                  string   `cli:"opt --translation-type"`
-	UnverifyTranslationsUponDelivery *bool    `cli:"opt --unverify-translations-upon-delivery"`
+	Category                         *string `cli:"opt --category"`
+	IncludeUntranslatedKeys          *bool   `cli:"opt --include-untranslated-keys"`
+	IncludeUnverifiedTranslations    *bool   `cli:"opt --include-unverified-translations"`
+	Lsp                              *string `cli:"opt --lsp"`
+	Message                          *string `cli:"opt --message"`
+	Priority                         *bool   `cli:"opt --priority"`
+	Quality                          *bool   `cli:"opt --quality"`
+	SourceLocaleID                   *string `cli:"opt --source-locale-id"`
+	StyleguideID                     *string `cli:"opt --styleguide-id"`
+	Tag                              *string `cli:"opt --tag"`
+	TargetLocaleIDs                  *string `cli:"opt --target-locale-ids"`
+	TranslationType                  *string `cli:"opt --translation-type"`
+	UnverifyTranslationsUponDelivery *bool   `cli:"opt --unverify-translations-upon-delivery"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -1999,7 +1999,7 @@ func (cmd *OrderCreate) Run() error {
 		}
 	}
 
-	if cmd.Category != "" {
+	if cmd.Category != nil {
 		params.Category = cmd.Category
 	}
 
@@ -2011,7 +2011,7 @@ func (cmd *OrderCreate) Run() error {
 		params.IncludeUnverifiedTranslations = cmd.IncludeUnverifiedTranslations
 	}
 
-	if cmd.Lsp != "" {
+	if cmd.Lsp != nil {
 		params.Lsp = cmd.Lsp
 	}
 
@@ -2027,7 +2027,7 @@ func (cmd *OrderCreate) Run() error {
 		params.Quality = cmd.Quality
 	}
 
-	if cmd.SourceLocaleID != "" {
+	if cmd.SourceLocaleID != nil {
 		params.SourceLocaleID = cmd.SourceLocaleID
 	}
 
@@ -2043,7 +2043,7 @@ func (cmd *OrderCreate) Run() error {
 		params.TargetLocaleIDs = cmd.TargetLocaleIDs
 	}
 
-	if cmd.TranslationType != "" {
+	if cmd.TranslationType != nil {
 		params.TranslationType = cmd.TranslationType
 	}
 
@@ -2182,7 +2182,7 @@ type ProjectCreate struct {
 	Credentials
 
 	MainFormat              *string `cli:"opt --main-format"`
-	Name                    string  `cli:"opt --name"`
+	Name                    *string `cli:"opt --name"`
 	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
 }
 
@@ -2209,7 +2209,7 @@ func (cmd *ProjectCreate) Run() error {
 		params.MainFormat = cmd.MainFormat
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -2309,7 +2309,7 @@ type ProjectUpdate struct {
 	Credentials
 
 	MainFormat              *string `cli:"opt --main-format"`
-	Name                    string  `cli:"opt --name"`
+	Name                    *string `cli:"opt --name"`
 	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
 
 	ID string `cli:"arg required"`
@@ -2338,7 +2338,7 @@ func (cmd *ProjectUpdate) Run() error {
 		params.MainFormat = cmd.MainFormat
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -2447,7 +2447,7 @@ type StyleguideCreate struct {
 	OverallTone        *string `cli:"opt --overall-tone"`
 	Samples            *string `cli:"opt --samples"`
 	TargetAudience     *string `cli:"opt --target-audience"`
-	Title              string  `cli:"opt --title"`
+	Title              *string `cli:"opt --title"`
 	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
 	ProjectID string `cli:"arg required"`
@@ -2516,7 +2516,7 @@ func (cmd *StyleguideCreate) Run() error {
 		params.TargetAudience = cmd.TargetAudience
 	}
 
-	if cmd.Title != "" {
+	if cmd.Title != nil {
 		params.Title = cmd.Title
 	}
 
@@ -2628,7 +2628,7 @@ type StyleguideUpdate struct {
 	OverallTone        *string `cli:"opt --overall-tone"`
 	Samples            *string `cli:"opt --samples"`
 	TargetAudience     *string `cli:"opt --target-audience"`
-	Title              string  `cli:"opt --title"`
+	Title              *string `cli:"opt --title"`
 	VocabularyType     *string `cli:"opt --vocabulary-type"`
 
 	ProjectID string `cli:"arg required"`
@@ -2698,7 +2698,7 @@ func (cmd *StyleguideUpdate) Run() error {
 		params.TargetAudience = cmd.TargetAudience
 	}
 
-	if cmd.Title != "" {
+	if cmd.Title != nil {
 		params.Title = cmd.Title
 	}
 
@@ -2766,7 +2766,7 @@ func (cmd *StyleguidesList) Run() error {
 type TagCreate struct {
 	Credentials
 
-	Name string `cli:"opt --name"`
+	Name *string `cli:"opt --name"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -2790,7 +2790,7 @@ func (cmd *TagCreate) Run() error {
 		}
 	}
 
-	if cmd.Name != "" {
+	if cmd.Name != nil {
 		params.Name = cmd.Name
 	}
 
@@ -2924,10 +2924,10 @@ func (cmd *TagsList) Run() error {
 type TranslationCreate struct {
 	Credentials
 
-	Content      string  `cli:"opt --content"`
+	Content      *string `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
-	KeyID        string  `cli:"opt --key-id"`
-	LocaleID     string  `cli:"opt --locale-id"`
+	KeyID        *string `cli:"opt --key-id"`
+	LocaleID     *string `cli:"opt --locale-id"`
 	PluralSuffix *string `cli:"opt --plural-suffix"`
 	Unverified   *bool   `cli:"opt --unverified"`
 
@@ -2953,7 +2953,7 @@ func (cmd *TranslationCreate) Run() error {
 		}
 	}
 
-	if cmd.Content != "" {
+	if cmd.Content != nil {
 		params.Content = cmd.Content
 	}
 
@@ -2961,11 +2961,11 @@ func (cmd *TranslationCreate) Run() error {
 		params.Excluded = cmd.Excluded
 	}
 
-	if cmd.KeyID != "" {
+	if cmd.KeyID != nil {
 		params.KeyID = cmd.KeyID
 	}
 
-	if cmd.LocaleID != "" {
+	if cmd.LocaleID != nil {
 		params.LocaleID = cmd.LocaleID
 	}
 
@@ -3070,7 +3070,7 @@ func (cmd *TranslationShow) Run() error {
 type TranslationUpdate struct {
 	Credentials
 
-	Content      string  `cli:"opt --content"`
+	Content      *string `cli:"opt --content"`
 	Excluded     *bool   `cli:"opt --excluded"`
 	PluralSuffix *string `cli:"opt --plural-suffix"`
 	Unverified   *bool   `cli:"opt --unverified"`
@@ -3098,7 +3098,7 @@ func (cmd *TranslationUpdate) Run() error {
 		}
 	}
 
-	if cmd.Content != "" {
+	if cmd.Content != nil {
 		params.Content = cmd.Content
 	}
 
@@ -3640,7 +3640,7 @@ type UploadCreate struct {
 	Credentials
 
 	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
-	File               string  `cli:"opt --file"`
+	File               *string `cli:"opt --file"`
 	FileFormat         *string `cli:"opt --file-format"`
 	LocaleID           *string `cli:"opt --locale-id"`
 	SkipUnverification *bool   `cli:"opt --skip-unverification"`
@@ -3674,7 +3674,7 @@ func (cmd *UploadCreate) Run() error {
 		params.ConvertEmoji = cmd.ConvertEmoji
 	}
 
-	if cmd.File != "" {
+	if cmd.File != nil {
 		params.File = cmd.File
 	}
 

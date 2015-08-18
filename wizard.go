@@ -423,7 +423,8 @@ func prompt() string {
 func newProjectStep(data *WizardData) error {
 	fmt.Print("Enter name of new project: ")
 	projectParam := &phraseapp.ProjectParams{}
-	projectParam.Name = prompt()
+	str := prompt()
+	projectParam.Name = &str
 
 	res, err := client.ProjectCreate(projectParam)
 	if err != nil {
