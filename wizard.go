@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -63,12 +64,15 @@ type WizardCommand struct {
 
 func (cmd *WizardCommand) Run() error {
 	data := WizardData{Host: cmd.Host}
-	DisplayWizard(&data, "", "")
+	err := DisplayWizard(&data, "", "")
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }
 
 type WizardData struct {
-	Host        string `yaml:"host"`
+	Host        string `yaml:"host,omitempty"`
 	AccessToken string `yaml:"access_token"`
 	ProjectID   string `yaml:"project_id"`
 	Format      string `yaml:"file_format"`
@@ -114,7 +118,7 @@ type WizardPushParams struct {
 	LocaleId   string `yaml:"locale_id,omitempty"`
 }
 
-func clean() {
+func clean() error {
 	switch runtime.GOOS {
 	case "darwin":
 		cmd := exec.Command("clear")
@@ -129,9 +133,9 @@ func clean() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
-		fmt.Printf("%s unsupported", runtime.GOOS)
-		panic("Do not know")
+		return fmt.Errorf("%s is unsupported for the wizard", runtime.GOOS)
 	}
+	return nil
 }
 
 func spinner(waitMsg string, position int, channelEnd *ChannelEnd, wg *sync.WaitGroup) {
@@ -197,8 +201,11 @@ func printSuccess(msg string) {
 	printWithColor(msg, ct.Green, true)
 }
 
-func DisplayWizard(data *WizardData, step string, errorMsg string) {
-	clean()
+func DisplayWizard(data *WizardData, step string, errorMsg string) error {
+	err := clean()
+	if err != nil {
+		return err
+	}
 
 	if errorMsg != "" {
 		printError(errorMsg)
@@ -208,31 +215,26 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) {
 	case step == "" || data.AccessToken == "":
 		data.Step = "token"
 		tokenStep(data)
-		return
 	case step == "newProject":
 		data.Step = "newProject"
 		newProjectStep(data)
-		return
 	case step == "selectProject":
 		data.Step = "selectProject"
 		selectProjectStep(data)
-		return
 	case step == "selectFormat":
 		data.Step = "selectFormat"
 		selectFormat(data)
-		return
 	case step == "pushConfig":
 		data.Step = "pushConfig"
 		pushConfig(data)
-		return
 	case step == "pullConfig":
 		data.Step = "pullConfig"
 		pullConfig(data)
-		return
 	case step == "finish":
 		writeConfig(data, ".phraseapp.yml")
-		return
 	}
+
+	return nil
 
 }
 
@@ -249,13 +251,13 @@ func defaultFilePath(fileFormat string) (string, error) {
 	return "", nil
 }
 
-func pushConfig(data *WizardData) {
+func pushConfig(data *WizardData) error {
 	defaultPath, err := defaultFilePath(data.Format)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 
-	fmt.Printf("Enter the path from where you want to upload your locale files to Phrase [Press enter to use default: %s]: ", defaultPath)
+	fmt.Printf("Enter the path to your local language files, you want to upload to PhraseApp [Press enter to use default: %s]: ", defaultPath)
 	var pushPath string
 	fmt.Scanln(&pushPath)
 	if pushPath == "" {
@@ -265,16 +267,16 @@ func pushConfig(data *WizardData) {
 	data.Push.Sources = make(WizardSources, 1)
 	data.Push.Sources[0] = &WizardPushConfig{File: pushPath, Params: &WizardPushParams{FileFormat: data.Format}}
 
-	DisplayWizard(data, next(data), "")
+	return DisplayWizard(data, next(data), "")
 }
 
-func pullConfig(data *WizardData) {
+func pullConfig(data *WizardData) error {
 	defaultPath, err := defaultFilePath(data.Format)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 
-	fmt.Printf("Enter the path you want to put the downloaded locale files from Phrase [Press enter to use default: %s]: ", defaultPath)
+	fmt.Printf("Enter the path to where you want to store downloaded language files from PhraseApp [Press enter to use default: %s]: ", defaultPath)
 	var pullPath string
 	fmt.Scanln(&pullPath)
 	if pullPath == "" {
@@ -283,18 +285,18 @@ func pullConfig(data *WizardData) {
 
 	data.Pull.Targets = make([]*WizardPullConfig, 1)
 	data.Pull.Targets[0] = &WizardPullConfig{File: pullPath, Params: &WizardPullParams{FileFormat: data.Format}}
-	DisplayWizard(data, next(data), "")
+	return DisplayWizard(data, next(data), "")
 }
 
 var client *phraseapp.Client
 
-func selectFormat(data *WizardData) {
+func selectFormat(data *WizardData) error {
 	auth := phraseapp.Credentials{Token: data.AccessToken}
 	var err error
 	client, err = phraseapp.NewClient(auth, nil)
 	formats, err := client.FormatsList(1, 25)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 
 	for counter, format := range formats {
@@ -310,27 +312,25 @@ func selectFormat(data *WizardData) {
 	fmt.Scanln(&id)
 	if id == "" && data.MainFormat != "" {
 		data.Format = data.MainFormat
-		DisplayWizard(data, next(data), "")
-		return
+		return DisplayWizard(data, next(data), "")
 	}
 	number, err := strconv.Atoi(id)
 	if err != nil || number < 1 || number > len(formats)+1 {
-		DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
-		return
+		return DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
 	}
 	data.Format = formats[number-1].ApiName
-	DisplayWizard(data, next(data), "")
+	return DisplayWizard(data, next(data), "")
 }
 
-func writeConfig(data *WizardData, filename string) {
+func writeConfig(data *WizardData, filename string) error {
 	wrapper := WizardWrapper{Data: data}
 	bytes, err := yaml.Marshal(wrapper)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 	err = ioutil.WriteFile(filename, bytes, 0655)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 	str := fmt.Sprintf("Success! We have created the config file for you %s:", filename)
 	printSuccess(str)
@@ -349,10 +349,11 @@ func writeConfig(data *WizardData, filename string) {
 	if initialPush == "y" || initialPush == "" {
 		err = firstPush()
 		if err != nil {
-			panic(err.Error())
+			return err
 		}
 	}
 	fmt.Println("Setup completed!")
+	return nil
 }
 
 func firstPush() error {
@@ -378,7 +379,7 @@ func next(data *WizardData) string {
 	return ""
 }
 
-func tokenStep(data *WizardData) {
+func tokenStep(data *WizardData) error {
 	printParrot()
 	fmt.Println("PhraseApp.com API Client Setup")
 	fmt.Println("")
@@ -387,17 +388,16 @@ func tokenStep(data *WizardData) {
 	data.AccessToken = strings.ToLower(data.AccessToken)
 	success, err := regexp.MatchString("^[0-9a-f]{64}$", data.AccessToken)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
-	if success == true {
-		DisplayWizard(data, next(data), "")
-	} else {
+	if !success {
 		data.AccessToken = ""
-		DisplayWizard(data, "", "Argument Error: AccessToken must be 64 letters long and can only contain a-f, 0-9")
+		return DisplayWizard(data, "", "Argument Error: AccessToken must be 64 letters long and can only contain a-f, 0-9")
 	}
+	return DisplayWizard(data, next(data), "")
 }
 
-func newProjectStep(data *WizardData) {
+func newProjectStep(data *WizardData) error {
 	fmt.Print("Enter name of new project: ")
 	projectParam := &phraseapp.ProjectParams{}
 	fmt.Scanln(&projectParam.Name)
@@ -406,43 +406,34 @@ func newProjectStep(data *WizardData) {
 	if err != nil {
 		success, match_err := regexp.MatchString("401", err.Error())
 		if match_err != nil {
-			fmt.Println(err.Error())
-			panic(match_err.Error())
+			return match_err
 		}
 		if success {
 			data.AccessToken = ""
-			DisplayWizard(data, "", fmt.Sprintf("Argument Error: Your AccessToken '%s' has no write scope. Please create a new Access Token with read and write scope.", data.AccessToken))
+			return DisplayWizard(data, "", fmt.Sprintf("Argument Error: Your AccessToken '%s' has no write scope. Please create a new Access Token with read and write scope.", data.AccessToken))
 		} else {
-			success, match_err := regexp.MatchString("Validation failed", err.Error())
+			_, match_err := regexp.MatchString("Validation failed", err.Error())
 			if match_err != nil {
-				fmt.Println(err.Error())
-				panic(match_err.Error())
+				return match_err
 			}
-			if success {
-				DisplayWizard(data, "newProject", err.Error())
-				return
-			} else {
-				panic(err.Error())
-			}
+			return DisplayWizard(data, "newProject", err.Error())
 		}
-	} else {
-		data.ProjectID = res.ID
-		DisplayWizard(data, next(data), "")
-		return
 	}
+	data.ProjectID = res.ID
+	return DisplayWizard(data, next(data), "")
 }
 
 type ChannelEnd struct {
 	closed bool
 }
 
-func selectProjectStep(data *WizardData) {
+func selectProjectStep(data *WizardData) error {
 	auth := phraseapp.Credentials{Token: data.AccessToken, Host: data.Host}
 	fmt.Println("Please select your project:")
 	var err error
 	client, err = phraseapp.NewClient(auth, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	var wg sync.WaitGroup
 	out := make(chan []phraseapp.Project, 1)
@@ -475,15 +466,16 @@ func selectProjectStep(data *WizardData) {
 		success, match_err := regexp.MatchString("401", err.Error())
 		if match_err != nil {
 			fmt.Println(err.Error())
-			panic(match_err.Error())
+			return match_err
 		}
 		if success {
 			errorMsg := fmt.Sprintf("Argument Error: AccessToken '%s' is invalid. It may be revoked. Please create a new Access Token.", data.AccessToken)
 			data.AccessToken = ""
 			DisplayWizard(data, "", errorMsg)
 		} else {
-			panic(err.Error())
+			return err
 		}
+		return nil
 	}
 
 	if len(projects) == 1 {
@@ -494,12 +486,12 @@ func selectProjectStep(data *WizardData) {
 		fmt.Scanln(&answer)
 		if answer == "y" {
 			DisplayWizard(data, next(data), "")
-			return
+			return nil
 		} else {
 			data.ProjectID = ""
 			data.MainFormat = ""
 			DisplayWizard(data, "newProject", "")
-			return
+			return nil
 		}
 	}
 	for counter, project := range projects {
@@ -512,16 +504,17 @@ func selectProjectStep(data *WizardData) {
 	number, err := strconv.Atoi(id)
 	if err != nil || number < 1 || number > len(projects)+1 {
 		DisplayWizard(data, "selectProject", fmt.Sprintf("Argument Error: Please select a project from the list by specifying its position in the list, e.g. 2 for the second project."))
-		return
+		return nil
 	}
 
 	if number == len(projects)+1 {
 		DisplayWizard(data, "newProject", "")
-		return
+		return nil
 	}
 
 	selectedProject := projects[number-1]
 	data.ProjectID = selectedProject.ID
 	data.MainFormat = selectedProject.MainFormat
 	DisplayWizard(data, next(data), "")
+	return nil
 }

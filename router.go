@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 11:25:15.459029066 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc14")
+	fmt.Printf("Built at 2015-08-18 12:13:42.369376218 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "7142c108f8454aebe2ba81de853ea5f9e1ed1d70")
-	fmt.Println("PhraseApp Client revision:", "c8e10e35c83317b153d24a9325f6c6cf34e7540b")
-	fmt.Println("PhraseApp Docs revision:", "697258e520bf4417c75639751016d849e1973020")
+	fmt.Println("PhraseApp Client revision:", "b787eb8cf400b47c1e2e91b268772aec8279324e")
+	fmt.Println("PhraseApp Docs revision:", "1ac3110e0724eab7bb7c64c92021bfb53687ec8e")
 	return nil
 }
 
@@ -2173,8 +2173,9 @@ func (cmd *OrdersList) Run() error {
 type ProjectCreate struct {
 	Credentials
 
-	Name                    string `cli:"opt --name"`
-	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
+	MainFormat              *string `cli:"opt --main-format"`
+	Name                    string  `cli:"opt --name"`
+	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
 }
 
 func (cmd *ProjectCreate) Run() error {
@@ -2194,6 +2195,10 @@ func (cmd *ProjectCreate) Run() error {
 		if e != nil {
 			return e
 		}
+	}
+
+	if cmd.MainFormat != nil {
+		params.MainFormat = cmd.MainFormat
 	}
 
 	if cmd.Name != "" {
@@ -2295,8 +2300,9 @@ func (cmd *ProjectShow) Run() error {
 type ProjectUpdate struct {
 	Credentials
 
-	Name                    string `cli:"opt --name"`
-	SharesTranslationMemory *bool  `cli:"opt --shares-translation-memory"`
+	MainFormat              *string `cli:"opt --main-format"`
+	Name                    string  `cli:"opt --name"`
+	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
 
 	ID string `cli:"arg required"`
 }
@@ -2318,6 +2324,10 @@ func (cmd *ProjectUpdate) Run() error {
 		if e != nil {
 			return e
 		}
+	}
+
+	if cmd.MainFormat != nil {
+		params.MainFormat = cmd.MainFormat
 	}
 
 	if cmd.Name != "" {
