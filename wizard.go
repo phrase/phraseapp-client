@@ -19,6 +19,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+const docsURL = "http://docs.phraseapp.com/developers/cli/configuration"
 const parrot = `
                                ppe############eep
                          p############################pp
@@ -353,7 +354,7 @@ func writeConfig(data *WizardData, filename string) error {
 	fmt.Println("")
 	fmt.Println(string(bytes))
 
-	printSuccess("You can make changes to this file, see this documentation for more advanced options: http://docs.phraseapp.com/api/v2/config")
+	printSuccess("You can make changes to this file, see this documentation for more advanced options: " + docsURL)
 	printSuccess("Now start using phraseapp push & pull for your workflow:")
 	fmt.Println("")
 	fmt.Println("$ phraseapp push")
