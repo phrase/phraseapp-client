@@ -33,7 +33,7 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("blacklisted_key/update", &BlacklistedKeyUpdate{ProjectID: projectID}, "Update an existing rule for blacklisting keys.")
 
-	r.Register("blacklisted_keys/index", &BlacklistedKeysIndex{ProjectID: projectID}, "List all rules for blacklisting keys for the given project.")
+	r.Register("blacklisted_keys/list", &BlacklistedKeysList{ProjectID: projectID}, "List all rules for blacklisting keys for the given project.")
 
 	r.Register("comment/create", &CommentCreate{ProjectID: projectID}, "Create a new comment for a key.")
 
@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 13:28:40.692194217 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc15")
+	fmt.Printf("Built at 2015-08-18 13:40:06.998548557 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "7142c108f8454aebe2ba81de853ea5f9e1ed1d70")
-	fmt.Println("PhraseApp Client revision:", "3e31d01d466d4a83a36ecd8dd8ae77c629a6b80f")
-	fmt.Println("PhraseApp Docs revision:", "17d5e6576d70db2749f4d57f5165ce40424b0a01")
+	fmt.Println("PhraseApp Client revision:", "a833475d012aed82eddafcc9721c3ccb25fa5590")
+	fmt.Println("PhraseApp Docs revision:", "c0f594c851af1a97e832c193a13574e624ab3e25")
 	return nil
 }
 
@@ -571,7 +571,7 @@ func (cmd *BlacklistedKeyUpdate) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
-type BlacklistedKeysIndex struct {
+type BlacklistedKeysList struct {
 	Credentials
 
 	Page    int `cli:"opt --page default=1"`
@@ -580,7 +580,7 @@ type BlacklistedKeysIndex struct {
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *BlacklistedKeysIndex) Run() error {
+func (cmd *BlacklistedKeysList) Run() error {
 
 	defaults, e := ConfigDefaultParams()
 	if e != nil {
@@ -599,7 +599,7 @@ func (cmd *BlacklistedKeysIndex) Run() error {
 		return err
 	}
 
-	res, err := client.BlacklistedKeysIndex(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.BlacklistedKeysList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
