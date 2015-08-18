@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -397,10 +398,16 @@ func tokenStep(data *WizardData) error {
 	return DisplayWizard(data, next(data), "")
 }
 
+func prompt() string {
+	reader := bufio.NewReader(os.Stdin)
+	bytes, _, _ := reader.ReadLine()
+	return string(bytes)
+}
+
 func newProjectStep(data *WizardData) error {
 	fmt.Print("Enter name of new project: ")
 	projectParam := &phraseapp.ProjectParams{}
-	fmt.Scanln(&projectParam.Name)
+	projectParam.Name = prompt()
 
 	res, err := client.ProjectCreate(projectParam)
 	if err != nil {
