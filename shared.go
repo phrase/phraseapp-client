@@ -147,7 +147,7 @@ func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
 
 func printErr(err error) {
 	ct.Foreground(ct.Red, true)
-	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+	fmt.Fprintf(os.Stderr, "\nERROR: %s\n", err)
 	ct.ResetColor()
 }
 
