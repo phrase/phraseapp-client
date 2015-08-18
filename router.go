@@ -25,6 +25,16 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("authorizations/list", &AuthorizationsList{}, "List all your authorizations.")
 
+	r.Register("blacklisted_key/create", &BlacklistedKeyCreate{ProjectID: projectID}, "Create a new rule for blacklisting keys.")
+
+	r.Register("blacklisted_key/delete", &BlacklistedKeyDelete{ProjectID: projectID}, "Delete an existing rule for blacklisting keys.")
+
+	r.Register("blacklisted_key/show", &BlacklistedKeyShow{ProjectID: projectID}, "Get details on a single rule for blacklisting keys for a given project.")
+
+	r.Register("blacklisted_key/update", &BlacklistedKeyUpdate{ProjectID: projectID}, "Update an existing rule for blacklisting keys.")
+
+	r.Register("blacklisted_keys/index", &BlacklistedKeysIndex{ProjectID: projectID}, "List all rules for blacklisting keys for the given project.")
+
 	r.Register("comment/create", &CommentCreate{ProjectID: projectID}, "Create a new comment for a key.")
 
 	r.Register("comment/delete", &CommentDelete{ProjectID: projectID}, "Delete an existing comment.")
@@ -40,16 +50,6 @@ func router(defaults map[string]string) *cli.Router {
 	r.Register("comment/update", &CommentUpdate{ProjectID: projectID}, "Update an existing comment.")
 
 	r.Register("comments/list", &CommentsList{ProjectID: projectID}, "List all comments for a key.")
-
-	r.Register("exclude_rule/create", &ExcludeRuleCreate{ProjectID: projectID}, "Create a new blacklisted key.")
-
-	r.Register("exclude_rule/delete", &ExcludeRuleDelete{ProjectID: projectID}, "Delete an existing blacklisted key.")
-
-	r.Register("exclude_rule/show", &ExcludeRuleShow{ProjectID: projectID}, "Get details on a single blacklisted key for a given project.")
-
-	r.Register("exclude_rule/update", &ExcludeRuleUpdate{ProjectID: projectID}, "Update an existing blacklisted key.")
-
-	r.Register("exclude_rules/index", &ExcludeRulesIndex{ProjectID: projectID}, "List all blacklisted keys for the given project.")
 
 	r.Register("formats/list", &FormatsList{}, "Get a handy list of all localization file formats supported in PhraseApp.")
 
@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 12:13:42.369376218 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-18 13:27:09.418159108 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "7142c108f8454aebe2ba81de853ea5f9e1ed1d70")
-	fmt.Println("PhraseApp Client revision:", "b787eb8cf400b47c1e2e91b268772aec8279324e")
-	fmt.Println("PhraseApp Docs revision:", "1ac3110e0724eab7bb7c64c92021bfb53687ec8e")
+	fmt.Println("PhraseApp Client revision:", "61ea7533d744d4a061f96a3441fed65d480c2653")
+	fmt.Println("PhraseApp Docs revision:", "17d5e6576d70db2749f4d57f5165ce40424b0a01")
 	return nil
 }
 
@@ -390,6 +390,216 @@ func (cmd *AuthorizationsList) Run() error {
 	}
 
 	res, err := client.AuthorizationsList(cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BlacklistedKeyCreate struct {
+	Credentials
+
+	Name string `cli:"opt --name"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func (cmd *BlacklistedKeyCreate) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.BlacklistedKeyParams)
+
+	val, defaultsPresent := defaults["blacklisted_key/create"]
+
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BlacklistedKeyCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BlacklistedKeyDelete struct {
+	Credentials
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *BlacklistedKeyDelete) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.BlacklistedKeyDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BlacklistedKeyShow struct {
+	Credentials
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *BlacklistedKeyShow) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BlacklistedKeyShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BlacklistedKeyUpdate struct {
+	Credentials
+
+	Name string `cli:"opt --name"`
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *BlacklistedKeyUpdate) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.BlacklistedKeyParams)
+
+	val, defaultsPresent := defaults["blacklisted_key/update"]
+
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Name != "" {
+		params.Name = cmd.Name
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BlacklistedKeyUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BlacklistedKeysIndex struct {
+	Credentials
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func (cmd *BlacklistedKeysIndex) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BlacklistedKeysIndex(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -713,216 +923,6 @@ func (cmd *CommentsList) Run() error {
 	}
 
 	res, err := client.CommentsList(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage)
-
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
-type ExcludeRuleCreate struct {
-	Credentials
-
-	Name string `cli:"opt --name"`
-
-	ProjectID string `cli:"arg required"`
-}
-
-func (cmd *ExcludeRuleCreate) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	params := new(phraseapp.ExcludeRuleParams)
-
-	val, defaultsPresent := defaults["exclude_rule/create"]
-
-	if defaultsPresent {
-		params, e = params.ApplyDefaults(val)
-		if e != nil {
-			return e
-		}
-	}
-
-	if cmd.Name != "" {
-		params.Name = cmd.Name
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.ExcludeRuleCreate(cmd.ProjectID, params)
-
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
-type ExcludeRuleDelete struct {
-	Credentials
-
-	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
-}
-
-func (cmd *ExcludeRuleDelete) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	err = client.ExcludeRuleDelete(cmd.ProjectID, cmd.ID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type ExcludeRuleShow struct {
-	Credentials
-
-	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
-}
-
-func (cmd *ExcludeRuleShow) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.ExcludeRuleShow(cmd.ProjectID, cmd.ID)
-
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
-type ExcludeRuleUpdate struct {
-	Credentials
-
-	Name string `cli:"opt --name"`
-
-	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
-}
-
-func (cmd *ExcludeRuleUpdate) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	params := new(phraseapp.ExcludeRuleParams)
-
-	val, defaultsPresent := defaults["exclude_rule/update"]
-
-	if defaultsPresent {
-		params, e = params.ApplyDefaults(val)
-		if e != nil {
-			return e
-		}
-	}
-
-	if cmd.Name != "" {
-		params.Name = cmd.Name
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.ExcludeRuleUpdate(cmd.ProjectID, cmd.ID, params)
-
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
-type ExcludeRulesIndex struct {
-	Credentials
-
-	Page    int `cli:"opt --page default=1"`
-	PerPage int `cli:"opt --per-page default=25"`
-
-	ProjectID string `cli:"arg required"`
-}
-
-func (cmd *ExcludeRulesIndex) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.ExcludeRulesIndex(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -1699,12 +1699,14 @@ func (cmd *LocaleDelete) Run() error {
 type LocaleDownload struct {
 	Credentials
 
-	ConvertEmoji             bool                    `cli:"opt --convert-emoji"`
-	FileFormat               string                  `cli:"opt --file-format"`
-	FormatOptions            *map[string]interface{} `cli:"opt --format-options"`
-	IncludeEmptyTranslations bool                    `cli:"opt --include-empty-translations"`
-	KeepNotranslateTags      bool                    `cli:"opt --keep-notranslate-tags"`
-	Tag                      *string                 `cli:"opt --tag"`
+	ConvertEmoji               bool                    `cli:"opt --convert-emoji"`
+	Encoding                   *string                 `cli:"opt --encoding"`
+	FileFormat                 string                  `cli:"opt --file-format"`
+	FormatOptions              *map[string]interface{} `cli:"opt --format-options"`
+	IncludeEmptyTranslations   bool                    `cli:"opt --include-empty-translations"`
+	KeepNotranslateTags        bool                    `cli:"opt --keep-notranslate-tags"`
+	SkipUnverifiedTranslations bool                    `cli:"opt --skip-unverified-translations"`
+	Tag                        *string                 `cli:"opt --tag"`
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1731,6 +1733,10 @@ func (cmd *LocaleDownload) Run() error {
 
 	params.ConvertEmoji = cmd.ConvertEmoji
 
+	if cmd.Encoding != nil {
+		params.Encoding = cmd.Encoding
+	}
+
 	if cmd.FileFormat != "" {
 		params.FileFormat = cmd.FileFormat
 	}
@@ -1742,6 +1748,8 @@ func (cmd *LocaleDownload) Run() error {
 	params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
 
 	params.KeepNotranslateTags = cmd.KeepNotranslateTags
+
+	params.SkipUnverifiedTranslations = cmd.SkipUnverifiedTranslations
 
 	if cmd.Tag != nil {
 		params.Tag = cmd.Tag
