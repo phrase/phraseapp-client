@@ -125,8 +125,6 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("translation/create", &TranslationCreate{ProjectID: projectID}, "Create a translation.")
 
-	r.Register("translation/machine_translate", &TranslationMachineTranslate{ProjectID: projectID}, "Update a translation with machine translation")
-
 	r.Register("translation/show", &TranslationShow{ProjectID: projectID}, "Get details on a single translation.")
 
 	r.Register("translation/update", &TranslationUpdate{ProjectID: projectID}, "Update an existing translation.")
@@ -167,11 +165,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 15:00:06.032694364 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-18 16:10:33.569517644 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "76ac2cd5f279591b48dd2816e58ca1349e18bb30")
-	fmt.Println("PhraseApp Client revision:", "481d6678a650cc9090d0606e97d248e8dad7e02e")
-	fmt.Println("PhraseApp Docs revision:", "c79e61233d7bca0a1b883a0b81a600348848ceb0")
+	fmt.Println("PhraseApp Client revision:", "aef056858969664b8d7c2c5bba2f778a1bbd3b1d")
+	fmt.Println("PhraseApp Docs revision:", "767813638335dadeb3072bcae9932641c783094c")
 	return nil
 }
 
@@ -2995,41 +2993,6 @@ func (cmd *TranslationCreate) Run() error {
 	}
 
 	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
-type TranslationMachineTranslate struct {
-	Credentials
-
-	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
-}
-
-func (cmd *TranslationMachineTranslate) Run() error {
-
-	defaults, e := ConfigDefaultParams()
-	if e != nil {
-		_ = defaults
-		return e
-	}
-
-	defaultCredentials, e := ConfigDefaultCredentials()
-	if e != nil {
-		return e
-	}
-
-	credentials := PhraseAppCredentials(cmd.Credentials)
-	client, err := phraseapp.NewClient(credentials, defaultCredentials)
-	if err != nil {
-		return err
-	}
-
-	err = client.TranslationMachineTranslate(cmd.ProjectID, cmd.ID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type TranslationShow struct {
