@@ -165,10 +165,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 16:13:11.560869467 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc18")
+	fmt.Printf("Built at 2015-08-18 18:04:38.671708307 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "76ac2cd5f279591b48dd2816e58ca1349e18bb30")
-	fmt.Println("PhraseApp Client revision:", "f66923e0c65d62fda5c675695b95cb6eda08c404")
+	fmt.Println("PhraseApp Client revision:", "937698f2f86ca4b23a14cf7a8d403e77cc60e73e")
 	fmt.Println("PhraseApp Docs revision:", "767813638335dadeb3072bcae9932641c783094c")
 	return nil
 }
@@ -176,9 +176,9 @@ func infoCommand() error {
 type AuthorizationCreate struct {
 	Credentials
 
-	ExpiresAt *time.Time `cli:"opt --expires-at"`
-	Note      *string    `cli:"opt --note"`
-	Scopes    []string   `cli:"opt --scopes"`
+	ExpiresAt **time.Time `cli:"opt --expires-at"`
+	Note      *string     `cli:"opt --note"`
+	Scopes    []string    `cli:"opt --scopes"`
 }
 
 func (cmd *AuthorizationCreate) Run() error {
@@ -303,9 +303,9 @@ func (cmd *AuthorizationShow) Run() error {
 type AuthorizationUpdate struct {
 	Credentials
 
-	ExpiresAt *time.Time `cli:"opt --expires-at"`
-	Note      *string    `cli:"opt --note"`
-	Scopes    []string   `cli:"opt --scopes"`
+	ExpiresAt **time.Time `cli:"opt --expires-at"`
+	Note      *string     `cli:"opt --note"`
+	Scopes    []string    `cli:"opt --scopes"`
 
 	ID string `cli:"arg required"`
 }
