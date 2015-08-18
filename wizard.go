@@ -260,7 +260,7 @@ func pushConfig(data *WizardData) error {
 
 	fmt.Printf("Enter the path to your local language files, you want to upload to PhraseApp [Press enter to use default: %s]: ", defaultPath)
 	var pushPath string
-	fmt.Scanln(&pushPath)
+	pushPath = prompt()
 	if pushPath == "" {
 		pushPath = defaultPath
 	}
@@ -279,7 +279,7 @@ func pullConfig(data *WizardData) error {
 
 	fmt.Printf("Enter the path to where you want to store downloaded language files from PhraseApp [Press enter to use default: %s]: ", defaultPath)
 	var pullPath string
-	fmt.Scanln(&pullPath)
+	pullPath = prompt()
 	if pullPath == "" {
 		pullPath = defaultPath
 	}
@@ -310,13 +310,26 @@ func selectFormat(data *WizardData) error {
 		mainFormatDefault = fmt.Sprintf(" [Press enter for default: %s]", data.MainFormat)
 	}
 	fmt.Printf("Select the format you want to use for language files you download from PhraseApp%s: ", mainFormatDefault)
-	fmt.Scanln(&id)
+	id = prompt()
+
 	if id == "" && data.MainFormat != "" {
 		data.Format = data.MainFormat
 		return DisplayWizard(data, next(data), "")
 	}
 	number, err := strconv.Atoi(id)
-	if err != nil || number < 1 || number > len(formats)+1 {
+	if err != nil {
+		number = 0
+		for index, format := range formats {
+			if format.ApiName == id {
+				number = index + 1
+			}
+		}
+
+		if number < 1 {
+			return DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
+		}
+
+	} else if number < 1 || number > len(formats)+1 {
 		return DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
 	}
 	data.Format = formats[number-1].ApiName
@@ -346,7 +359,7 @@ func writeConfig(data *WizardData, filename string) error {
 	fmt.Println("")
 	var initialPush string
 	fmt.Print("Enter \"y\" to upload your locales now for the first time (Default: \"y\"): ")
-	fmt.Scanln(&initialPush)
+	initialPush = prompt()
 	if initialPush == "y" || initialPush == "" {
 		err = firstPush()
 		if err != nil {
@@ -385,7 +398,7 @@ func tokenStep(data *WizardData) error {
 	fmt.Println("PhraseApp.com API Client Setup")
 	fmt.Println("")
 	fmt.Print("Please enter you API Access Token (Generate one in your profile at phraseapp.com): ")
-	fmt.Scanln(&data.AccessToken)
+	data.AccessToken = prompt()
 	data.AccessToken = strings.ToLower(data.AccessToken)
 	success, err := regexp.MatchString("^[0-9a-f]{64}$", data.AccessToken)
 	if err != nil {
@@ -489,8 +502,7 @@ func selectProjectStep(data *WizardData) error {
 		data.ProjectID = projects[0].ID
 		data.MainFormat = projects[0].MainFormat
 		fmt.Printf("You've got one project, \"%s\". Answer \"y\" to select this or \"n\" to create a new project: ", projects[0].Name)
-		var answer string
-		fmt.Scanln(&answer)
+		answer := prompt()
 		if answer == "y" {
 			DisplayWizard(data, next(data), "")
 			return nil
@@ -506,8 +518,7 @@ func selectProjectStep(data *WizardData) error {
 	}
 	fmt.Printf("%2d. Create new project\n", len(projects)+1)
 	fmt.Print("Select project: ")
-	var id string
-	fmt.Scanln(&id)
+	id := prompt()
 	number, err := strconv.Atoi(id)
 	if err != nil || number < 1 || number > len(projects)+1 {
 		DisplayWizard(data, "selectProject", fmt.Sprintf("Argument Error: Please select a project from the list by specifying its position in the list, e.g. 2 for the second project."))
