@@ -1,4 +1,5 @@
 .phraseapp.yml
+.phraseapp.yml.dev
 
 # InteliJ
 *.iml
