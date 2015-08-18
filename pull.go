@@ -15,18 +15,18 @@ import (
 
 type PullCommand struct {
 	Credentials
-	DebugPull bool `cli:"opt --debug desc='Debug output (only push+pull)'"`
 }
 
 func (cmd *PullCommand) Run() error {
+	if cmd.Debug {
+		Debug = true
+	}
+
 	client, err := ClientFromCmdCredentials(cmd.Credentials)
 	if err != nil {
 		return err
 	}
 
-	if cmd.DebugPull {
-		Debug = true
-	}
 	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err

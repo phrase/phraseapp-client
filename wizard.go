@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -67,7 +66,7 @@ func (cmd *WizardCommand) Run() error {
 	data := WizardData{Host: cmd.Host}
 	err := DisplayWizard(&data, "", "")
 	if err != nil {
-		log.Fatal(err)
+		printError(err)
 	}
 	return nil
 }
@@ -184,8 +183,11 @@ func printParrot() {
 	ct.ResetColor()
 }
 
-func printError(errorMsg string) {
+func printErrorStr(errorMsg string) {
 	printWithColor(errorMsg, ct.Red, true)
+}
+func printError(err error) {
+	printWithColor(err.Error(), ct.Red, true)
 }
 
 func printWait(msg string) {
@@ -209,33 +211,33 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) error {
 	}
 
 	if errorMsg != "" {
-		printError(errorMsg)
+		printErrorStr(errorMsg)
 	}
 	switch {
 
 	case step == "" || data.AccessToken == "":
 		data.Step = "token"
-		tokenStep(data)
+		return tokenStep(data)
 	case step == "newProject":
 		data.Step = "newProject"
-		newProjectStep(data)
+		return newProjectStep(data)
 	case step == "selectProject":
 		data.Step = "selectProject"
-		selectProjectStep(data)
+		return selectProjectStep(data)
 	case step == "selectFormat":
 		data.Step = "selectFormat"
-		selectFormat(data)
+		return selectFormat(data)
 	case step == "pushConfig":
 		data.Step = "pushConfig"
-		pushConfig(data)
+		return pushConfig(data)
 	case step == "pullConfig":
 		data.Step = "pullConfig"
-		pullConfig(data)
+		return pullConfig(data)
 	case step == "finish":
-		writeConfig(data, ".phraseapp.yml")
+		return writeConfig(data, ".phraseapp.yml")
 	}
 
-	return nil
+	return fmt.Errorf("Step %s not known in init wizard", step)
 
 }
 
@@ -491,11 +493,10 @@ func selectProjectStep(data *WizardData) error {
 		if success {
 			errorMsg := fmt.Sprintf("Argument Error: AccessToken '%s' is invalid. It may be revoked. Please create a new Access Token.", data.AccessToken)
 			data.AccessToken = ""
-			DisplayWizard(data, "", errorMsg)
+			return DisplayWizard(data, "", errorMsg)
 		} else {
 			return err
 		}
-		return nil
 	}
 
 	if len(projects) == 1 {
@@ -504,13 +505,11 @@ func selectProjectStep(data *WizardData) error {
 		fmt.Printf("You've got one project, \"%s\". Answer \"y\" to select this or \"n\" to create a new project: ", projects[0].Name)
 		answer := prompt()
 		if answer == "y" {
-			DisplayWizard(data, next(data), "")
-			return nil
+			return DisplayWizard(data, next(data), "")
 		} else {
 			data.ProjectID = ""
 			data.MainFormat = ""
-			DisplayWizard(data, "newProject", "")
-			return nil
+			return DisplayWizard(data, "newProject", "")
 		}
 	}
 	for counter, project := range projects {
@@ -521,18 +520,15 @@ func selectProjectStep(data *WizardData) error {
 	id := prompt()
 	number, err := strconv.Atoi(id)
 	if err != nil || number < 1 || number > len(projects)+1 {
-		DisplayWizard(data, "selectProject", fmt.Sprintf("Argument Error: Please select a project from the list by specifying its position in the list, e.g. 2 for the second project."))
-		return nil
+		return DisplayWizard(data, "selectProject", fmt.Sprintf("Argument Error: Please select a project from the list by specifying its position in the list, e.g. 2 for the second project."))
 	}
 
 	if number == len(projects)+1 {
-		DisplayWizard(data, "newProject", "")
-		return nil
+		return DisplayWizard(data, "newProject", "")
 	}
 
 	selectedProject := projects[number-1]
 	data.ProjectID = selectedProject.ID
 	data.MainFormat = selectedProject.MainFormat
-	DisplayWizard(data, next(data), "")
-	return nil
+	return DisplayWizard(data, next(data), "")
 }
