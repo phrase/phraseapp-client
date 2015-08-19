@@ -296,8 +296,10 @@ var client *phraseapp.Client
 
 func selectFormat(data *WizardData) error {
 	auth := phraseapp.Credentials{Token: data.AccessToken}
-	var err error
-	client, err = phraseapp.NewClient(auth, nil)
+	client, err := phraseapp.NewClient(auth, nil)
+	if err != nil {
+		return err
+	}
 	formats, err := client.FormatsList(1, 25)
 	if err != nil {
 		return err
@@ -456,9 +458,7 @@ func selectProjectStep(data *WizardData) error {
 	fmt.Println("Please select your project:")
 	var err error
 	client, err = phraseapp.NewClient(auth, nil)
-	if err != nil {
-		return err
-	}
+
 	var wg sync.WaitGroup
 	out := make(chan []phraseapp.Project, 1)
 	wg.Add(1)
@@ -487,15 +487,15 @@ func selectProjectStep(data *WizardData) error {
 	close(out)
 
 	if err != nil {
-		success, match_err := regexp.MatchString("401", err.Error())
+		unauth_match, match_err := regexp.MatchString("401", err.Error())
 		if match_err != nil {
-			fmt.Println(err.Error())
-			return match_err
+			fmt.Fprintln(os.Stderr, err.Error())
+			panic(match_err)
 		}
-		if success {
+		if unauth_match {
 			errorMsg := fmt.Sprintf("Argument Error: AccessToken '%s' is invalid. It may be revoked. Please create a new Access Token.", data.AccessToken)
 			data.AccessToken = ""
-			return DisplayWizard(data, "", errorMsg)
+			return fmt.Errorf(errorMsg)
 		} else {
 			return err
 		}

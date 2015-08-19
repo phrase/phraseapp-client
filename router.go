@@ -149,6 +149,8 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("upload/show", &UploadShow{ProjectID: projectID}, "View details and summary for a single upload.")
 
+	r.Register("uploads/list", &UploadsList{ProjectID: projectID}, "List all uploads for the given project.")
+
 	r.Register("version/show", &VersionShow{ProjectID: projectID}, "Get details on a single version.")
 
 	r.Register("versions/list", &VersionsList{ProjectID: projectID}, "List all versions for the given translation.")
@@ -165,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-18 18:35:24.538055789 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.0.rc20")
+	fmt.Printf("Built at 2015-08-18 19:28:28.860032443 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "8c3f2127836724c1d428896ab7f6eb113707f862")
-	fmt.Println("PhraseApp Client revision:", "8ac80c484360cc30dafaa00ce8cee399fb4265fd")
-	fmt.Println("PhraseApp Docs revision:", "767813638335dadeb3072bcae9932641c783094c")
+	fmt.Println("PhraseApp Client revision:", "6491b83a75fbcabc5b9b174d51e240dd853ae9ae")
+	fmt.Println("PhraseApp Docs revision:", "26152cec812022f63b4d442871dcdf880ef61891")
 	return nil
 }
 
@@ -3712,6 +3714,43 @@ func (cmd *UploadShow) Run() error {
 	}
 
 	res, err := client.UploadShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type UploadsList struct {
+	Credentials
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func (cmd *UploadsList) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.UploadsList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err

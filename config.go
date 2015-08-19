@@ -155,7 +155,7 @@ func parseCredentials(yml string) (*phraseapp.Credentials, error) {
 	var conf *credentialConf
 
 	if err := yaml.Unmarshal([]byte(yml), &conf); err != nil {
-		fmt.Println("Could not parse .phraseapp.yml")
+		fmt.Fprintln(os.Stderr, "Could not parse .phraseapp.yml")
 		return nil, err
 	}
 
@@ -177,7 +177,7 @@ func parseDefaults(yml string) (phraseapp.DefaultParams, error) {
 
 	err := yaml.Unmarshal([]byte(yml), &conf)
 	if err != nil {
-		fmt.Println("Could not parse .phraseapp.yml")
+		fmt.Fprintln(os.Stderr, "Could not parse .phraseapp.yml")
 		return nil, err
 	}
 

@@ -115,7 +115,7 @@ func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, loc
 		}
 		valid, err := pc.isValidLocale(remoteLocale)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Fprintln(os.Stderr, err)
 		}
 		if !valid {
 			continue

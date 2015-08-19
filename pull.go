@@ -120,7 +120,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 			sharedMessage("pull", localeToPath)
 		}
 		if Debug {
-			fmt.Println(strings.Repeat("-", 10))
+			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
 		}
 	}
 
@@ -189,16 +189,16 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 	}
 
 	if Debug {
-		fmt.Println("Target file pattern:", target.File)
-		fmt.Println("Actual file path", localeFile.Path)
-		fmt.Println("LocaleID", localeID)
-		fmt.Println("ProjectID", target.ProjectID)
-		fmt.Println("FileFormat", downloadParams.FileFormat)
-		fmt.Println("ConvertEmoji", downloadParams.ConvertEmoji)
-		fmt.Println("IncludeEmptyTranslations", downloadParams.IncludeEmptyTranslations)
-		fmt.Println("KeepNotranslateTags", downloadParams.KeepNotranslateTags)
-		fmt.Println("Tag", downloadParams.Tag)
-		fmt.Println("FormatOptions", downloadParams.FormatOptions)
+		fmt.Fprintln(os.Stderr, "Target file pattern:", target.File)
+		fmt.Fprintln(os.Stderr, "Actual file path", localeFile.Path)
+		fmt.Fprintln(os.Stderr, "LocaleID", localeID)
+		fmt.Fprintln(os.Stderr, "ProjectID", target.ProjectID)
+		fmt.Fprintln(os.Stderr, "FileFormat", downloadParams.FileFormat)
+		fmt.Fprintln(os.Stderr, "ConvertEmoji", downloadParams.ConvertEmoji)
+		fmt.Fprintln(os.Stderr, "IncludeEmptyTranslations", downloadParams.IncludeEmptyTranslations)
+		fmt.Fprintln(os.Stderr, "KeepNotranslateTags", downloadParams.KeepNotranslateTags)
+		fmt.Fprintln(os.Stderr, "Tag", downloadParams.Tag)
+		fmt.Fprintln(os.Stderr, "FormatOptions", downloadParams.FormatOptions)
 	}
 
 	res, err := client.LocaleDownload(target.ProjectID, localeID, downloadParams)

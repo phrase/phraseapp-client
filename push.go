@@ -107,7 +107,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		}
 
 		if Debug {
-			fmt.Println(strings.Repeat("-", 10))
+			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
 		}
 
 	}
@@ -154,28 +154,28 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	}
 
 	if Debug {
-		fmt.Println("Source file pattern:", source.File)
-		fmt.Println("Actual File Location", uploadParams.File)
+		fmt.Fprintln(os.Stderr, "Source file pattern:", source.File)
+		fmt.Fprintln(os.Stderr, "Actual File Location", uploadParams.File)
 		if uploadParams.LocaleID != nil {
-			fmt.Println("LocaleID/Name", *uploadParams.LocaleID)
+			fmt.Fprintln(os.Stderr, "LocaleID/Name", *uploadParams.LocaleID)
 		} else {
-			fmt.Println("LocaleID/Name", nil)
+			fmt.Fprintln(os.Stderr, "LocaleID/Name", nil)
 		}
 
 		if uploadParams.FileFormat != nil {
-			fmt.Println("Format", *uploadParams.FileFormat)
+			fmt.Fprintln(os.Stderr, "Format", *uploadParams.FileFormat)
 		} else {
-			fmt.Println("Format", nil)
+			fmt.Fprintln(os.Stderr, "Format", nil)
 		}
-		fmt.Println("Tags", uploadParams.Tags)
-		fmt.Println("Emoji", uploadParams.ConvertEmoji)
+		fmt.Fprintln(os.Stderr, "Tags", uploadParams.Tags)
+		fmt.Fprintln(os.Stderr, "Emoji", uploadParams.ConvertEmoji)
 		if uploadParams.UpdateTranslations != nil {
-			fmt.Println("UpdateTranslations", *uploadParams.UpdateTranslations)
+			fmt.Fprintln(os.Stderr, "UpdateTranslations", *uploadParams.UpdateTranslations)
 		} else {
-			fmt.Println("UpdateTranslations", nil)
+			fmt.Fprintln(os.Stderr, "UpdateTranslations", nil)
 		}
-		fmt.Println("SkipUnverification", uploadParams.SkipUnverification)
-		//		fmt.Println("FormatOpts", uploadParams.FormatOptions)
+		fmt.Fprintln(os.Stderr, "SkipUnverification", uploadParams.SkipUnverification)
+		//		fmt.Fprintln(os.Stderr, "FormatOpts", uploadParams.FormatOptions)
 	}
 
 	aUpload, err := client.UploadCreate(source.ProjectID, uploadParams)
@@ -302,12 +302,12 @@ func (source *Source) glob() ([]string, error) {
 	pattern := source.fileWithoutPlaceholder() + source.extensionWithoutPlaceholder()
 
 	files, err := filepath.Glob(pattern)
-
-	if Debug {
-		fmt.Println("Found", len(files), "files matching the source pattern", pattern)
-	}
 	if err != nil {
 		return nil, err
+	}
+
+	if Debug {
+		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
 	}
 
 	return files, nil
