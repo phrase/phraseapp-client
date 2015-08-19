@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-19 12:32:46.99701562 +0200 CEST\n")
+	fmt.Printf("Built at 2015-08-19 12:34:27.337657325 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
 	fmt.Println("PhraseApp API Client revision:", "8c3f2127836724c1d428896ab7f6eb113707f862")
-	fmt.Println("PhraseApp Client revision:", "7d3cc658a766280e3844edaba7c75f4240e0c1fa")
-	fmt.Println("PhraseApp Docs revision:", "26152cec812022f63b4d442871dcdf880ef61891")
+	fmt.Println("PhraseApp Client revision:", "209dcd7a4a6ea904802b2b61179e4b596444ac7c")
+	fmt.Println("PhraseApp Docs revision:", "bb9b117237ffff4e63348808b22c230c50d25f12")
 	return nil
 }
 
@@ -1963,19 +1963,19 @@ func (cmd *OrderConfirm) Run() error {
 type OrderCreate struct {
 	Credentials
 
-	Category                         *string `cli:"opt --category"`
-	IncludeUntranslatedKeys          *bool   `cli:"opt --include-untranslated-keys"`
-	IncludeUnverifiedTranslations    *bool   `cli:"opt --include-unverified-translations"`
-	Lsp                              *string `cli:"opt --lsp"`
-	Message                          *string `cli:"opt --message"`
-	Priority                         *bool   `cli:"opt --priority"`
-	Quality                          *bool   `cli:"opt --quality"`
-	SourceLocaleID                   *string `cli:"opt --source-locale-id"`
-	StyleguideID                     *string `cli:"opt --styleguide-id"`
-	Tag                              *string `cli:"opt --tag"`
-	TargetLocaleIDs                  *string `cli:"opt --target-locale-ids"`
-	TranslationType                  *string `cli:"opt --translation-type"`
-	UnverifyTranslationsUponDelivery *bool   `cli:"opt --unverify-translations-upon-delivery"`
+	Category                         *string  `cli:"opt --category"`
+	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
+	IncludeUnverifiedTranslations    *bool    `cli:"opt --include-unverified-translations"`
+	Lsp                              *string  `cli:"opt --lsp"`
+	Message                          *string  `cli:"opt --message"`
+	Priority                         *bool    `cli:"opt --priority"`
+	Quality                          *bool    `cli:"opt --quality"`
+	SourceLocaleID                   *string  `cli:"opt --source-locale-id"`
+	StyleguideID                     *string  `cli:"opt --styleguide-id"`
+	Tag                              *string  `cli:"opt --tag"`
+	TargetLocaleIDs                  []string `cli:"opt --target-locale-ids"`
+	TranslationType                  *string  `cli:"opt --translation-type"`
+	UnverifyTranslationsUponDelivery *bool    `cli:"opt --unverify-translations-upon-delivery"`
 
 	ProjectID string `cli:"arg required"`
 }
