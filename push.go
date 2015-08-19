@@ -480,9 +480,9 @@ func printSummary(summary *phraseapp.SummaryType) {
 	}
 	if changed || Debug {
 		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		printMessage("- Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		printMessage("- Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		printMessage("- Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
 		fmt.Print("\n")
 	}
 }
