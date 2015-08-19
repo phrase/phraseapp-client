@@ -60,10 +60,12 @@ const parrot = `
 `
 
 type WizardCommand struct {
-	Host string `cli:"opt --host"`
+	Host  string `cli:"opt --host"`
+	Debug bool   `cli:"opt --verbose -v"`
 }
 
 func (cmd *WizardCommand) Run() error {
+	Debug = cmd.Debug
 	data := WizardData{Host: cmd.Host}
 	err := DisplayWizard(&data, "", "")
 	if err != nil {
