@@ -248,7 +248,6 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 	if tag != "" {
 		lc.Tag = tag
 	}
-
 	locale := source.getRemoteLocaleForLocaleFile(lc)
 	if locale != nil {
 		lc.ExistsRemote = true
@@ -269,12 +268,12 @@ func (source *Source) generateLocaleForFile(path string) (*LocaleFile, error) {
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
 	for _, remote := range source.RemoteLocales {
-		if remote.ID == source.GetLocaleID() || remote.Name == source.GetLocaleID() {
+		if remote.Name == source.GetLocaleID() || remote.ID == source.GetLocaleID() {
 			return remote
 		}
 
 		localeName := source.replacePlaceholderInParams(localeFile)
-		if strings.Contains(remote.Name, localeName) {
+		if localeName != "" && strings.Contains(remote.Name, localeName) {
 			return remote
 		}
 
@@ -401,9 +400,9 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	uploadParams.FileFormat = &source.FileFormat
 
 	if localeFile.ID != "" {
-		uploadParams.LocaleID = &(localeFile.ID)
+		uploadParams.LocaleID = &localeFile.ID
 	} else if localeFile.RFC != "" {
-		uploadParams.LocaleID = &(localeFile.RFC)
+		uploadParams.LocaleID = &localeFile.RFC
 	}
 
 	if localeFile.Tag != "" {
@@ -417,7 +416,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Locale
 	params := source.Params
 
 	localeID := params.LocaleID
-	if localeID != "" && !strings.Contains(localeID, "<locale_code>") {
+	if localeID != "" {
 		uploadParams.LocaleID = &localeID
 	}
 
