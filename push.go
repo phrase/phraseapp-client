@@ -47,7 +47,7 @@ type Source struct {
 	ProjectID      string      `yaml:"project_id,omitempty"`
 	AccessToken    string      `yaml:"access_token,omitempty"`
 	FileFormat     string      `yaml:"file_format,omitempty"`
-	Params         *PushParams `yaml:"params,omitempty"`
+	Params         *PushParams `yaml:"params"`
 	RemoteLocales  []*phraseapp.Locale
 	PathComponents *PathComponents
 	Extension      string
