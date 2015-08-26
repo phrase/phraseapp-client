@@ -12,6 +12,15 @@ This quick start will guide you through the basic steps to get up and running wi
 
 [Download and install](https://phraseapp.com/cli) the client for your platform. See our [detailed installation guide](http://docs.phraseapp.com/developers/cli/installation#download) for more information.
 
+##### Homebrew
+
+If you use homebrew, we have provided a tap to make installation easier on Mac OS X:
+
+        brew tap phrase/brewed
+        brew install phraseapp
+
+The tap is linked to our Formula collection and will be updated, when you call `brew update` as well.
+
 #### 2. Init
 
 [Initialize your project](http://docs.phraseapp.com/developers/cli/installation#initialization) by executing the `init` command. This lets you define your preferred locale file format, source files and more.
