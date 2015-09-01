@@ -167,10 +167,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-08-31 10:57:06.156887376 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "96b5ea14971e8605c506cfa5d5a8c99a329f62c1")
-	fmt.Println("PhraseApp Client revision:", "7dec2684ba347f8b4d00ad4bf128ba518ac16d8b")
+	fmt.Printf("Built at 2015-09-01 16:35:03.733793072 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "1.0.1")
+	fmt.Println("PhraseApp API Client revision:", "a9eed155d538a560633d872b947d83fec3eaad38")
+	fmt.Println("PhraseApp Client revision:", "adcbc9e5435f76cb08d413e5b6fa7c3bff3bf862")
 	fmt.Println("PhraseApp Docs revision:", "318e37219928ebadc312c54394b9e931218c2726")
 	return nil
 }
