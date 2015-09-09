@@ -155,9 +155,9 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("versions/list", &VersionsList{ProjectID: projectID}, "List all versions for the given translation.")
 
-	r.Register("pull", &PullCommand{}, "Download locales from your PhraseApp project.")
+	r.Register("pull", &PullCommand{}, "Download locales from your PhraseApp project.\n  You can provide parameters supported by the locales#download endpoint http://docs.phraseapp.com/api/v2/locales/#download\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
 
-	r.Register("push", &PushCommand{}, "Upload locales to your PhraseApp project.")
+	r.Register("push", &PushCommand{}, "Upload locales to your PhraseApp project.\n  You can provide parameters supported by the uploads#create endpoint http://docs.phraseapp.com/api/v2/uploads/#create\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
@@ -167,11 +167,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-09-01 16:35:03.733793072 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.0.1")
-	fmt.Println("PhraseApp API Client revision:", "a9eed155d538a560633d872b947d83fec3eaad38")
-	fmt.Println("PhraseApp Client revision:", "adcbc9e5435f76cb08d413e5b6fa7c3bff3bf862")
-	fmt.Println("PhraseApp Docs revision:", "318e37219928ebadc312c54394b9e931218c2726")
+	fmt.Printf("Built at 2015-09-09 14:45:30.393155116 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "test")
+	fmt.Println("PhraseApp API Client revision:", "d08256669d14f2678e14d6a9ee120a24d1a69302")
+	fmt.Println("PhraseApp Client revision:", "77b4555eab169d8dee185aa37dcbc8476981ec54")
+	fmt.Println("PhraseApp Docs revision:", "d6991697505b7d368c879d97b8f8a6e77cd94411")
 	return nil
 }
 
