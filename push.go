@@ -383,7 +383,7 @@ type PushConfig struct {
 		ProjectID   string `yaml:"project_id"`
 		FileFormat  string `yaml:"file_format,omitempty"`
 		Push        struct {
-			Sources *Sources
+			Sources Sources
 		}
 	}
 }
@@ -412,7 +412,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
-	sources := *config.Phraseapp.Push.Sources
+	sources := config.Phraseapp.Push.Sources
 
 	validSources := []*Source{}
 	for _, source := range sources {
