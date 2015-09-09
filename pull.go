@@ -53,13 +53,15 @@ type Target struct {
 }
 
 type PullParams struct {
-	FileFormat               string                  `yaml:"file_format,omitempty"`
-	LocaleID                 string                  `yaml:"locale_id,omitempty"`
-	ConvertEmoji             bool                    `yaml:"convert_emoji,omitempty"`
-	FormatOptions            *map[string]interface{} `yaml:"format_options,omitempty"`
-	IncludeEmptyTranslations bool                    `yaml:"include_empty_translations,omitempty"`
-	KeepNotranslateTags      bool                    `yaml:"keep_notranslate_tags,omitempty"`
-	Tag                      string                  `yaml:"tag,omitempty"`
+	FileFormat                 string                  `yaml:"file_format,omitempty"`
+	LocaleID                   string                  `yaml:"locale_id,omitempty"`
+	Encoding                   string                  `yaml:"encoding,omitempty"`
+	ConvertEmoji               bool                    `yaml:"convert_emoji,omitempty"`
+	FormatOptions              *map[string]interface{} `yaml:"format_options,omitempty"`
+	IncludeEmptyTranslations   bool                    `yaml:"include_empty_translations,omitempty"`
+	KeepNotranslateTags        bool                    `yaml:"keep_notranslate_tags,omitempty"`
+	SkipUnverifiedTranslations bool                    `yaml:"skip_unverified_translations,omitempty"`
+	Tag                        string                  `yaml:"tag,omitempty"`
 }
 
 func (t *Target) GetFormat() string {
@@ -236,12 +238,17 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	}
 
 	downloadParams.IncludeEmptyTranslations = params.IncludeEmptyTranslations
-
 	downloadParams.KeepNotranslateTags = params.KeepNotranslateTags
+	downloadParams.SkipUnverifiedTranslations = params.SkipUnverifiedTranslations
 
 	tag := params.Tag
 	if tag != "" {
 		downloadParams.Tag = &tag
+	}
+
+	encoding := params.Encoding
+	if encoding != "" {
+		downloadParams.Encoding = &encoding
 	}
 
 	return downloadParams
