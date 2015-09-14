@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "test"
+const PHRASEAPP_CLIENT_VERSION = "1.0.2"
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
