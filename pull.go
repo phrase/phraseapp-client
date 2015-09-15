@@ -126,7 +126,9 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 
 		err = target.DownloadAndWriteToFile(client, localeFile)
 		if err != nil {
-			return fmt.Errorf("%s for %s", err, localeFile.Path)
+			errmsg := fmt.Sprintf("%s for %s", err, localeFile.Path)
+			ReportError("Pull Error", errmsg)
+			return fmt.Errorf(errmsg)
 		} else {
 			sharedMessage("pull", localeFile)
 		}
@@ -240,11 +242,15 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 
 func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
 	if locale == nil {
-		return fmt.Errorf("Remote locale could not be downloaded correctly!")
+		errmsg := "Remote locale could not be downloaded correctly!"
+		ReportError("Pull Error", errmsg)
+		return fmt.Errorf(errmsg)
 	}
 
 	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {
-		return fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
+		errmsg := fmt.Sprintf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
+		ReportError("Pull Error", errmsg)
+		return fmt.Errorf(errmsg)
 	}
 	return nil
 }
@@ -319,7 +325,9 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
-		return nil, fmt.Errorf("no targets for download specified")
+		errmsg := "no targets for download specified"
+		ReportError("Pull Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
 	}
 
 	targets := config.Phraseapp.Pull.Targets
@@ -342,7 +350,9 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	}
 
 	if len(validTargets) <= 0 {
-		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
+		errmsg := "no targets could be identified! Refine the targets list in your config"
+		ReportError("Pull Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
 	}
 
 	return validTargets, nil

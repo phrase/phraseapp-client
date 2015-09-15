@@ -265,7 +265,9 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
+		errmsg := fmt.Sprintf("Could not find any files on your system that matches: '%s'", abs)
+		RerportError("Push Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
 	}
 	return localeFiles, nil
 }
@@ -337,7 +339,9 @@ func (source *Source) recurse() ([]string, error) {
 	files := []string{}
 	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("%s for pattern: %s", err, source.File)
+			errmsg = fmt.Sprintf("%s for pattern: %s", err, source.File)
+			ReportError("Push Error", errmsg)
+			return fmt.Errorf(errmsg)
 		}
 		if strings.HasSuffix(f.Name(), source.Extension) {
 			files = append(files, path)
@@ -397,7 +401,9 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
-		return nil, fmt.Errorf("no sources for upload specified")
+		errmsg := "no sources for upload specified"
+		ReportError("Push Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
 	}
 
 	sources := config.Phraseapp.Push.Sources
@@ -420,7 +426,9 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	}
 
 	if len(validSources) <= 0 {
-		return nil, fmt.Errorf("no sources could be identified! Refine the sources list in your config")
+		errmsg := "no sources could be identified! Refine the sources list in your config"
+		ReportError(errmsg)
+		return nil, fmt.Errorf(errmsg)
 	}
 
 	return validSources, nil
