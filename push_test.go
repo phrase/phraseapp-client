@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"path/filepath"
+	"sort"
 	"testing"
 )
 
@@ -73,7 +75,7 @@ func TestSourceCheckPreconditions(t *testing.T) {
 	} {
 		source.File = file
 		if err := source.CheckPreconditions(); err == nil {
-			t.Errorf("source.CheckPrecondition did no fail!")
+			t.Errorf("CheckPrecondition did not fail!")
 		}
 	}
 
@@ -84,7 +86,7 @@ func TestSourceCheckPreconditions(t *testing.T) {
 	} {
 		source.File = file
 		if err := source.CheckPreconditions(); err != nil {
-			t.Errorf("source.CheckPrecondition should not fail with: %s", err.Error())
+			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
 		}
 	}
 }
@@ -108,9 +110,11 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 	}
 
 	if len(localeFiles) == len(expectedFiles) {
-		compareLocaleFiles(t, localeFiles, expectedFiles)
+		if err = compareLocaleFiles(localeFiles, expectedFiles); err != nil {
+			t.Errorf(err.Error())
+		}
 	} else {
-		t.Errorf("source.LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
+		t.Errorf(".LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
 	}
 }
 
@@ -135,27 +139,38 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 	}
 
 	if len(localeFiles) == len(expectedFiles) {
-		compareLocaleFiles(t, localeFiles, expectedFiles)
+		if err = compareLocaleFiles(localeFiles, expectedFiles); err != nil {
+			t.Errorf(err.Error())
+		}
 	} else {
-		t.Errorf("source.LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
+		t.Errorf("LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
 	}
 }
 
-func compareLocaleFiles(t *testing.T, actualFiles LocaleFiles, expectedFiles LocaleFiles) {
-	for idx, localeFile := range actualFiles {
+type ByPath []*LocaleFile
+
+func (a ByPath) Len() int           { return len(a) }
+func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByPath) Less(i, j int) bool { return a[i].Path < a[j].Path }
+
+func compareLocaleFiles(actualFiles LocaleFiles, expectedFiles LocaleFiles) error {
+	sort.Sort(ByPath(actualFiles))
+	sort.Sort(ByPath(expectedFiles))
+	for idx, actualFile := range actualFiles {
 		expected := expectedFiles[idx]
-		actual := localeFile
-		if expected.Path != localeFile.Path {
-			t.Errorf("Expected Path %s should eql %s", expected.Path, actual.Path)
+		actual := actualFile
+		if expected.Path != actual.Path {
+			return fmt.Errorf("Expected Path %s should eql %s", expected.Path, actual.Path)
 		}
-		if expected.Name != localeFile.Name {
-			t.Errorf("Expected Name %s should eql %s", expected.Name, actual.Name)
+		if expected.Name != actual.Name {
+			return fmt.Errorf("Expected Name %s should eql %s", expected.Name, actual.Name)
 		}
-		if expected.RFC != localeFile.RFC {
-			t.Errorf("Expected RFC %s should eql %s", expected.RFC, actual.RFC)
+		if expected.RFC != actual.RFC {
+			return fmt.Errorf("Expected RFC %s should eql %s", expected.RFC, actual.RFC)
 		}
-		if expected.ID != localeFile.ID {
-			t.Errorf("Expected ID %s should eql %s", expected.ID, actual.ID)
+		if expected.ID != actual.ID {
+			return fmt.Errorf("Expected ID %s should eql %s", expected.ID, actual.ID)
 		}
 	}
+	return nil
 }

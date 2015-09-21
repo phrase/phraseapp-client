@@ -27,8 +27,6 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	fmt.Println(client.Credentials.Token)
-
 	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err
@@ -76,7 +74,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf("'%s' does not exist or does not have a valid extension.", abs)
+		return fmt.Errorf("'%s' does not have a valid extension.", abs)
 	}
 
 	remoteLocales, err := RemoteLocales(client, target.ProjectID)
@@ -85,12 +83,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 	}
 	target.RemoteLocales = remoteLocales
 
-	localeFile := &LocaleFile{
-		ID:  target.GetLocaleID(),
-		Tag: target.GetTag(),
-	}
-
-	localeFiles, err := target.TargetToLocaleFile(localeFile)
+	localeFiles, err := target.LocaleFiles()
 	if err != nil {
 		return err
 	}
@@ -190,10 +183,11 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	return downloadParams
 }
 
-func (target *Target) TargetToLocaleFile(localeFile *LocaleFile) (LocaleFiles, error) {
+func (target *Target) LocaleFiles() (LocaleFiles, error) {
+	localeID := target.GetLocaleID()
 	files := []*LocaleFile{}
 	for _, remoteLocale := range target.RemoteLocales {
-		if localeFile.ID != "" && !(remoteLocale.ID == localeFile.ID || remoteLocale.Name == localeFile.ID) {
+		if localeID != "" && !(remoteLocale.ID == localeID || remoteLocale.Name == localeID) {
 			continue
 		}
 		err := target.IsValidLocale(remoteLocale, target.File)
@@ -201,21 +195,22 @@ func (target *Target) TargetToLocaleFile(localeFile *LocaleFile) (LocaleFiles, e
 			return nil, err
 		}
 
-		newLocaleFile := &LocaleFile{
+		localeFile := &LocaleFile{
 			Name:       remoteLocale.Name,
 			ID:         remoteLocale.ID,
 			RFC:        remoteLocale.Code,
-			Tag:        localeFile.Tag,
-			FileFormat: localeFile.FileFormat,
+			Tag:        target.GetTag(),
+			FileFormat: target.GetFormat(),
 			Path:       target.File,
 		}
 
-		absPath, err := target.ReplacePlaceholders(newLocaleFile)
+		absPath, err := target.ReplacePlaceholders(localeFile)
 		if err != nil {
 			return nil, err
 		}
-		newLocaleFile.Path = absPath
-		files = append(files, newLocaleFile)
+		localeFile.Path = absPath
+
+		files = append(files, localeFile)
 	}
 
 	return files, nil
