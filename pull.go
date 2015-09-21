@@ -27,6 +27,8 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
+	fmt.Println(client.Credentials.Token)
+
 	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err
@@ -64,62 +66,46 @@ type PullParams struct {
 	Tag                        string                  `yaml:"tag,omitempty"`
 }
 
-func (t *Target) GetFormat() string {
-	if t.Params != nil && t.Params.FileFormat != "" {
-		return t.Params.FileFormat
-	}
-	if t.FileFormat != "" {
-		return t.FileFormat
-	}
-	return ""
-}
-
-func (t *Target) GetLocaleID() string {
-	if t.Params != nil {
-		return t.Params.LocaleID
-	}
-	return ""
-}
-
-func (t *Target) GetTag() string {
-	if t.Params != nil {
-		return t.Params.Tag
-	}
-	return ""
-}
-
 func (target *Target) Pull(client *phraseapp.Client) error {
 	if strings.TrimSpace(target.File) == "" {
-		return fmt.Errorf("file pattern for target may not be empty")
+		return fmt.Errorf("file pattern for target may not be empty.")
 	}
 
-	pathComponents, err := ExtractPathComponents(target.File)
+	if filepath.Ext(target.File) == "" {
+		abs, err := filepath.Abs(target.File)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("'%s' does not exist or does not have a valid extension.", abs)
+	}
+
+	remoteLocales, err := RemoteLocales(client, target.ProjectID)
+	if err != nil {
+		return err
+	}
+	target.RemoteLocales = remoteLocales
+
+	localeFile := &LocaleFile{
+		ID:  target.GetLocaleID(),
+		Tag: target.GetTag(),
+	}
+
+	localeFiles, err := target.TargetToLocaleFile(localeFile)
 	if err != nil {
 		return err
 	}
 
-	target.RemoteLocales, err = RemoteLocales(client, target.ProjectID)
-	if err != nil {
-		return err
-	}
-
-	localeFile := &LocaleFile{ID: target.GetLocaleID(), Tag: target.GetTag()}
-	localeToPathMapping, err := pathComponents.ExpandPathsWithLocale(target.RemoteLocales, localeFile)
-	if err != nil {
-		return err
-	}
-
-	for _, localeToPath := range localeToPathMapping {
-		err := createFile(localeToPath.Path)
+	for _, localeFile := range localeFiles {
+		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
 		}
 
-		err = target.DownloadAndWriteToFile(client, localeToPath)
+		err = target.DownloadAndWriteToFile(client, localeFile)
 		if err != nil {
-			return fmt.Errorf("%s for %s", err, localeToPath.Path)
+			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
-			sharedMessage("pull", localeToPath)
+			sharedMessage("pull", localeFile)
 		}
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -127,56 +113,6 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 	}
 
 	return nil
-}
-
-func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		return nil, err
-	}
-
-	var config *PullConfig
-
-	err = yaml.Unmarshal([]byte(content), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	if cmd.Token != "" {
-		token = cmd.Token
-	}
-	projectId := config.Phraseapp.ProjectID
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
-		return nil, fmt.Errorf("no targets for download specified")
-	}
-
-	targets := config.Phraseapp.Pull.Targets
-
-	validTargets := []*Target{}
-	for _, target := range targets {
-		if target == nil {
-			continue
-		}
-		if target.ProjectID == "" {
-			target.ProjectID = projectId
-		}
-		if target.AccessToken == "" {
-			target.AccessToken = token
-		}
-		if target.FileFormat == "" {
-			target.FileFormat = fileFormat
-		}
-		validTargets = append(validTargets, target)
-	}
-
-	if len(validTargets) <= 0 {
-		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
-	}
-
-	return validTargets, nil
 }
 
 func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
@@ -254,7 +190,86 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	return downloadParams
 }
 
-// Parsing
+func (target *Target) TargetToLocaleFile(localeFile *LocaleFile) (LocaleFiles, error) {
+	files := []*LocaleFile{}
+	for _, remoteLocale := range target.RemoteLocales {
+		if localeFile.ID != "" && !(remoteLocale.ID == localeFile.ID || remoteLocale.Name == localeFile.ID) {
+			continue
+		}
+		err := target.IsValidLocale(remoteLocale, target.File)
+		if err != nil {
+			return nil, err
+		}
+
+		newLocaleFile := &LocaleFile{
+			Name:       remoteLocale.Name,
+			ID:         remoteLocale.ID,
+			RFC:        remoteLocale.Code,
+			Tag:        localeFile.Tag,
+			FileFormat: localeFile.FileFormat,
+			Path:       target.File,
+		}
+
+		absPath, err := target.ReplacePlaceholders(newLocaleFile)
+		if err != nil {
+			return nil, err
+		}
+		newLocaleFile.Path = absPath
+		files = append(files, newLocaleFile)
+	}
+
+	return files, nil
+}
+
+func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
+	if !(locale != nil) {
+		return fmt.Errorf("Locale not set")
+	}
+
+	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {
+		return fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
+	}
+	return nil
+}
+
+func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error) {
+	absPath, err := filepath.Abs(target.File)
+	if err != nil {
+		return "", err
+	}
+
+	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
+	path = strings.Replace(path, "<locale_code>", localeFile.RFC, -1)
+	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
+
+	return path, nil
+}
+
+func (t *Target) GetFormat() string {
+	if t.Params != nil && t.Params.FileFormat != "" {
+		return t.Params.FileFormat
+	}
+	if t.FileFormat != "" {
+		return t.FileFormat
+	}
+	return ""
+}
+
+func (t *Target) GetLocaleID() string {
+	if t.Params != nil {
+		return t.Params.LocaleID
+	}
+	return ""
+}
+
+func (t *Target) GetTag() string {
+	if t.Params != nil {
+		return t.Params.Tag
+	}
+	return ""
+}
+
+// Configuration
 type PullConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
@@ -266,11 +281,61 @@ type PullConfig struct {
 	}
 }
 
+func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
+	content, err := ConfigContent()
+	if err != nil {
+		return nil, err
+	}
+
+	var config *PullConfig
+
+	err = yaml.Unmarshal([]byte(content), &config)
+	if err != nil {
+		return nil, err
+	}
+
+	token := config.Phraseapp.AccessToken
+	if cmd.Token != "" {
+		token = cmd.Token
+	}
+	projectId := config.Phraseapp.ProjectID
+	fileFormat := config.Phraseapp.FileFormat
+
+	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
+		return nil, fmt.Errorf("no targets for download specified")
+	}
+
+	targets := config.Phraseapp.Pull.Targets
+
+	validTargets := []*Target{}
+	for _, target := range targets {
+		if target == nil {
+			continue
+		}
+		if target.ProjectID == "" {
+			target.ProjectID = projectId
+		}
+		if target.AccessToken == "" {
+			target.AccessToken = token
+		}
+		if target.FileFormat == "" {
+			target.FileFormat = fileFormat
+		}
+		validTargets = append(validTargets, target)
+	}
+
+	if len(validTargets) <= 0 {
+		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
+	}
+
+	return validTargets, nil
+}
+
 func createFile(path string) error {
-	err := exists(path)
+	err := Exists(path)
 	if err != nil {
 		absDir := filepath.Dir(path)
-		err := exists(absDir)
+		err := Exists(absDir)
 		if err != nil {
 			os.MkdirAll(absDir, 0700)
 		}
@@ -280,13 +345,6 @@ func createFile(path string) error {
 			return err
 		}
 		defer f.Close()
-	}
-	return nil
-}
-
-func exists(absPath string) error {
-	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return fmt.Errorf("no such file or directory:", absPath)
 	}
 	return nil
 }

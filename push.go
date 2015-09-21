@@ -68,7 +68,11 @@ var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
 func (source *Source) CheckPreconditions() error {
 	if strings.TrimSpace(source.Extension) == "" {
-		return fmt.Errorf("provide a valid extension!")
+		abs, err := filepath.Abs(source.File)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("'%s' does not exist or does not have a valid extension.", abs)
 	}
 
 	duplicatedPlaceholders := []string{}
@@ -95,13 +99,6 @@ func (source *Source) CheckPreconditions() error {
 	}
 
 	return nil
-}
-
-func (source *Source) GetLocaleID() string {
-	if source.Params != nil {
-		return source.Params.LocaleID
-	}
-	return ""
 }
 
 func (source *Source) Push(client *phraseapp.Client) error {
@@ -279,6 +276,10 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 		localeFiles = append(localeFiles, localeFile)
 	}
+
+	if len(localeFiles) <= 0 {
+		return nil, fmt.Errorf("file pattern did not identify any files on your system!")
+	}
 	return localeFiles, nil
 }
 
@@ -438,28 +439,11 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	return validSources, nil
 }
 
-func printSummary(summary *phraseapp.SummaryType) {
-	newItems := []int64{summary.LocalesCreated, summary.TranslationsUpdated, summary.TranslationKeysCreated, summary.TranslationsCreated}
-	var changed bool
-	for _, item := range newItems {
-		if item > 0 {
-			changed = true
-		}
+func (source *Source) GetLocaleID() string {
+	if source.Params != nil {
+		return source.Params.LocaleID
 	}
-	if changed || Debug {
-		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-		fmt.Print("\n")
-	}
-}
-
-func printMessage(msg, stat string) {
-	fmt.Print(msg)
-	ct.Foreground(ct.Green, true)
-	fmt.Print(stat)
-	ct.ResetColor()
+	return ""
 }
 
 func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
@@ -638,4 +622,34 @@ func (parser *Parser) TagMatches(path string) map[string]string {
 		}
 	}
 	return tagged
+}
+
+// print out
+func printSummary(summary *phraseapp.SummaryType) {
+	newItems := []int64{
+		summary.LocalesCreated,
+		summary.TranslationsUpdated,
+		summary.TranslationKeysCreated,
+		summary.TranslationsCreated,
+	}
+	var changed bool
+	for _, item := range newItems {
+		if item > 0 {
+			changed = true
+		}
+	}
+	if changed || Debug {
+		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
+		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+		fmt.Print("\n")
+	}
+}
+
+func printMessage(msg, stat string) {
+	fmt.Print(msg)
+	ct.Foreground(ct.Green, true)
+	fmt.Print(stat)
+	ct.ResetColor()
 }
