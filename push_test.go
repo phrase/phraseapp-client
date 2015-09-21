@@ -2,26 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"path/filepath"
-	"sort"
 	"testing"
 )
 
-func getBaseLocales() []*phraseapp.Locale {
-	return []*phraseapp.Locale{
-		&phraseapp.Locale{
-			Code: "en",
-			ID:   "en-locale-id",
-			Name: "english",
-		},
-		&phraseapp.Locale{
-			Code: "de",
-			ID:   "de-locale-id",
-			Name: "german",
-		},
-	}
-}
 func getBaseSource() *Source {
 	source := &Source{
 		File:        "./tests/<locale_code>.yml",
@@ -45,6 +29,7 @@ func getBaseSource() *Source {
 }
 
 func TestSourceFields(t *testing.T) {
+	fmt.Println("Source#Fields test")
 	source := getBaseSource()
 
 	if source.File != "./tests/<locale_code>.yml" {
@@ -66,6 +51,7 @@ func TestSourceFields(t *testing.T) {
 }
 
 func TestSourceCheckPreconditions(t *testing.T) {
+	fmt.Println("Source#CheckPreconditions test")
 	source := getBaseSource()
 
 	for _, file := range []string{
@@ -92,6 +78,7 @@ func TestSourceCheckPreconditions(t *testing.T) {
 }
 
 func TestSourceLocaleFilesOne(t *testing.T) {
+	fmt.Println("Source#LocaleFiles#1 test")
 	source := getBaseSource()
 	localeFiles, err := source.LocaleFiles()
 
@@ -119,6 +106,7 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 }
 
 func TestSourceLocaleFilesTwo(t *testing.T) {
+	fmt.Println("Source#LocaleFiles#2 test")
 	source := getBaseSource()
 	source.File = "./**/<locale_name>.yml"
 
@@ -147,30 +135,94 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 	}
 }
 
-type ByPath []*LocaleFile
+type Pattern struct {
+	File         string
+	Ext          string
+	TestPath     string
+	ExpectedRFC  string
+	ExpectedName string
+	ExpectedTag  string
+}
 
-func (a ByPath) Len() int           { return len(a) }
-func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByPath) Less(i, j int) bool { return a[i].Path < a[j].Path }
+func TestParserPatterns(t *testing.T) {
+	fmt.Println("Parser pattern test")
+	for _, pattern := range []*Pattern{
+		&Pattern{
+			File:        "./locales/<locale_code>.yml",
+			Ext:         "yml",
+			TestPath:    "locales/en.yml",
+			ExpectedRFC: "en",
+		},
+		&Pattern{
+			File:        "./config/<tag>/<locale_code>.yml",
+			Ext:         "yml",
+			TestPath:    "config/abc/en.yml",
+			ExpectedRFC: "en",
+			ExpectedTag: "abc",
+		},
+		&Pattern{
+			File:         "./config/<locale_name>/<locale_code>.yml",
+			Ext:          "yml",
+			TestPath:     "config/german/de.yml",
+			ExpectedRFC:  "de",
+			ExpectedTag:  "",
+			ExpectedName: "german",
+		},
+		&Pattern{
+			File:        "./config/<locale_code>/*.yml",
+			Ext:         "yml",
+			TestPath:    "config/en/english.yml",
+			ExpectedRFC: "en",
+		},
+		&Pattern{
+			File:        "./<tag>/<locale_code>.lproj/Localizable.strings",
+			Ext:         "strings",
+			TestPath:    "abc/en.lproj/Localizable.strings",
+			ExpectedRFC: "en",
+			ExpectedTag: "abc",
+		},
+		&Pattern{
+			File:        "./<tag>/<locale_code>-values/Strings.xml",
+			Ext:         "xml",
+			TestPath:    "abc/en-values/Strings.xml",
+			ExpectedRFC: "en",
+			ExpectedTag: "abc",
+		},
+		&Pattern{
+			File:        "./<tag>/play.<locale_code>",
+			Ext:         "<locale_code>",
+			TestPath:    "abc/play.en",
+			ExpectedRFC: "en",
+			ExpectedTag: "abc",
+		},
+	} {
+		parser := &Parser{
+			SourceFile: pattern.File,
+			Extension:  pattern.Ext,
+		}
+		parser.Initialize()
+		parser.Search()
 
-func compareLocaleFiles(actualFiles LocaleFiles, expectedFiles LocaleFiles) error {
-	sort.Sort(ByPath(actualFiles))
-	sort.Sort(ByPath(expectedFiles))
-	for idx, actualFile := range actualFiles {
-		expected := expectedFiles[idx]
-		actual := actualFile
-		if expected.Path != actual.Path {
-			return fmt.Errorf("Expected Path %s should eql %s", expected.Path, actual.Path)
+		if !parser.MatchesPath(pattern.TestPath) {
+			t.Fail()
 		}
-		if expected.Name != actual.Name {
-			return fmt.Errorf("Expected Name %s should eql %s", expected.Name, actual.Name)
+		fmt.Println("Pattern:", pattern.File, " -> ", parser.Matcher)
+
+		localeFile, err := parser.Eval(pattern.TestPath)
+		if err != nil {
+			t.Errorf(err.Error())
 		}
-		if expected.RFC != actual.RFC {
-			return fmt.Errorf("Expected RFC %s should eql %s", expected.RFC, actual.RFC)
+
+		if localeFile.RFC != pattern.ExpectedRFC {
+			t.Errorf("Expected RFC to equal %s but was %s", pattern.ExpectedRFC, localeFile.RFC)
 		}
-		if expected.ID != actual.ID {
-			return fmt.Errorf("Expected ID %s should eql %s", expected.ID, actual.ID)
+
+		if localeFile.Tag != pattern.ExpectedTag {
+			t.Errorf("Expected Tag to equal %s but was %s", pattern.ExpectedTag, localeFile.Tag)
+		}
+
+		if localeFile.Name != pattern.ExpectedName {
+			t.Errorf("Expected LocaleName to equal %s but was %s", pattern.ExpectedName, localeFile.Name)
 		}
 	}
-	return nil
 }

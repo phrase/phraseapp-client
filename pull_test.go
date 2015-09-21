@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -27,6 +28,7 @@ func getBaseTarget() *Target {
 }
 
 func TestTargetFields(t *testing.T) {
+	fmt.Println("Target#Fields test")
 	target := getBaseTarget()
 
 	if target.File != "./tests/<locale_code>.yml" {
@@ -48,6 +50,7 @@ func TestTargetFields(t *testing.T) {
 }
 
 func TestTargetLocaleFilesOne(t *testing.T) {
+	fmt.Println("Target#LocaleFiles test")
 	target := getBaseTarget()
 	localeFiles, err := target.LocaleFiles()
 
