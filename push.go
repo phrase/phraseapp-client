@@ -66,7 +66,6 @@ type PushParams struct {
 }
 
 var separator = string(os.PathSeparator)
-var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
 func (source *Source) Push(client *phraseapp.Client) error {
 	if err := CheckPreconditions(source.File); err != nil {

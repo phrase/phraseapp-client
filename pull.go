@@ -82,10 +82,18 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		return err
 	}
 
+	localeIdToFileIsDistinct := (target.GetLocaleID() != "" && len(localeFiles) == 1)
+
 	for _, localeFile := range localeFiles {
 		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
+		}
+
+		if localeIdToFileIsDistinct {
+			if target.GetLocaleID() != "" {
+				localeFile.ID = target.GetLocaleID()
+			}
 		}
 
 		err = target.DownloadAndWriteToFile(client, localeFile)
@@ -105,18 +113,10 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
 	downloadParams := target.setDownloadParams()
 
-	params := target.Params
-	localeID := ""
-	if params != nil && params.LocaleID != "" {
-		localeID = params.LocaleID
-	} else {
-		localeID = localeFile.ID
-	}
-
 	if Debug {
 		fmt.Fprintln(os.Stderr, "Target file pattern:", target.File)
 		fmt.Fprintln(os.Stderr, "Actual file path", localeFile.Path)
-		fmt.Fprintln(os.Stderr, "LocaleID", localeID)
+		fmt.Fprintln(os.Stderr, "LocaleID", localeFile.ID)
 		fmt.Fprintln(os.Stderr, "ProjectID", target.ProjectID)
 		fmt.Fprintln(os.Stderr, "FileFormat", downloadParams.FileFormat)
 		fmt.Fprintln(os.Stderr, "ConvertEmoji", downloadParams.ConvertEmoji)
@@ -126,7 +126,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		fmt.Fprintln(os.Stderr, "FormatOptions", downloadParams.FormatOptions)
 	}
 
-	res, err := client.LocaleDownload(target.ProjectID, localeID, downloadParams)
+	res, err := client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
 	if err != nil {
 		return err
 	}

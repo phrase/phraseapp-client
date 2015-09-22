@@ -8,6 +8,7 @@ import (
 
 	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"regexp"
 )
 
 var Debug bool
@@ -17,6 +18,8 @@ type LocaleFile struct {
 	Path, Name, ID, RFC, Tag, FileFormat string
 	ExistsRemote                         bool
 }
+
+var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
 func CheckPreconditions(file string) error {
 	if strings.TrimSpace(file) == "" {
