@@ -6,7 +6,7 @@ import (
 )
 
 func TestSourceCheckPreconditions(t *testing.T) {
-	fmt.Println("Shared#CheckPreconditions test")
+	fmt.Println("Shared#CheckPreconditions")
 	for _, file := range []string{
 		"",
 		"no_extension",

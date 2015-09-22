@@ -29,7 +29,7 @@ func getBaseSource() *Source {
 }
 
 func TestSourceFields(t *testing.T) {
-	fmt.Println("Source#Fields test")
+	fmt.Println("Push#Source#Fields")
 	source := getBaseSource()
 
 	if source.File != "./tests/<locale_code>.yml" {
@@ -51,7 +51,7 @@ func TestSourceFields(t *testing.T) {
 }
 
 func TestSourceLocaleFilesOne(t *testing.T) {
-	fmt.Println("Source#LocaleFiles#1 test")
+	fmt.Println("Push#Source#LocaleFiles#1")
 	source := getBaseSource()
 	localeFiles, err := source.LocaleFiles()
 
@@ -79,7 +79,7 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 }
 
 func TestSourceLocaleFilesTwo(t *testing.T) {
-	fmt.Println("Source#LocaleFiles#2 test")
+	fmt.Println("Push#Source#LocaleFiles#2")
 	source := getBaseSource()
 	source.File = "./**/<locale_name>.yml"
 
@@ -118,8 +118,8 @@ type Pattern struct {
 }
 
 func TestParserPatterns(t *testing.T) {
-	fmt.Println("Parser pattern test")
-	for _, pattern := range []*Pattern{
+	fmt.Println("Push#Parser")
+	for idx, pattern := range []*Pattern{
 		&Pattern{
 			File:        "./locales/<locale_code>.yml",
 			Ext:         "yml",
@@ -198,9 +198,10 @@ func TestParserPatterns(t *testing.T) {
 		}
 		parser.Initialize()
 		parser.Search()
+		fmt.Println("  ", idx+1, pattern.File, ":", parser.Matcher)
 
 		if !parser.MatchesPath(pattern.TestPath) {
-			printPattern(pattern, parser)
+			fmt.Println("File:", pattern.TestPath)
 			t.Fail()
 		}
 
@@ -228,13 +229,8 @@ func TestParserPatterns(t *testing.T) {
 	}
 }
 
-func printPattern(pattern *Pattern, parser *Parser) {
-	fmt.Println("Pattern:", pattern.File, " -> ", parser.Matcher)
-	fmt.Println("File:", pattern.TestPath)
-}
-
 func TestReplacePlaceholderInParams(t *testing.T) {
-	fmt.Println("Source#ReplacePlaceholderInParams test")
+	fmt.Println("Push#Source#ReplacePlaceholderInParams")
 	source := getBaseSource()
 	source.Params.LocaleID = "<locale_code>"
 	localeFile := &LocaleFile{
@@ -250,7 +246,7 @@ func TestReplacePlaceholderInParams(t *testing.T) {
 	}
 }
 func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
-	fmt.Println("Source#getRemoteLocaleForLocaleFile test")
+	fmt.Println("Push#Source#getRemoteLocaleForLocaleFile")
 	source := getBaseSource()
 	localeFile := &LocaleFile{
 		Name: "english",
@@ -270,7 +266,7 @@ func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
 }
 
 func TestGenerateLocaleForFile(t *testing.T) {
-	fmt.Println("Source#generateLocaleForFile test")
+	fmt.Println("Push#Source#generateLocaleForFile")
 	source := getBaseSource()
 
 	validPathOnFileSystem := "abc/defg"

@@ -29,7 +29,7 @@ func getBaseTarget() *Target {
 }
 
 func TestTargetFields(t *testing.T) {
-	fmt.Println("Target#Fields test")
+	fmt.Println("Pull#Target#Fields")
 	target := getBaseTarget()
 
 	if target.File != "./tests/<locale_code>.yml" {
@@ -50,8 +50,8 @@ func TestTargetFields(t *testing.T) {
 
 }
 
-func TestTargetLocaleFilesOne(t *testing.T) {
-	fmt.Println("Target#LocaleFiles test")
+func TestTargetLocaleFiles(t *testing.T) {
+	fmt.Println("Pull#Target#LocaleFiles")
 	target := getBaseTarget()
 	localeFiles, err := target.LocaleFiles()
 
@@ -86,7 +86,7 @@ func TestTargetLocaleFilesOne(t *testing.T) {
 }
 
 func TestReplacePlaceholders(t *testing.T) {
-	fmt.Println("Target#ReplacePlaceholders test")
+	fmt.Println("Pull#Target#ReplacePlaceholders")
 	target := getBaseTarget()
 	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
 	localeFile := &LocaleFile{
