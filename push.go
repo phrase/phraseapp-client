@@ -231,7 +231,11 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	}
 
 	if len(localeFiles) <= 0 {
-		return nil, fmt.Errorf("file pattern did not identify any files on your system!")
+		abs, err := filepath.Abs(source.File)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
 	}
 	return localeFiles, nil
 }
