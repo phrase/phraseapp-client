@@ -50,33 +50,6 @@ func TestSourceFields(t *testing.T) {
 
 }
 
-func TestSourceCheckPreconditions(t *testing.T) {
-	fmt.Println("Source#CheckPreconditions test")
-	source := getBaseSource()
-
-	for _, file := range []string{
-		"./<locale_code>/<locale_code>.yml",
-		"./**/**/en.yml",
-		"./**/*/*/en.yml",
-	} {
-		source.File = file
-		if err := source.CheckPreconditions(); err == nil {
-			t.Errorf("CheckPrecondition did not fail!")
-		}
-	}
-
-	for _, file := range []string{
-		"./<tag>/<locale_code>.yml",
-		"./**/*/en.yml",
-		"./**/*/<locale_name>/<locale_code>/<tag>.yml",
-	} {
-		source.File = file
-		if err := source.CheckPreconditions(); err != nil {
-			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
-		}
-	}
-}
-
 func TestSourceLocaleFilesOne(t *testing.T) {
 	fmt.Println("Source#LocaleFiles#1 test")
 	source := getBaseSource()

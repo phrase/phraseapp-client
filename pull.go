@@ -65,16 +65,8 @@ type PullParams struct {
 }
 
 func (target *Target) Pull(client *phraseapp.Client) error {
-	if strings.TrimSpace(target.File) == "" {
-		return fmt.Errorf("file pattern for target may not be empty.")
-	}
-
-	if filepath.Ext(target.File) == "" {
-		abs, err := filepath.Abs(target.File)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("'%s' does not have a valid extension.", abs)
+	if err := CheckPreconditions(target.File); err != nil {
+		return err
 	}
 
 	remoteLocales, err := RemoteLocales(client, target.ProjectID)
