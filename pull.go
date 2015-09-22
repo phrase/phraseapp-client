@@ -19,6 +19,8 @@ type PullCommand struct {
 
 func (cmd *PullCommand) Run() error {
 	if cmd.Debug {
+		// suppresses content output
+		cmd.Debug = false
 		Debug = true
 	}
 

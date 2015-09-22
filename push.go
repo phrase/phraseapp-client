@@ -19,6 +19,8 @@ type PushCommand struct {
 
 func (cmd *PushCommand) Run() error {
 	if cmd.Debug {
+		// suppresses content output
+		cmd.Debug = false
 		Debug = true
 	}
 	client, err := ClientFromCmdCredentials(cmd.Credentials)
@@ -151,24 +153,8 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	}
 
 	if Debug {
-		fmt.Fprintln(os.Stderr, "Source file pattern:", source.File)
-		fmt.Fprintln(os.Stderr, "Actual File Location", uploadParams.File)
-		if uploadParams.LocaleID != nil {
-			fmt.Fprintln(os.Stderr, "LocaleID/Name", *uploadParams.LocaleID)
-		} else {
-			fmt.Fprintln(os.Stderr, "LocaleID/Name", nil)
-		}
-
-		if uploadParams.FileFormat != nil {
-			fmt.Fprintln(os.Stderr, "Format", *uploadParams.FileFormat)
-		} else {
-			fmt.Fprintln(os.Stderr, "Format", nil)
-		}
-		if uploadParams.UpdateTranslations != nil {
-			fmt.Fprintln(os.Stderr, "UpdateTranslations", *uploadParams.UpdateTranslations)
-		} else {
-			fmt.Fprintln(os.Stderr, "UpdateTranslations", nil)
-		}
+		fmt.Fprintln(os.Stdout, "Source file pattern:", source.File)
+		fmt.Fprintln(os.Stdout, "Actual file location:", localeFile.Path)
 	}
 
 	aUpload, err := client.UploadCreate(source.ProjectID, uploadParams)
@@ -233,6 +219,13 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		localeFile, err := source.generateLocaleForFile(temporaryLocaleFile, path)
 		if err != nil {
 			return nil, err
+		}
+
+		if Debug {
+			fmt.Println(fmt.Sprintf(
+				"RFC:'%s', Name:'%s', Tag;'%s', Pattern:'%s'",
+				localeFile.RFC, localeFile.Name, localeFile.Tag, parser.Matcher.String(),
+			))
 		}
 
 		localeFiles = append(localeFiles, localeFile)
