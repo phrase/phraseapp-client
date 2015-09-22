@@ -217,13 +217,11 @@ func TestParserPatterns(t *testing.T) {
 		}
 
 		if localeFile.Tag != pattern.ExpectedTag {
-			printPattern(pattern, parser)
 			t.Errorf("Expected Tag to equal '%s' but was '%s'", pattern.ExpectedTag, localeFile.Tag)
 			t.Fail()
 		}
 
 		if localeFile.Name != pattern.ExpectedName {
-			printPattern(pattern, parser)
 			t.Errorf("Expected LocaleName to equal '%s' but was '%s'", pattern.ExpectedName, localeFile.Name)
 			t.Fail()
 		}
@@ -233,4 +231,78 @@ func TestParserPatterns(t *testing.T) {
 func printPattern(pattern *Pattern, parser *Parser) {
 	fmt.Println("Pattern:", pattern.File, " -> ", parser.Matcher)
 	fmt.Println("File:", pattern.TestPath)
+}
+
+func TestReplacePlaceholderInParams(t *testing.T) {
+	fmt.Println("Source#ReplacePlaceholderInParams test")
+	source := getBaseSource()
+	source.Params.LocaleID = "<locale_code>"
+	localeFile := &LocaleFile{
+		Name: "en",
+		RFC:  "en",
+		ID:   "",
+		Path: "",
+	}
+	s := source.replacePlaceholderInParams(localeFile)
+	if s != "en" {
+		t.Errorf("Expected LocaleId to equal '%s' but was '%s'", "en", s)
+		t.Fail()
+	}
+}
+func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
+	fmt.Println("Source#getRemoteLocaleForLocaleFile test")
+	source := getBaseSource()
+	localeFile := &LocaleFile{
+		Name: "english",
+		RFC:  "en",
+		ID:   "",
+		Path: "",
+	}
+	locale := source.getRemoteLocaleForLocaleFile(localeFile)
+	if locale.Name != localeFile.Name {
+		t.Errorf("Expected LocaleName to equal '%s' but was '%s'", "ennglish", localeFile.Name)
+		t.Fail()
+	}
+	if locale.Code != localeFile.RFC {
+		t.Errorf("Expected LocaleId to equal '%s' but was '%s'", "en", localeFile.RFC)
+		t.Fail()
+	}
+}
+
+func TestGenerateLocaleForFile(t *testing.T) {
+	fmt.Println("Source#generateLocaleForFile test")
+	source := getBaseSource()
+
+	validPathOnFileSystem := "abc/defg"
+	localeFile := &LocaleFile{
+		Name: "english",
+		RFC:  "en",
+		ID:   "",
+		Path: "",
+	}
+	newLocaleFile, err := source.generateLocaleForFile(localeFile, validPathOnFileSystem)
+	if err != nil {
+		t.Errorf(err.Error())
+		t.Fail()
+	}
+
+	if newLocaleFile.ExistsRemote == false {
+		t.Errorf("Expected that Locale exists remote but was '%b'", newLocaleFile.ExistsRemote)
+		t.Fail()
+	}
+
+	if newLocaleFile.RFC != "en" {
+		t.Errorf("Expected LocaleCode to equal '%s' but was '%s'", "en", newLocaleFile.RFC)
+		t.Fail()
+	}
+
+	if newLocaleFile.Name != "english" {
+		t.Errorf("Expected LocaleName to equal '%s' but was '%s'", "english", newLocaleFile.Name)
+		t.Fail()
+	}
+
+	if newLocaleFile.ID != "en-locale-id" {
+		t.Errorf("Expected LocaleId to equal '%s' but was '%s'", "en-locale-id", newLocaleFile.ID)
+		t.Fail()
+	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -81,5 +82,27 @@ func TestTargetLocaleFilesOne(t *testing.T) {
 		}
 	} else {
 		t.Errorf("LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
+	}
+}
+
+func TestReplacePlaceholders(t *testing.T) {
+	fmt.Println("Target#ReplacePlaceholders test")
+	target := getBaseTarget()
+	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
+	localeFile := &LocaleFile{
+		Name: "english",
+		RFC:  "en",
+		ID:   "en-locale-id",
+		Tag:  "abc",
+		Path: "",
+	}
+	newPath, err := target.ReplacePlaceholders(localeFile)
+	if err != nil {
+		t.Errorf(err.Error())
+		t.Fail()
+	}
+
+	if !strings.HasSuffix(newPath, "/en/abc/english.yml") {
+		t.Errorf("Expected the new path to eql '%s' and not %s", "/en/abc/english.yml", newPath)
 	}
 }
