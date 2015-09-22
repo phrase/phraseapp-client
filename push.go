@@ -19,6 +19,8 @@ type PushCommand struct {
 
 func (cmd *PushCommand) Run() error {
 	if cmd.Debug {
+		// suppresses content output
+		cmd.Debug = false
 		Debug = true
 	}
 	client, err := ClientFromCmdCredentials(cmd.Credentials)
@@ -64,56 +66,13 @@ type PushParams struct {
 }
 
 var separator = string(os.PathSeparator)
-var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
-
-func (source *Source) CheckPreconditions() error {
-	if strings.TrimSpace(source.Extension) == "" {
-		return fmt.Errorf("provide a valid extension!")
-	}
-
-	duplicatedPlaceholders := []string{}
-	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
-		if strings.Count(source.File, name) > 1 {
-			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
-		}
-	}
-
-	starCount := strings.Count(source.File, "*")
-	recCount := strings.Count(source.File, "**")
-
-	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
-		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
-	}
-
-	if recCount > 1 {
-		duplicatedPlaceholders = append(duplicatedPlaceholders, "**")
-	}
-
-	if len(duplicatedPlaceholders) > 0 {
-		dups := strings.Join(duplicatedPlaceholders, ", ")
-		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
-	}
-
-	return nil
-}
-
-func (source *Source) GetLocaleID() string {
-	if source.Params != nil {
-		return source.Params.LocaleID
-	}
-	return ""
-}
 
 func (source *Source) Push(client *phraseapp.Client) error {
-	if strings.TrimSpace(source.File) == "" {
-		return fmt.Errorf("file of source may not be empty")
+	if err := CheckPreconditions(source.File); err != nil {
+		return err
 	}
 
 	source.Extension = filepath.Ext(source.File)
-
-	if err := source.CheckPreconditions(); err != nil {
-		return err
-	}
 
 	remoteLocales, err := RemoteLocales(client, source.ProjectID)
 	if err != nil {
@@ -193,24 +152,8 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	}
 
 	if Debug {
-		fmt.Fprintln(os.Stderr, "Source file pattern:", source.File)
-		fmt.Fprintln(os.Stderr, "Actual File Location", uploadParams.File)
-		if uploadParams.LocaleID != nil {
-			fmt.Fprintln(os.Stderr, "LocaleID/Name", *uploadParams.LocaleID)
-		} else {
-			fmt.Fprintln(os.Stderr, "LocaleID/Name", nil)
-		}
-
-		if uploadParams.FileFormat != nil {
-			fmt.Fprintln(os.Stderr, "Format", *uploadParams.FileFormat)
-		} else {
-			fmt.Fprintln(os.Stderr, "Format", nil)
-		}
-		if uploadParams.UpdateTranslations != nil {
-			fmt.Fprintln(os.Stderr, "UpdateTranslations", *uploadParams.UpdateTranslations)
-		} else {
-			fmt.Fprintln(os.Stderr, "UpdateTranslations", nil)
-		}
+		fmt.Fprintln(os.Stdout, "Source file pattern:", source.File)
+		fmt.Fprintln(os.Stdout, "Actual file location:", localeFile.Path)
 	}
 
 	aUpload, err := client.UploadCreate(source.ProjectID, uploadParams)
@@ -277,7 +220,22 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 			return nil, err
 		}
 
+		if Debug {
+			fmt.Println(fmt.Sprintf(
+				"RFC:'%s', Name:'%s', Tag;'%s', Pattern:'%s'",
+				localeFile.RFC, localeFile.Name, localeFile.Tag, parser.Matcher.String(),
+			))
+		}
+
 		localeFiles = append(localeFiles, localeFile)
+	}
+
+	if len(localeFiles) <= 0 {
+		abs, err := filepath.Abs(source.File)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
 	}
 	return localeFiles, nil
 }
@@ -438,28 +396,11 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	return validSources, nil
 }
 
-func printSummary(summary *phraseapp.SummaryType) {
-	newItems := []int64{summary.LocalesCreated, summary.TranslationsUpdated, summary.TranslationKeysCreated, summary.TranslationsCreated}
-	var changed bool
-	for _, item := range newItems {
-		if item > 0 {
-			changed = true
-		}
+func (source *Source) GetLocaleID() string {
+	if source.Params != nil {
+		return source.Params.LocaleID
 	}
-	if changed || Debug {
-		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-		fmt.Print("\n")
-	}
-}
-
-func printMessage(msg, stat string) {
-	fmt.Print(msg)
-	ct.Foreground(ct.Green, true)
-	fmt.Print(stat)
-	ct.ResetColor()
+	return ""
 }
 
 func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
@@ -553,19 +494,21 @@ func (parser *Parser) Initialize() {
 
 func (parser *Parser) Search() error {
 	for _, token := range parser.Tokens {
-		head := token
+		head := strings.Replace(token, ".", "_PHRASEAPP_REGEXP_DOT_", 1)
 		// if next is part of the placeholder dsl then it can be expanded and will be
 		// converted to a regexp, else we found a path part that is already a static string
-		nextRegexp := parser.ConvertToRegexp(token)
+		nextRegexp := parser.ConvertToRegexp(head)
 		if nextRegexp != "" {
 			head = nextRegexp
+
 			// if it is the end of the path and matching the extension
 			// e.g. config/.yml we convert it to config/.*.yml
 		} else if strings.TrimSpace(token) == parser.Extension {
-			head = ".*" + token
+			head = ".*" + head
 		}
 
 		head = parser.SanitizeRegexp(head)
+		head = strings.Replace(head, "_PHRASEAPP_REGEXP_DOT_", "[.]", 1)
 		parser.Buffer = append(parser.Buffer, head)
 	}
 
@@ -584,12 +527,15 @@ func (parser *Parser) Search() error {
 }
 
 func (parser *Parser) ConvertToRegexp(part string) string {
-	group := placeholderRegexp.FindString(part)
-	if group == "" {
+	groups := placeholderRegexp.FindAllString(part, -1)
+	if len(groups) <= 0 {
 		return ""
 	}
-	replacer := fmt.Sprintf("(?P%s.+)", group)
-	return strings.Replace(part, group, replacer, 1)
+	for _, group := range groups {
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		part = strings.Replace(part, group, replacer, 1)
+	}
+	return part
 }
 
 func (parser *Parser) SanitizeRegexp(token string) string {
@@ -634,8 +580,42 @@ func (parser *Parser) TagMatches(path string) map[string]string {
 	subMatches := parser.Matcher.FindStringSubmatch(path)
 	for i, subMatch := range subMatches {
 		if subMatch != "" {
+			if strings.Contains(subMatch, separator) {
+				subSlice := strings.Split(subMatch, separator)
+				subMatch = subSlice[len(subSlice)-1]
+			}
 			tagged[namedMatches[i]] = subMatch
 		}
 	}
 	return tagged
+}
+
+// print out
+func printSummary(summary *phraseapp.SummaryType) {
+	newItems := []int64{
+		summary.LocalesCreated,
+		summary.TranslationsUpdated,
+		summary.TranslationKeysCreated,
+		summary.TranslationsCreated,
+	}
+	var changed bool
+	for _, item := range newItems {
+		if item > 0 {
+			changed = true
+		}
+	}
+	if changed || Debug {
+		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
+		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
+		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
+		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
+		fmt.Print("\n")
+	}
+}
+
+func printMessage(msg, stat string) {
+	fmt.Print(msg)
+	ct.Foreground(ct.Green, true)
+	fmt.Print(stat)
+	ct.ResetColor()
 }

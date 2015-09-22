@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"regexp"
 )
 
 var Debug bool
@@ -19,66 +19,58 @@ type LocaleFile struct {
 	ExistsRemote                         bool
 }
 
+var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
+
+func CheckPreconditions(file string) error {
+	if strings.TrimSpace(file) == "" {
+		return fmt.Errorf(
+			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
+			"http://docs.phraseapp.com/developers/cli/configuration/",
+		)
+	}
+
+	extension := filepath.Ext(file)
+	if strings.TrimSpace(extension) == "" {
+		abs, err := filepath.Abs(file)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(
+			"'%s' does not have a valid extension. Please use a valid extension: %s",
+			abs, "http://docs.phraseapp.com/guides/formats/",
+		)
+	}
+
+	duplicatedPlaceholders := []string{}
+	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
+		if strings.Count(file, name) > 1 {
+			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
+		}
+	}
+
+	starCount := strings.Count(file, "*")
+	recCount := strings.Count(file, "**")
+
+	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
+		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
+	}
+
+	if recCount > 1 {
+		duplicatedPlaceholders = append(duplicatedPlaceholders, "**")
+	}
+
+	if len(duplicatedPlaceholders) > 0 {
+		dups := strings.Join(duplicatedPlaceholders, ", ")
+		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
+	}
+
+	return nil
+}
+
 func (localeFile *LocaleFile) RelPath() string {
 	callerPath, _ := os.Getwd()
 	relativePath, _ := filepath.Rel(callerPath, localeFile.Path)
 	return relativePath
-}
-
-// PathComponents replacement for ugly slicing string logic on paths
-type PathComponents struct {
-	Path        string
-	Separator   string
-	Parts       []string
-	GlobPattern string
-}
-
-func (pc *PathComponents) isLocalePatternUsed() bool {
-	return pc.isLocaleNameInPath() || pc.isLocaleCodeInPath()
-}
-
-func (pc *PathComponents) isLocaleNameInPath() bool {
-	return strings.Contains(pc.Path, "<locale_name>")
-}
-
-func (pc *PathComponents) isLocaleCodeInPath() bool {
-	return strings.Contains(pc.Path, "<locale_code>")
-}
-
-func (pc *PathComponents) isTagInPath() bool {
-	return strings.Contains(pc.Path, "<tag>")
-}
-
-func (pc *PathComponents) isValidLocale(locale *phraseapp.Locale) (bool, error) {
-	localePresent := (locale != nil)
-
-	if !localePresent {
-		return false, fmt.Errorf("Locale not set")
-	}
-
-	if pc.isLocaleCodeInPath() && (locale.Code == "") {
-		return false, fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
-	}
-	return true, nil
-}
-
-func ExtractPathComponents(userPath string) (*PathComponents, error) {
-	pc := &PathComponents{Separator: string(os.PathSeparator)}
-	pc.GlobPattern = extractGlobPattern(userPath)
-	pc.Path = strings.TrimSpace(strings.TrimSuffix(userPath, pc.GlobPattern))
-	pc.Parts = strings.Split(userPath, pc.Separator)
-
-	return pc, nil
-}
-
-func extractGlobPattern(userPath string) string {
-	if strings.HasSuffix(userPath, path.Join("**", "*")) {
-		return "**/*"
-	} else if strings.HasSuffix(userPath, "*") {
-		return "*"
-	} else {
-		return ""
-	}
 }
 
 // Locale to Path mapping
@@ -104,45 +96,6 @@ func (localeFile *LocaleFile) Message() string {
 		str = fmt.Sprintf("%s", localeFile.Name)
 	}
 	return strings.TrimSpace(str)
-}
-
-// Locale placeholder logic <locale_name>
-func (pc *PathComponents) ExpandPathsWithLocale(locales []*phraseapp.Locale, localeFile *LocaleFile) (LocaleFiles, error) {
-	files := []*LocaleFile{}
-	for _, remoteLocale := range locales {
-		if localeFile.ID != "" && !(remoteLocale.ID == localeFile.ID || remoteLocale.Name == localeFile.ID) {
-			continue
-		}
-		valid, err := pc.isValidLocale(remoteLocale)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		if !valid {
-			continue
-		}
-
-		localeFile := &LocaleFile{Name: remoteLocale.Name, ID: remoteLocale.ID, RFC: remoteLocale.Code, Tag: localeFile.Tag, FileFormat: localeFile.FileFormat}
-		absPath, err := pc.filePath(localeFile)
-		if err != nil {
-			return nil, err
-		}
-		localeFile.Path = absPath
-		files = append(files, localeFile)
-	}
-	return files, nil
-}
-
-func (pc *PathComponents) filePath(localeFile *LocaleFile) (string, error) {
-	absPath, err := filepath.Abs(pc.Path)
-	if err != nil {
-		return "", err
-	}
-
-	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
-	path = strings.Replace(path, "<locale_code>", localeFile.RFC, -1)
-	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
-
-	return path, nil
 }
 
 func printErr(err error) {
@@ -211,23 +164,9 @@ func TakeWhile(seq []string, predicate func(string) bool) []string {
 	return take
 }
 
-func Select(seq []string, f func(string) bool) []string {
-	newSeq := []string{}
-	for _, s := range seq {
-		if f(s) {
-			newSeq = append(newSeq, s)
-		}
+func Exists(absPath string) error {
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		return fmt.Errorf("no such file or directory:", absPath)
 	}
-	return newSeq
-}
-
-func DropWhile(seq []string, predicate func(string) bool) []string {
-	sliced := 0
-	for idx, elem := range seq {
-		if predicate(elem) {
-			continue
-		}
-		sliced = idx
-	}
-	return seq[sliced:]
+	return nil
 }
