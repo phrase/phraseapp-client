@@ -498,19 +498,21 @@ func (parser *Parser) Initialize() {
 
 func (parser *Parser) Search() error {
 	for _, token := range parser.Tokens {
-		head := token
+		head := strings.Replace(token, ".", "_PHRASEAPP_REGEXP_DOT_", 1)
 		// if next is part of the placeholder dsl then it can be expanded and will be
 		// converted to a regexp, else we found a path part that is already a static string
-		nextRegexp := parser.ConvertToRegexp(token)
+		nextRegexp := parser.ConvertToRegexp(head)
 		if nextRegexp != "" {
 			head = nextRegexp
+
 			// if it is the end of the path and matching the extension
 			// e.g. config/.yml we convert it to config/.*.yml
 		} else if strings.TrimSpace(token) == parser.Extension {
-			head = ".*" + token
+			head = ".*" + head
 		}
 
 		head = parser.SanitizeRegexp(head)
+		head = strings.Replace(head, "_PHRASEAPP_REGEXP_DOT_", "[.]", 1)
 		parser.Buffer = append(parser.Buffer, head)
 	}
 
@@ -529,12 +531,15 @@ func (parser *Parser) Search() error {
 }
 
 func (parser *Parser) ConvertToRegexp(part string) string {
-	group := placeholderRegexp.FindString(part)
-	if group == "" {
+	groups := placeholderRegexp.FindAllString(part, -1)
+	if len(groups) <= 0 {
 		return ""
 	}
-	replacer := fmt.Sprintf("(?P%s.+)", group)
-	return strings.Replace(part, group, replacer, 1)
+	for _, group := range groups {
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		part = strings.Replace(part, group, replacer, 1)
+	}
+	return part
 }
 
 func (parser *Parser) SanitizeRegexp(token string) string {
@@ -579,6 +584,10 @@ func (parser *Parser) TagMatches(path string) map[string]string {
 	subMatches := parser.Matcher.FindStringSubmatch(path)
 	for i, subMatch := range subMatches {
 		if subMatch != "" {
+			if strings.Contains(subMatch, separator) {
+				subSlice := strings.Split(subMatch, separator)
+				subMatch = subSlice[len(subSlice)-1]
+			}
 			tagged[namedMatches[i]] = subMatch
 		}
 	}
