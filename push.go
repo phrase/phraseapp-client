@@ -403,8 +403,8 @@ func (source *Source) GetLocaleID() string {
 	return ""
 }
 
-func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.LocaleFileImportParams, error) {
-	uploadParams := new(phraseapp.LocaleFileImportParams)
+func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.UploadParams, error) {
+	uploadParams := new(phraseapp.UploadParams)
 	uploadParams.File = &localeFile.Path
 	uploadParams.FileFormat = &source.FileFormat
 

@@ -157,6 +157,18 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("versions/list", &VersionsList{ProjectID: projectID}, "List all versions for the given translation.")
 
+	r.Register("webhook/create", &WebhookCreate{ProjectID: projectID}, "Create a new webhook.")
+
+	r.Register("webhook/delete", &WebhookDelete{ProjectID: projectID}, "Delete an existing webhook.")
+
+	r.Register("webhook/show", &WebhookShow{ProjectID: projectID}, "Get details on a single webhook.")
+
+	r.Register("webhook/test", &WebhookTest{ProjectID: projectID}, "Perform a test request for a webhook.")
+
+	r.Register("webhook/update", &WebhookUpdate{ProjectID: projectID}, "Update an existing webhook.")
+
+	r.Register("webhooks/list", &WebhooksList{ProjectID: projectID}, "List all webhooks for the given project.")
+
 	r.Register("pull", &PullCommand{}, "Download locales from your PhraseApp project.\n  You can provide parameters supported by the locales#download endpoint http://docs.phraseapp.com/api/v2/locales/#download\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
 
 	r.Register("push", &PushCommand{}, "Upload locales to your PhraseApp project.\n  You can provide parameters supported by the uploads#create endpoint http://docs.phraseapp.com/api/v2/uploads/#create\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
@@ -169,11 +181,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-09-22 13:26:13.260840409 +0200 CEST\n")
+	fmt.Printf("Built at 2015-09-23 15:38:25.026715723 +0200 CEST\n")
 	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "d7cc5cb554cfc41b3ae1a7867a2c4f3c6d7aabec")
-	fmt.Println("PhraseApp Client revision:", "1fee81ae91a37eb26207c1d3e6ce92ff0c1f5586")
-	fmt.Println("PhraseApp Docs revision:", "9e5ba9cfada35aad92758eedeb8f7ad50ccd9cd8")
+	fmt.Println("PhraseApp API Client revision:", "19df2260c78262fb46d2bb76fdc781cbc12e882a")
+	fmt.Println("PhraseApp Client revision:", "915b7dccc971b64bb2b3e4d99b8f10628cc6f213")
+	fmt.Println("PhraseApp Docs revision:", "504c5232b85e8d2cb00d83b7185880cce1b7d07a")
 	return nil
 }
 
@@ -3626,7 +3638,7 @@ func (cmd *UploadCreate) Run() error {
 		return e
 	}
 
-	params := new(phraseapp.LocaleFileImportParams)
+	params := new(phraseapp.UploadParams)
 
 	val, defaultsPresent := defaults["upload/create"]
 
@@ -3827,6 +3839,281 @@ func (cmd *VersionsList) Run() error {
 	}
 
 	res, err := client.VersionsList(cmd.ProjectID, cmd.TranslationID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type WebhookCreate struct {
+	Credentials
+
+	Active      *bool   `cli:"opt --active"`
+	CallbackUrl *string `cli:"opt --callback-url"`
+	Description *string `cli:"opt --description"`
+	Events      *string `cli:"opt --events"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func (cmd *WebhookCreate) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.WebhookParams)
+
+	val, defaultsPresent := defaults["webhook/create"]
+
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Active != nil {
+		params.Active = cmd.Active
+	}
+
+	if cmd.CallbackUrl != nil {
+		params.CallbackUrl = cmd.CallbackUrl
+	}
+
+	if cmd.Description != nil {
+		params.Description = cmd.Description
+	}
+
+	if cmd.Events != nil {
+		params.Events = cmd.Events
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.WebhookCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type WebhookDelete struct {
+	Credentials
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *WebhookDelete) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.WebhookDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type WebhookShow struct {
+	Credentials
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *WebhookShow) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.WebhookShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type WebhookTest struct {
+	Credentials
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *WebhookTest) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.WebhookTest(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type WebhookUpdate struct {
+	Credentials
+
+	Active      *bool   `cli:"opt --active"`
+	CallbackUrl *string `cli:"opt --callback-url"`
+	Description *string `cli:"opt --description"`
+	Events      *string `cli:"opt --events"`
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func (cmd *WebhookUpdate) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	params := new(phraseapp.WebhookParams)
+
+	val, defaultsPresent := defaults["webhook/update"]
+
+	if defaultsPresent {
+		params, e = params.ApplyDefaults(val)
+		if e != nil {
+			return e
+		}
+	}
+
+	if cmd.Active != nil {
+		params.Active = cmd.Active
+	}
+
+	if cmd.CallbackUrl != nil {
+		params.CallbackUrl = cmd.CallbackUrl
+	}
+
+	if cmd.Description != nil {
+		params.Description = cmd.Description
+	}
+
+	if cmd.Events != nil {
+		params.Events = cmd.Events
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.WebhookUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type WebhooksList struct {
+	Credentials
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func (cmd *WebhooksList) Run() error {
+
+	defaults, e := ConfigDefaultParams()
+	if e != nil {
+		_ = defaults
+		return e
+	}
+
+	defaultCredentials, e := ConfigDefaultCredentials()
+	if e != nil {
+		return e
+	}
+
+	credentials := PhraseAppCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(credentials, defaultCredentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.WebhooksList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
