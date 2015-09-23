@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "test"
+const PHRASEAPP_CLIENT_VERSION = "1.1.0"
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
@@ -181,10 +181,10 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-09-23 15:56:21.523171879 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "19df2260c78262fb46d2bb76fdc781cbc12e882a")
-	fmt.Println("PhraseApp Client revision:", "25a23944492d9b1f5310f2713656e9b27594336e")
+	fmt.Printf("Built at 2015-09-23 16:04:08.064958629 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "1.1.0")
+	fmt.Println("PhraseApp API Client revision:", "54cfc515f35a5271a3d9a5df5dd7c060f14769e5")
+	fmt.Println("PhraseApp Client revision:", "86ba4c883664a771998609d3e1e219ada20e3473")
 	fmt.Println("PhraseApp Docs revision:", "ff96de6009c9e82ee05c7b41e2aaddb62e03fe48")
 	return nil
 }
