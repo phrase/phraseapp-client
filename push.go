@@ -68,24 +68,8 @@ type PushParams struct {
 var separator = string(os.PathSeparator)
 
 func (source *Source) CheckPreconditions() error {
-	if strings.TrimSpace(source.File) == "" {
-		return fmt.Errorf(
-			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
-			"http://docs.phraseapp.com/developers/cli/configuration/",
-		)
-	}
-
-	extension := filepath.Ext(source.File)
-
-	if strings.TrimSpace(extension) == "" {
-		abs, err := filepath.Abs(source.File)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf(
-			"'%s' does not have a valid extension. Please use a valid extension: %s",
-			abs, "http://docs.phraseapp.com/guides/formats/",
-		)
+	if err := ValidPath(source.File); err != nil {
+		return err
 	}
 
 	duplicatedPlaceholders := []string{}

@@ -21,6 +21,29 @@ type LocaleFile struct {
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
+func ValidPath(file string) error {
+	if strings.TrimSpace(file) == "" {
+		return fmt.Errorf(
+			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
+			"http://docs.phraseapp.com/developers/cli/configuration/",
+		)
+	}
+
+	extension := filepath.Ext(file)
+	if strings.TrimSpace(extension) == "" {
+		abs, err := filepath.Abs(file)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(
+			"'%s' does not have a valid extension. Please use a valid extension: %s",
+			abs, "http://docs.phraseapp.com/guides/formats/",
+		)
+	}
+
+	return nil
+}
+
 func (localeFile *LocaleFile) RelPath() string {
 	callerPath, _ := os.Getwd()
 	relativePath, _ := filepath.Rel(callerPath, localeFile.Path)

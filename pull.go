@@ -67,23 +67,8 @@ type PullParams struct {
 }
 
 func (target *Target) CheckPreconditions() error {
-	if strings.TrimSpace(target.File) == "" {
-		return fmt.Errorf(
-			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
-			"http://docs.phraseapp.com/developers/cli/configuration/",
-		)
-	}
-
-	extension := filepath.Ext(target.File)
-	if strings.TrimSpace(extension) == "" {
-		abs, err := filepath.Abs(target.File)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf(
-			"'%s' does not have a valid extension. Please use a valid extension: %s",
-			abs, "http://docs.phraseapp.com/guides/formats/",
-		)
+	if err := ValidPath(target.File); err != nil {
+		return err
 	}
 
 	if strings.Count(target.File, "*") > 0 {
