@@ -21,52 +21,6 @@ type LocaleFile struct {
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
-func CheckPreconditions(file string) error {
-	if strings.TrimSpace(file) == "" {
-		return fmt.Errorf(
-			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
-			"http://docs.phraseapp.com/developers/cli/configuration/",
-		)
-	}
-
-	extension := filepath.Ext(file)
-	if strings.TrimSpace(extension) == "" {
-		abs, err := filepath.Abs(file)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf(
-			"'%s' does not have a valid extension. Please use a valid extension: %s",
-			abs, "http://docs.phraseapp.com/guides/formats/",
-		)
-	}
-
-	duplicatedPlaceholders := []string{}
-	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
-		if strings.Count(file, name) > 1 {
-			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
-		}
-	}
-
-	starCount := strings.Count(file, "*")
-	recCount := strings.Count(file, "**")
-
-	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
-		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
-	}
-
-	if recCount > 1 {
-		duplicatedPlaceholders = append(duplicatedPlaceholders, "**")
-	}
-
-	if len(duplicatedPlaceholders) > 0 {
-		dups := strings.Join(duplicatedPlaceholders, ", ")
-		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
-	}
-
-	return nil
-}
-
 func (localeFile *LocaleFile) RelPath() string {
 	callerPath, _ := os.Getwd()
 	relativePath, _ := filepath.Rel(callerPath, localeFile.Path)

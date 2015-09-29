@@ -67,8 +67,55 @@ type PushParams struct {
 
 var separator = string(os.PathSeparator)
 
+func (source *Source) CheckPreconditions() error {
+	if strings.TrimSpace(source.File) == "" {
+		return fmt.Errorf(
+			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
+			"http://docs.phraseapp.com/developers/cli/configuration/",
+		)
+	}
+
+	extension := filepath.Ext(source.File)
+
+	if strings.TrimSpace(extension) == "" {
+		abs, err := filepath.Abs(source.File)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(
+			"'%s' does not have a valid extension. Please use a valid extension: %s",
+			abs, "http://docs.phraseapp.com/guides/formats/",
+		)
+	}
+
+	duplicatedPlaceholders := []string{}
+	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
+		if strings.Count(source.File, name) > 1 {
+			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
+		}
+	}
+
+	starCount := strings.Count(source.File, "*")
+	recCount := strings.Count(source.File, "**")
+
+	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
+		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
+	}
+
+	if recCount > 1 {
+		duplicatedPlaceholders = append(duplicatedPlaceholders, "**")
+	}
+
+	if len(duplicatedPlaceholders) > 0 {
+		dups := strings.Join(duplicatedPlaceholders, ", ")
+		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
+	}
+
+	return nil
+}
+
 func (source *Source) Push(client *phraseapp.Client) error {
-	if err := CheckPreconditions(source.File); err != nil {
+	if err := source.CheckPreconditions(); err != nil {
 		return err
 	}
 

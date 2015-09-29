@@ -28,6 +28,34 @@ func getBaseSource() *Source {
 	return source
 }
 
+func TestPushPreconditions(t *testing.T) {
+	fmt.Println("Push#Source#CheckPreconditions")
+	source := getBaseSource()
+	for _, file := range []string{
+		"",
+		"no_extension",
+		"./<locale_code>/<locale_code>.yml",
+		"./**/**/en.yml",
+		"./**/*/*/en.yml",
+	} {
+		source.File = file
+		if err := source.CheckPreconditions(); err == nil {
+			t.Errorf("CheckPrecondition did not fail for pattern: '%s'", file)
+		}
+	}
+
+	for _, file := range []string{
+		"./<tag>/<locale_code>.yml",
+		"./**/*/en.yml",
+		"./**/*/<locale_name>/<locale_code>/<tag>.yml",
+	} {
+		source.File = file
+		if err := source.CheckPreconditions(); err != nil {
+			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
+		}
+	}
+}
+
 func TestSourceFields(t *testing.T) {
 	fmt.Println("Push#Source#Fields")
 	source := getBaseSource()

@@ -66,8 +66,51 @@ type PullParams struct {
 	Tag                        string                  `yaml:"tag,omitempty"`
 }
 
+func (target *Target) CheckPreconditions() error {
+	if strings.TrimSpace(target.File) == "" {
+		return fmt.Errorf(
+			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
+			"http://docs.phraseapp.com/developers/cli/configuration/",
+		)
+	}
+
+	extension := filepath.Ext(target.File)
+	if strings.TrimSpace(extension) == "" {
+		abs, err := filepath.Abs(target.File)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(
+			"'%s' does not have a valid extension. Please use a valid extension: %s",
+			abs, "http://docs.phraseapp.com/guides/formats/",
+		)
+	}
+
+	if strings.Count(target.File, "*") > 0 {
+		return fmt.Errorf(
+			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!",
+			"http://docs.phraseapp.com/developers/cli/configuration/#targets",
+		)
+	}
+
+	duplicatedPlaceholders := []string{}
+	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
+		if strings.Count(target.File, name) > 1 {
+			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
+		}
+	}
+
+	if len(duplicatedPlaceholders) > 0 {
+		dups := strings.Join(duplicatedPlaceholders, ", ")
+		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
+	}
+
+	return nil
+}
+
 func (target *Target) Pull(client *phraseapp.Client) error {
-	if err := CheckPreconditions(target.File); err != nil {
+
+	if err := target.CheckPreconditions(); err != nil {
 		return err
 	}
 
@@ -211,8 +254,8 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 }
 
 func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
-	if !(locale != nil) {
-		return fmt.Errorf("Locale not set")
+	if locale == nil {
+		return fmt.Errorf("Remote locale could not be downloaded correctly!")
 	}
 
 	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {

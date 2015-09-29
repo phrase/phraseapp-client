@@ -28,6 +28,36 @@ func getBaseTarget() *Target {
 	return target
 }
 
+func TestPullPreconditions(t *testing.T) {
+	fmt.Println("Pull#Target#CheckPreconditions")
+	target := getBaseTarget()
+	for _, file := range []string{
+		"",
+		"no_extension",
+		"./<locale_code>/<locale_code>.yml",
+		"./**/**/en.yml",
+		"./**/*/*/en.yml",
+		"./**/*/en.yml",
+		"./**/*/<locale_name>/<locale_code>/<tag>.yml",
+	} {
+		target.File = file
+		if err := target.CheckPreconditions(); err == nil {
+			t.Errorf("CheckPrecondition did not fail for pattern: '%s'", file)
+		}
+	}
+
+	for _, file := range []string{
+		"./<tag>/<locale_code>.yml",
+		"./en.yml",
+		"./<locale_name>/<locale_code>/<tag>.yml",
+	} {
+		target.File = file
+		if err := target.CheckPreconditions(); err != nil {
+			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
+		}
+	}
+}
+
 func TestTargetFields(t *testing.T) {
 	fmt.Println("Pull#Target#Fields")
 	target := getBaseTarget()
