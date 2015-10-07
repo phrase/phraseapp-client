@@ -513,7 +513,7 @@ type Parser struct {
 
 func (parser *Parser) Initialize() {
 	tokens := []string{}
-	for _, token := range strings.Split(parser.SourceFile, separator) {
+	for _, token := range strings.Split(parser.SourceFile, "/") {
 		if token == "." || token == "" {
 			continue
 		}
@@ -543,8 +543,8 @@ func (parser *Parser) Search() error {
 		parser.Buffer = append(parser.Buffer, head)
 	}
 
-	fileAsRegexp := strings.Join(parser.Buffer, separator)
-	matcherString := strings.Trim(fileAsRegexp, separator)
+	fileAsRegexp := strings.Join(parser.Buffer, "[/\\\\]")
+	matcherString := strings.Trim(fileAsRegexp, "[/\\\\]")
 
 	reMatcher, err := regexp.Compile(matcherString)
 	if err != nil {
