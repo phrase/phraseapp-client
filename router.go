@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "1.1.0"
+const PHRASEAPP_CLIENT_VERSION = "1.1.1"
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
@@ -133,15 +133,15 @@ func router(defaults map[string]string) *cli.Router {
 
 	r.Register("translations/by_key", &TranslationsByKey{ProjectID: projectID}, "List translations for a specific key.")
 
-	r.Register("translations/by_locale", &TranslationsByLocale{ProjectID: projectID}, "List translations for a specific locale.")
+	r.Register("translations/by_locale", &TranslationsByLocale{ProjectID: projectID}, "List translations for a specific locale. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
 	r.Register("translations/exclude", &TranslationsExclude{ProjectID: projectID}, "Exclude translations matching query from locale export.")
 
 	r.Register("translations/include", &TranslationsInclude{ProjectID: projectID}, "Include translations matching query in locale export.")
 
-	r.Register("translations/list", &TranslationsList{ProjectID: projectID}, "List translations for the given project. Alternatively, POST request to /search")
+	r.Register("translations/list", &TranslationsList{ProjectID: projectID}, "List translations for the given project. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
-	r.Register("translations/search", &TranslationsSearch{ProjectID: projectID}, "List translations for the given project if you exceed GET request limitations on translations list.")
+	r.Register("translations/search", &TranslationsSearch{ProjectID: projectID}, "List translations for the given project if you exceed GET request limitations on translations list. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
 	r.Register("translations/unverify", &TranslationsUnverify{ProjectID: projectID}, "Mark translations matching query as unverified.")
 
@@ -181,11 +181,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-09-23 16:04:08.064958629 +0200 CEST\n")
-	fmt.Println("PhraseApp Client version:", "1.1.0")
-	fmt.Println("PhraseApp API Client revision:", "54cfc515f35a5271a3d9a5df5dd7c060f14769e5")
-	fmt.Println("PhraseApp Client revision:", "86ba4c883664a771998609d3e1e219ada20e3473")
-	fmt.Println("PhraseApp Docs revision:", "ff96de6009c9e82ee05c7b41e2aaddb62e03fe48")
+	fmt.Printf("Built at 2015-10-08 14:20:18.131440309 +0200 CEST\n")
+	fmt.Println("PhraseApp Client version:", "1.1.1")
+	fmt.Println("PhraseApp API Client revision:", "07070643c663eaae33c7431549cdbb4ceb0aec4d")
+	fmt.Println("PhraseApp Client revision:", "e6762fc19aa2375ee24b3397755a99cf4bb18762")
+	fmt.Println("PhraseApp Docs revision:", "35d9726b3435a3c6d4df9ecaa670876b4c59da54")
 	return nil
 }
 
