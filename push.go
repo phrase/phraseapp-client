@@ -224,24 +224,24 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		}
 	}
 
-	parser := Parser{
+	reducer := Reducer{
 		SourceFile: source.File,
 		Extension:  source.Extension,
 	}
-	parser.Initialize()
+	reducer.Initialize()
 
-	if err := parser.Search(); err != nil {
+	if err := reducer.Reduce(); err != nil {
 		return nil, err
 	}
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
 
-		if !parser.MatchesPath(path) {
+		if !reducer.MatchesPath(path) {
 			continue
 		}
 
-		temporaryLocaleFile, err := parser.Eval(path)
+		temporaryLocaleFile, err := reducer.Eval(path)
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +254,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		if Debug {
 			fmt.Println(fmt.Sprintf(
 				"RFC:'%s', Name:'%s', Tag;'%s', Pattern:'%s'",
-				localeFile.RFC, localeFile.Name, localeFile.Tag, parser.Matcher.String(),
+				localeFile.RFC, localeFile.Name, localeFile.Tag, reducer.Matcher.String(),
 			))
 		}
 
@@ -498,130 +498,7 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Upload
 	return uploadParams, nil
 }
 
-// Parser Algorithm, Stateful
-// parser := &Parser{ SourceFile: file, Extension: ext }
-// parser.Initialize()
-// parser.Search()
-// parser.Eval( path )
-type Parser struct {
-	SourceFile string
-	Extension  string
-	Tokens     []string
-	Buffer     []string
-	Matcher    *regexp.Regexp
-}
-
-func (parser *Parser) Initialize() {
-	tokens := []string{}
-	for _, token := range strings.Split(parser.SourceFile, "/") {
-		if token == "." || token == "" {
-			continue
-		}
-		tokens = append(tokens, token)
-	}
-	parser.Tokens = tokens
-	parser.Buffer = []string{}
-}
-
-func (parser *Parser) Search() error {
-	for _, token := range parser.Tokens {
-		head := strings.Replace(token, ".", "_PHRASEAPP_REGEXP_DOT_", 1)
-		// if next is part of the placeholder dsl then it can be expanded and will be
-		// converted to a regexp, else we found a path part that is already a static string
-		nextRegexp := parser.ConvertToRegexp(head)
-		if nextRegexp != "" {
-			head = nextRegexp
-
-			// if it is the end of the path and matching the extension
-			// e.g. config/.yml we convert it to config/.*.yml
-		} else if strings.TrimSpace(token) == parser.Extension {
-			head = ".*" + head
-		}
-
-		head = parser.SanitizeRegexp(head)
-		head = strings.Replace(head, "_PHRASEAPP_REGEXP_DOT_", "[.]", 1)
-		parser.Buffer = append(parser.Buffer, head)
-	}
-
-	fileAsRegexp := strings.Join(parser.Buffer, "[/\\\\]")
-	matcherString := strings.Trim(fileAsRegexp, "[/\\\\]")
-
-	reMatcher, err := regexp.Compile(matcherString)
-	if err != nil {
-		return err
-	}
-
-	// valid regular expression
-	parser.Matcher = reMatcher
-
-	return nil
-}
-
-func (parser *Parser) ConvertToRegexp(part string) string {
-	groups := placeholderRegexp.FindAllString(part, -1)
-	if len(groups) <= 0 {
-		return ""
-	}
-	for _, group := range groups {
-		replacer := fmt.Sprintf("(?P%s.+)", group)
-		part = strings.Replace(part, group, replacer, 1)
-	}
-	return part
-}
-
-func (parser *Parser) SanitizeRegexp(token string) string {
-	newToken := strings.Replace(token, "**", "__PHRASE_DOUBLE_STAR__", -1)
-	newToken = strings.Replace(newToken, "*", ".*", -1)
-	newToken = strings.Replace(newToken, "..", ".", -1)
-	newToken = strings.Replace(newToken, "__PHRASE_DOUBLE_STAR__", ".*", -1)
-	return newToken
-}
-
-func (parser *Parser) MatchesPath(path string) bool {
-	return parser.Matcher.MatchString(path)
-}
-
-func (parser *Parser) Eval(path string) (*LocaleFile, error) {
-	tagged := parser.TagMatches(path)
-	name := tagged["locale_name"]
-	rfc := tagged["locale_code"]
-	tag := tagged["tag"]
-
-	localeFile := &LocaleFile{}
-	if name != "" {
-		localeFile.Name = name
-	}
-
-	if rfc != "" {
-		localeFile.RFC = rfc
-	}
-
-	if tag != "" {
-		localeFile.Tag = tag
-	}
-
-	return localeFile, nil
-}
-
-// @return named matches for the given path matching the file pattern
-// example: {"locale_name" : "English", "locale_code" : "en-Gb", "tag" : "my_tag"}
-func (parser *Parser) TagMatches(path string) map[string]string {
-	tagged := map[string]string{}
-	namedMatches := parser.Matcher.SubexpNames()
-	subMatches := parser.Matcher.FindStringSubmatch(path)
-	for i, subMatch := range subMatches {
-		if subMatch != "" {
-			if strings.Contains(subMatch, separator) {
-				subSlice := strings.Split(subMatch, separator)
-				subMatch = subSlice[len(subSlice)-1]
-			}
-			tagged[namedMatches[i]] = subMatch
-		}
-	}
-	return tagged
-}
-
-// print out
+// Print out
 func printSummary(summary *phraseapp.SummaryType) {
 	newItems := []int64{
 		summary.LocalesCreated,
@@ -649,4 +526,209 @@ func printMessage(msg, stat string) {
 	ct.Foreground(ct.Green, true)
 	fmt.Print(stat)
 	ct.ResetColor()
+}
+
+// Reducer Algorithm:
+// reducer := &Reducer{
+// 		SourceFile: file,
+// 		Extension: extension,
+// }
+// reducer.Initialize()
+// reducer.Reduce()
+// if reducer.MatchesPath(path) {
+// 		reducer.Eval(path)
+// }
+type Reducer struct {
+	SourceFile string
+	Extension  string
+	Tokens     []string
+	Reductions []*Reduction
+	Matcher    *regexp.Regexp
+}
+
+type Reduction struct {
+	Original string
+	Matcher  *regexp.Regexp
+}
+
+func (reducer *Reducer) Initialize() {
+	tokens := []string{}
+	for _, token := range strings.Split(reducer.SourceFile, "/") {
+		if token == "." || token == "" {
+			continue
+		}
+		tokens = append(tokens, token)
+	}
+	reducer.Tokens = tokens
+}
+
+func (reducer *Reducer) Reduce() error {
+	reducer.Reductions = []*Reduction{}
+	heads := []string{}
+	for _, token := range reducer.Tokens {
+		head, matcher, err := reducer.toRegexp(token)
+		if err != nil {
+			return err
+		}
+		heads = append(heads, head)
+		reducer.Reductions = append(reducer.Reductions, &Reduction{
+			Original: token,
+			Matcher:  matcher,
+		})
+	}
+
+	reMatcher, err := reducer.wholeMatcher(heads)
+	if err != nil {
+		return err
+	}
+	reducer.Matcher = reMatcher
+
+	return nil
+}
+
+func (reducer *Reducer) MatchesPath(path string) bool {
+	return reducer.Matcher.MatchString(path)
+}
+
+func (reducer *Reducer) Eval(path string) (*LocaleFile, error) {
+	tagged := reducer.unify(path)
+
+	name := tagged["locale_name"]
+	rfc := tagged["locale_code"]
+	tag := tagged["tag"]
+
+	localeFile := &LocaleFile{}
+	if name != "" {
+		localeFile.Name = name
+	}
+
+	if rfc != "" {
+		localeFile.RFC = rfc
+	}
+
+	if tag != "" {
+		localeFile.Tag = tag
+	}
+
+	return localeFile, nil
+}
+
+// Private Reducer Methods
+func (reducer *Reducer) toRegexp(token string) (string, *regexp.Regexp, error) {
+	head := strings.Replace(token, ".", "_PHRASEAPP_REGEXP_DOT_", 1)
+	nextRegexp := reducer.convertToGroupRegexp(head)
+	if nextRegexp != "" {
+		head = nextRegexp
+	}
+	head = reducer.sanitizeRegexp(head)
+	head = strings.Replace(head, "_PHRASEAPP_REGEXP_DOT_", "[.]", 1)
+	if strings.HasPrefix(head, "[.]") {
+		head = ".*" + head
+	}
+	matcher, err := regexp.Compile(head)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return head, matcher, nil
+}
+
+func (reducer *Reducer) convertToGroupRegexp(part string) string {
+	groups := placeholderRegexp.FindAllString(part, -1)
+	if len(groups) <= 0 {
+		return ""
+	}
+
+	for _, group := range groups {
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		part = strings.Replace(part, group, replacer, 1)
+	}
+
+	return part
+}
+
+func (reducer *Reducer) sanitizeRegexp(token string) string {
+	newToken := strings.Replace(token, "**", "__PHRASE_DOUBLE_STAR__", -1)
+	newToken = strings.Replace(newToken, "*", ".*", -1)
+	newToken = strings.Replace(newToken, "..", ".", -1)
+	newToken = strings.Replace(newToken, "__PHRASE_DOUBLE_STAR__", ".*", -1)
+	return newToken
+}
+
+func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
+	fileAsRegexp := strings.Join(heads, "[/\\\\]")
+	matcherString := strings.Trim(fileAsRegexp, "[/\\\\]")
+	reMatcher, err := regexp.Compile(matcherString)
+	if err != nil {
+		return nil, err
+	}
+	return reMatcher, nil
+}
+
+func (reducer *Reducer) unify(path string) map[string]string {
+	tagged := map[string]string{}
+
+	tokens := strings.Split(path, "/")
+	reductions := reducer.Reductions
+
+	if strings.Contains(reducer.SourceFile, "**") || reducer.fileContainsStar() {
+		for idx, reduction := range reductions {
+			if reduction.Original == "**" {
+				break
+			}
+			partlyTagged := reducer.tagMatches(reduction, tokens[idx])
+			tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
+		}
+	}
+
+	offset := 0
+	for i := len(reductions) - 1; i >= 0; i-- {
+		reduction := reductions[i]
+		idx := len(tokens) - offset - 1
+		partlyTagged := reducer.tagMatches(reduction, tokens[idx])
+		tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
+
+		if i == 0 {
+			break
+		}
+		offset += 1
+	}
+
+	return tagged
+}
+
+func (reducer *Reducer) fileContainsStar() bool {
+	last := reducer.Reductions[len(reducer.Reductions)-1]
+	return strings.Contains(reducer.SourceFile, "*") && !strings.Contains(last.Original, "*")
+}
+
+func (reducer *Reducer) tagMatches(reduction *Reduction, token string) map[string]string {
+	tagged := map[string]string{}
+	namedMatches := reduction.Matcher.SubexpNames()
+	subMatches := reduction.Matcher.FindStringSubmatch(token)
+	for i, subMatch := range subMatches {
+		if subMatch != "" {
+			tagged[namedMatches[i]] = subMatch
+		}
+	}
+	return tagged
+}
+
+func (reducer *Reducer) updateTaggedMatches(original, updater map[string]string) map[string]string {
+	localeCode := updater["locale_code"]
+	localeName := updater["locale_name"]
+	tag := updater["tag"]
+
+	if original["locale_code"] == "" {
+		original["locale_code"] = strings.Trim(localeCode, "/")
+	}
+
+	if original["locale_name"] == "" {
+		original["locale_name"] = strings.Trim(localeName, "/")
+	}
+
+	if original["tag"] == "" {
+		original["tag"] = strings.Trim(tag, "/")
+	}
+	return original
 }
