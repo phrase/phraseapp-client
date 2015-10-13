@@ -1,14 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
+	"strings"
 )
 
 var Debug bool
@@ -146,4 +148,26 @@ func Exists(absPath string) error {
 		return fmt.Errorf("no such file or directory:", absPath)
 	}
 	return nil
+}
+
+func ReportError(name string, message string) {
+	body := []byte(fmt.Sprintf("{"+
+		"\"name\":\"%s\","+
+		"\"message\":\"%s\","+
+		"\"data\": {"+
+		"\"version\":\"%s\","+
+		"\"os\":\"%s\","+
+		"\"arch\":\"%s\""+
+		"}}",
+		name, message, PHRASEAPP_CLIENT_VERSION, runtime.GOOS, runtime.GOARCH))
+
+	req, err := http.NewRequest("POST", "https://phraseapp.com/errors", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resp.Body.Close()
 }

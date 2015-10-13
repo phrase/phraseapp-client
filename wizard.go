@@ -136,7 +136,9 @@ func clean() error {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
-		return fmt.Errorf("%s is unsupported for the wizard", runtime.GOOS)
+		errmsg := fmt.Sprintf("%s is unsupported for the wizard", runtime.GOOS)
+		ReportError("Unsupported OS", errmsg)
+		return fmt.Errorf(errmsg)
 	}
 	return nil
 }
@@ -240,7 +242,9 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) error {
 		return writeConfig(data, ".phraseapp.yml")
 	}
 
-	return fmt.Errorf("Step %s not known in init wizard", step)
+	errmsg := fmt.Sprintf("Step %s not known in init wizard", step)
+	ReportError("Invalid Wizard Step", errmsg)
+	return fmt.Errorf(errmsg)
 
 }
 
@@ -495,9 +499,10 @@ func selectProjectStep(data *WizardData) error {
 			panic(match_err)
 		}
 		if unauth_match {
-			errorMsg := fmt.Sprintf("Argument Error: AccessToken '%s' is invalid. It may be revoked. Please create a new Access Token.", data.AccessToken)
+			errmsg := fmt.Sprintf("Argument Error: AccessToken '%s' is invalid. It may be revoked. Please create a new Access Token.", data.AccessToken)
 			data.AccessToken = ""
-			return fmt.Errorf(errorMsg)
+			ReportError("Invalid AccessToken", errmsg)
+			return fmt.Errorf(errmsg)
 		} else {
 			return err
 		}
