@@ -266,7 +266,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 			return nil, err
 		}
 		errmsg := fmt.Sprintf("Could not find any files on your system that matches: '%s'", abs)
-		RerportError("Push Error", errmsg)
+		ReportError("Push Error", errmsg)
 		return nil, fmt.Errorf(errmsg)
 	}
 	return localeFiles, nil
@@ -339,7 +339,7 @@ func (source *Source) recurse() ([]string, error) {
 	files := []string{}
 	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
 		if err != nil {
-			errmsg = fmt.Sprintf("%s for pattern: %s", err, source.File)
+			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
 			ReportError("Push Error", errmsg)
 			return fmt.Errorf(errmsg)
 		}
@@ -427,7 +427,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 
 	if len(validSources) <= 0 {
 		errmsg := "no sources could be identified! Refine the sources list in your config"
-		ReportError(errmsg)
+		ReportError("Push Error", errmsg)
 		return nil, fmt.Errorf(errmsg)
 	}
 

@@ -242,8 +242,8 @@ func DisplayWizard(data *WizardData, step string, errorMsg string) error {
 		return writeConfig(data, ".phraseapp.yml")
 	}
 
-	errmsg = fmt.Sprintf("Step %s not known in init wizard", step)
-	ReportError("Invalid Wizard Step" errmsg)
+	errmsg := fmt.Sprintf("Step %s not known in init wizard", step)
+	ReportError("Invalid Wizard Step", errmsg)
 	return fmt.Errorf(errmsg)
 
 }
