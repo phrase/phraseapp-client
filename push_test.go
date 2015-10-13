@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"path/filepath"
-	"testing"
 	"strings"
+	"testing"
 )
 
 func getBaseSource() *Source {
@@ -224,6 +224,44 @@ func TestReducerPatterns(t *testing.T) {
 	fmt.Println("Push#Reducer")
 	for idx, pattern := range []*Pattern{
 		&Pattern{
+			File:        "./.abc/<locale_code>.yml",
+			Ext:         "yml",
+			TestPath:    ".abc/en.yml",
+			ExpectedRFC: "en",
+		},
+		&Pattern{
+			File:        "./abc+/defg./}{x/][etc??/<locale_code>.yml",
+			Ext:         "yml",
+			TestPath:    "abc+/defg./}{x/][etc??/en.yml",
+			ExpectedRFC: "en",
+		},
+		&Pattern{
+			File:     "./*.yml",
+			Ext:      "yml",
+			TestPath: "en.yml",
+		},
+		&Pattern{
+			File:     "./locales/?*.yml",
+			Ext:      "yml",
+			TestPath: "locales/?en.yml",
+		},
+		&Pattern{
+			File:     "./locales/en.yml",
+			Ext:      "yml",
+			TestPath: "locales/en.yml",
+		},
+		&Pattern{
+			File:     "./locales/.yml",
+			Ext:      "yml",
+			TestPath: "locales/en.yml",
+		},
+		&Pattern{
+			File:        "./<locale_code>.lproj/.strings",
+			Ext:         "strings",
+			TestPath:    "abc/defg/en.lproj/Localizable.strings",
+			ExpectedRFC: "en",
+		},
+		&Pattern{
 			File:        "./locales/<locale_code>.yml",
 			Ext:         "yml",
 			TestPath:    "locales/en.yml",
@@ -364,6 +402,62 @@ func TestReducerPatterns(t *testing.T) {
 			File:         "./<locale_name>_more/**/<tag>no_tag/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english_more/abc/defg/someTagno_tag/filename.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./<locale_name>/**/<tag>/*.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "english/abc/defg/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/someTag/filename.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./<locale_name>/<tag>/**/*.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "english/someTag/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/filename.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./**/<locale_name>/<tag>/*.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/english/someTag/filename.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./<locale_name>/**/*/<tag>/main.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "english/abc/defg/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/someTag/main.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./**/<locale_code>/<locale_name>/*/<tag>/main.yml",
+			Ext:          "<locale_code>",
+			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/en/english/hahah/someTag/main.yml",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./<locale_name>/*/<tag>/**/main.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "english/xyz/someTag/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/main.en",
+			ExpectedRFC:  "en",
+			ExpectedTag:  "someTag",
+			ExpectedName: "english",
+		},
+		&Pattern{
+			File:         "./**/<locale_name>/*/<tag>.<locale_code>",
+			Ext:          "<locale_code>",
+			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/english/hahah/someTag.en",
 			ExpectedRFC:  "en",
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",

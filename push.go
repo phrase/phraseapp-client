@@ -236,7 +236,6 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-
 		if !reducer.MatchesPath(path) {
 			continue
 		}
@@ -615,14 +614,18 @@ func (reducer *Reducer) Eval(path string) (*LocaleFile, error) {
 
 // Private Reducer Methods
 func (reducer *Reducer) toRegexp(token string) (string, *regexp.Regexp, error) {
-	head := strings.Replace(token, ".", "_PHRASEAPP_REGEXP_DOT_", 1)
+	// <locale_code>.yml => <locale_code>__PHRASEAPP_REGEXP_DOT__yml
+	head := escapeRegexp(token)
+	// <locale_code>__PHRASEAPP_REGEXP_DOT__yml => (?P<locale_code>.+)__PHRASEAPP_REGEXP_DOT__yml
 	nextRegexp := reducer.convertToGroupRegexp(head)
 	if nextRegexp != "" {
 		head = nextRegexp
 	}
-	head = reducer.sanitizeRegexp(head)
-	head = strings.Replace(head, "_PHRASEAPP_REGEXP_DOT_", "[.]", 1)
-	if strings.HasPrefix(head, "[.]") {
+	// (?P<locale_code>.+)__PHRASEAPP_REGEXP_DOT__yml => (?P<locale_code>.+)[.]yml
+	head = convertRegexp(head)
+
+	// Edge case: [.]strings => .*[.]strings
+	if reducer.isLastToken(head) && strings.HasPrefix(head, "[.]") {
 		head = ".*" + head
 	}
 	matcher, err := regexp.Compile(head)
@@ -631,6 +634,10 @@ func (reducer *Reducer) toRegexp(token string) (string, *regexp.Regexp, error) {
 	}
 
 	return head, matcher, nil
+}
+
+func (reducer *Reducer) isLastToken(head string) bool {
+	return strings.Contains(head, strings.TrimLeft(reducer.Extension, "."))
 }
 
 func (reducer *Reducer) convertToGroupRegexp(part string) string {
@@ -647,17 +654,16 @@ func (reducer *Reducer) convertToGroupRegexp(part string) string {
 	return part
 }
 
-func (reducer *Reducer) sanitizeRegexp(token string) string {
-	newToken := strings.Replace(token, "**", "__PHRASE_DOUBLE_STAR__", -1)
-	newToken = strings.Replace(newToken, "*", ".*", -1)
-	newToken = strings.Replace(newToken, "..", ".", -1)
-	newToken = strings.Replace(newToken, "__PHRASE_DOUBLE_STAR__", ".*", -1)
-	return newToken
-}
-
 func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
-	fileAsRegexp := strings.Join(heads, "[/\\\\]")
-	matcherString := strings.Trim(fileAsRegexp, "[/\\\\]")
+	matcherString := strings.Join(heads, "[/\\\\]")
+
+	if strings.HasPrefix(matcherString, "[/\\\\]") {
+		matcherString = strings.TrimLeft(matcherString, "[/\\\\]")
+	}
+	if strings.HasSuffix(matcherString, "[/\\\\]") {
+		matcherString = strings.TrimRight(matcherString, "[/\\\\]")
+	}
+
 	reMatcher, err := regexp.Compile(matcherString)
 	if err != nil {
 		return nil, err
@@ -665,6 +671,23 @@ func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
 	return reMatcher, nil
 }
 
+// ** can endlessly pump at any position
+// * means: expand one folder
+// initialization assumption: A Regexp validated the input path, the input is assumed to be correct.
+// Then the following is true:
+//		skip any folder in the path when a * occurs and see if 1. or 2. still holds true
+// 		1. start rightmost until a ** occurs, unify all placeholders that make sense up to that point
+// 			1.1 ** occurs at the beginning: nothing happens, go to 2. ( **/.../.strings )
+// 			1.2 ** occurs before the file ( <placeholder1>/<placeholder2>/**/.strings ), unify all placeholders
+// 			1.3 ** occurs other than 1.1 and 1.2 unify up to the position of ** according to 1.2
+//		=> the right hand side of ** is fully unified
+// 		2. start leftmost until the ** occurs, on the way unify all placeholders
+// 			2.1 ** occurs at the beginning, unify all placeholders ( **/<placeholder1-n>/.strings ) in reverse order
+//				1.2 did not unify a placeholder because it had no left hand path
+// 			2.2 ** occurs before the file ( <placeholder1>/<placeholder2>/**/.strings ), unify file head
+// 				1.2 unified all placeholders on the left hand side
+// 			2.3 ** occurs other than 2.1 and 2.2 unify in reverse to the point according to 2.1
+//				again: 1.2 unified all placeholders on the left hand side
 func (reducer *Reducer) unify(path string) map[string]string {
 	tagged := map[string]string{}
 
@@ -676,6 +699,9 @@ func (reducer *Reducer) unify(path string) map[string]string {
 			if reduction.Original == "**" {
 				break
 			}
+			if reduction.Original == "*" {
+				continue
+			}
 			partlyTagged := reducer.tagMatches(reduction, tokens[idx])
 			tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
 		}
@@ -684,13 +710,16 @@ func (reducer *Reducer) unify(path string) map[string]string {
 	offset := 0
 	for i := len(reductions) - 1; i >= 0; i-- {
 		reduction := reductions[i]
+		if reduction.Original == "**" {
+			break
+		}
+		if reduction.Original == "*" {
+			offset += 1
+			continue
+		}
 		idx := len(tokens) - offset - 1
 		partlyTagged := reducer.tagMatches(reduction, tokens[idx])
 		tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
-
-		if i == 0 {
-			break
-		}
 		offset += 1
 	}
 
@@ -731,4 +760,97 @@ func (reducer *Reducer) updateTaggedMatches(original, updater map[string]string)
 		original["tag"] = strings.Trim(tag, "/")
 	}
 	return original
+}
+
+// Escaping of Regexp
+func escapeRegexp(token string) string {
+	for _, e := range regexpMapping {
+		token = strings.Replace(token, e.Symbol, e.Escaper(), -1)
+	}
+	return token
+}
+
+func convertRegexp(token string) string {
+	for _, e := range regexpMapping {
+		token = strings.Replace(token, e.Escaper(), e.SymbolAsRegexp, -1)
+	}
+	return token
+}
+
+type RegexpEscaping struct {
+	Symbol         string
+	Replacer       string
+	SymbolAsRegexp string
+}
+
+func (regexpEscaping *RegexpEscaping) Escaper() string {
+	return fmt.Sprintf("__PHRASEAPP_REGEXP_%s__", regexpEscaping.Replacer)
+}
+
+var regexpMapping = []*RegexpEscaping{
+	&RegexpEscaping{
+		Symbol:         "**",
+		Replacer:       "DOUBLE_STAR",
+		SymbolAsRegexp: ".*",
+	},
+	&RegexpEscaping{
+		Symbol:         "*",
+		Replacer:       "SINGLE_STAR",
+		SymbolAsRegexp: ".*",
+	},
+	&RegexpEscaping{
+		Symbol:         "+",
+		Replacer:       "PLUS",
+		SymbolAsRegexp: "[+]",
+	},
+	&RegexpEscaping{
+		Symbol:         "?",
+		Replacer:       "QUESTION_MARK",
+		SymbolAsRegexp: "[?]",
+	},
+	&RegexpEscaping{
+		Symbol:         ".",
+		Replacer:       "DOT",
+		SymbolAsRegexp: "[.]",
+	},
+	&RegexpEscaping{
+		Symbol:         "^",
+		Replacer:       "CARET",
+		SymbolAsRegexp: "\\^",
+	},
+	&RegexpEscaping{
+		Symbol:         "(",
+		Replacer:       "OPEN_BRACKET",
+		SymbolAsRegexp: "[(]",
+	},
+	&RegexpEscaping{
+		Symbol:         ")",
+		Replacer:       "CLOSE_BRACKET",
+		SymbolAsRegexp: "[)]",
+	},
+	&RegexpEscaping{
+		Symbol:         "[",
+		Replacer:       "OPEN_SQUARE_BRACKET",
+		SymbolAsRegexp: "\\[",
+	},
+	&RegexpEscaping{
+		Symbol:         "]",
+		Replacer:       "CLOSE_SQUARE_BRACKET",
+		SymbolAsRegexp: "\\]",
+	},
+	&RegexpEscaping{
+		Symbol:         "{",
+		Replacer:       "OPEN_CURLY_BRACKET",
+		SymbolAsRegexp: "[{]",
+	},
+	&RegexpEscaping{
+		Symbol:         "}",
+		Replacer:       "CLOSE_CURLY_BRACKET",
+		SymbolAsRegexp: "[}]",
+	},
+	&RegexpEscaping{
+		Symbol:         "|",
+		Replacer:       "PIPE",
+		SymbolAsRegexp: "[|]",
+	},
 }
