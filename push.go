@@ -154,7 +154,7 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	}
 
 	localeName := source.replacePlaceholderInParams(localeFile)
-	if localeName != localeFile.RFC {
+	if localeName != "" && localeName != localeFile.RFC {
 		localeParams.Name = &localeName
 	}
 
