@@ -672,22 +672,17 @@ func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
 }
 
 // ** can endlessly pump at any position
-// * means: expand one folder
 // initialization assumption: A Regexp validated the input path, the input is assumed to be correct.
-// Then the following is true:
-//		skip any folder in the path when a * occurs and see if 1. or 2. still holds true
-// 		1. start rightmost until a ** occurs, unify all placeholders that make sense up to that point
-// 			1.1 ** occurs at the beginning: nothing happens, go to 2. ( **/.../.strings )
-// 			1.2 ** occurs before the file ( <placeholder1>/<placeholder2>/**/.strings ), unify all placeholders
-// 			1.3 ** occurs other than 1.1 and 1.2 unify up to the position of ** according to 1.2
-//		=> the right hand side of ** is fully unified
-// 		2. start leftmost until the ** occurs, on the way unify all placeholders
-// 			2.1 ** occurs at the beginning, unify all placeholders ( **/<placeholder1-n>/.strings ) in reverse order
-//				1.2 did not unify a placeholder because it had no left hand path
-// 			2.2 ** occurs before the file ( <placeholder1>/<placeholder2>/**/.strings ), unify file head
-// 				1.2 unified all placeholders on the left hand side
-// 			2.3 ** occurs other than 2.1 and 2.2 unify in reverse to the point according to 2.1
-//				again: 1.2 unified all placeholders on the left hand side
+// 		1. start leftmost until a ** occurs
+// 			1.1 ./**/<tag>/<locale_name>/<locale_code>.yml -> nothing happens
+// 			1.2 ./<locale_name>/<tag>/**/<locale_code>.yml -> unifiy <locale_name> and <tag>, break at **
+// 			1.3 ./<locale_name>/**/<tag>/<locale_code>.yml -> unify <locale_name>, break at **
+//		=> the left hand side of ** is fully unified
+//
+// 		2. start rightmost until the ** occurs
+// 			2.1 ./<locale_name>/<tag>/**/<locale_code>.yml -> unifiy <locale_code>, break at **
+// 			2.2 ./**/<tag>/<locale_name>/*.yml -> unify <locale_name> and <tag>, break at **
+// 			2.3 ./<locale_name>/**/<tag>/<locale_code>.yml -> unify <tag> and <locale_code>
 func (reducer *Reducer) unify(path string) map[string]string {
 	tagged := map[string]string{}
 
