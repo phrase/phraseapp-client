@@ -3,10 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"encoding/json"
 	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"net/http"
 	"os"
+	"net/http"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -20,6 +21,20 @@ type LocaleFile struct {
 	Path, Name, ID, RFC, Tag, FileFormat string
 	ExistsRemote                         bool
 }
+
+type BugsnagError struct {
+	App        string `json:"app"`
+	AppVersion string `json:"app_version"`
+	ErrorData `json:"data"`
+	Message string `json:"message"`
+	Name    string `json:"name"`
+}
+
+type ErrorData struct {
+    Arch string `json:"arch"`
+    Os   string `json:"os"`
+}
+
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
@@ -151,15 +166,22 @@ func Exists(absPath string) error {
 }
 
 func ReportError(name string, message string) {
-	body := []byte(fmt.Sprintf("{"+
-		"\"name\":\"%s\","+
-		"\"message\":\"%s\","+
-		"\"data\": {"+
-		"\"version\":\"%s\","+
-		"\"os\":\"%s\","+
-		"\"arch\":\"%s\""+
-		"}}",
-		name, message, PHRASEAPP_CLIENT_VERSION, runtime.GOOS, runtime.GOARCH))
+	bs := &BugsnagError{
+		App: "phraseapp-client",
+		AppVersion: PHRASEAPP_CLIENT_VERSION,
+		ErrorData: ErrorData {
+	  	Arch: runtime.GOARCH,
+	    Os: runtime.GOOS,
+	  },
+		Name: name,
+		Message: message,
+	}
+
+	body, err := json.Marshal(bs)
+  if err != nil {
+  	fmt.Errorf("Error: %s", err)
+    return;
+  }
 
 	req, err := http.NewRequest("POST", "https://phraseapp.com/errors", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -167,7 +189,8 @@ func ReportError(name string, message string) {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Errorf("Error: %s", err)
 	}
 	resp.Body.Close()
+
 }
