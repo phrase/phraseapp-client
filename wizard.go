@@ -87,6 +87,8 @@ type WizardData struct {
 	Pull struct {
 		Targets WizardTargets
 	}
+
+	FormatExtension string `yaml:"-"`
 }
 
 type WizardWrapper struct {
@@ -267,11 +269,22 @@ func pushConfig(data *WizardData) error {
 		return err
 	}
 
-	fmt.Printf("Enter the path to your local language files, you want to upload to PhraseApp [Press enter to use default: %s]: ", defaultPath)
+	fmt.Println("Enter the path to your local language files, you want to upload to PhraseApp.")
+	fmt.Println("For documentation see http://docs.phraseapp.com/developers/cli/configuration/#sources")
+
 	var pushPath string
-	pushPath = prompt()
-	if pushPath == "" {
-		pushPath = defaultPath
+	for {
+		fmt.Printf("\nSource path [default: %s]: ", defaultPath)
+		pushPath = prompt()
+		if pushPath == "" {
+			pushPath = defaultPath
+		}
+
+		err := ValidPath(pushPath, data.Format, data.FormatExtension)
+		if err == nil {
+			break
+		}
+		fmt.Println(err)
 	}
 
 	data.Push.Sources = make(WizardSources, 1)
@@ -286,11 +299,22 @@ func pullConfig(data *WizardData) error {
 		return err
 	}
 
-	fmt.Printf("Enter the path to where you want to store downloaded language files from PhraseApp [Press enter to use default: %s]: ", defaultPath)
+	fmt.Println("Enter the path to where you want to store downloaded language files from PhraseApp.")
+	fmt.Println("For documentation see http://docs.phraseapp.com/developers/cli/configuration/#targets")
+
 	var pullPath string
-	pullPath = prompt()
-	if pullPath == "" {
-		pullPath = defaultPath
+	for {
+		fmt.Printf("\nTarget path [default: %s]: ", defaultPath)
+		pullPath = prompt()
+		if pullPath == "" {
+			pullPath = defaultPath
+		}
+
+		err := ValidPath(pullPath, data.Format, data.FormatExtension)
+		if err == nil {
+			break
+		}
+		fmt.Println(err)
 	}
 
 	data.Pull.Targets = make([]*WizardPullConfig, 1)
@@ -344,6 +368,7 @@ func selectFormat(data *WizardData) error {
 		return DisplayWizard(data, "selectFormat", fmt.Sprintf("Argument Error: Please select a format from the list by specifying its position in the list."))
 	}
 	data.Format = formats[number-1].ApiName
+	data.FormatExtension = formats[number-1].Extension
 	return DisplayWizard(data, next(data), "")
 }
 
