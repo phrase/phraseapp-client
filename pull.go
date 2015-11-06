@@ -67,7 +67,7 @@ type PullParams struct {
 }
 
 func (target *Target) CheckPreconditions() error {
-	if err := ValidPath(target.File); err != nil {
+	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
 		return err
 	}
 

@@ -68,7 +68,7 @@ type PushParams struct {
 var separator = string(os.PathSeparator)
 
 func (source *Source) CheckPreconditions() error {
-	if err := ValidPath(source.File); err != nil {
+	if err := ValidPath(source.File, source.FileFormat, ""); err != nil {
 		return err
 	}
 

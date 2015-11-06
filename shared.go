@@ -37,23 +37,23 @@ type ErrorData struct {
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
-func ValidPath(file string) error {
+func ValidPath(file, format, fileExtension string) error {
 	if strings.TrimSpace(file) == "" {
 		return fmt.Errorf(
-			"File patterns of a source may not be empty! Please use a valid file pattern: %s",
-			"http://docs.phraseapp.com/developers/cli/configuration/",
+			"File patterns may not be empty!\nFor more information see http://docs.phraseapp.com/developers/cli/configuration/",
 		)
 	}
 
-	extension := filepath.Ext(file)
-	if strings.TrimSpace(extension) == "" {
-		abs, err := filepath.Abs(file)
-		if err != nil {
-			return err
+	extension := strings.Trim(strings.TrimSpace(filepath.Ext(file)), ".")
+	if extension == "" || (fileExtension != "" && extension != fileExtension) {
+		extensionInfo := ""
+		if fileExtension != "" {
+			extensionInfo = fmt.Sprintf(" %q", fileExtension)
 		}
+
 		return fmt.Errorf(
-			"'%s' does not have a valid extension. Please use a valid extension: %s",
-			abs, "http://docs.phraseapp.com/guides/formats/",
+			"'%s' does not have the required extension%s.\nFor more information see http://docs.phraseapp.com/guides/formats/%s",
+			file, extensionInfo, format,
 		)
 	}
 
