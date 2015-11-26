@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "1.1.4"
+const PHRASEAPP_CLIENT_VERSION = "1.1.5"
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
@@ -181,11 +181,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-11-12 11:06:33.777088146 +0100 CET\n")
-	fmt.Println("PhraseApp Client version:", "1.1.4")
-	fmt.Println("PhraseApp API Client revision:", "1434a98b4716bb39897f5e74f3a722c7dc8446ee")
-	fmt.Println("PhraseApp Client revision:", "452b96c01790cf9601a62cb427a08be03262742d")
-	fmt.Println("PhraseApp Docs revision:", "5e6a42aa0024352a2084dfdaa8c5c3061c119b0a")
+	fmt.Printf("Built at 2015-11-26 14:00:43.3202751 +0100 CET\n")
+	fmt.Println("PhraseApp Client version:", "1.1.5")
+	fmt.Println("PhraseApp API Client revision:", "a5ec93ea76abbf612989fe52ecb19bd93a1f792f")
+	fmt.Println("PhraseApp Client revision:", "d95c7c82f456a19f07fd7234a4dbdce5bac7a468")
+	fmt.Println("PhraseApp Docs revision:", "677c1bf417e89ec65da2f103c378a46992f18f8b")
 	return nil
 }
 
@@ -1715,6 +1715,7 @@ type LocaleDownload struct {
 
 	ConvertEmoji               bool                    `cli:"opt --convert-emoji"`
 	Encoding                   *string                 `cli:"opt --encoding"`
+	FallbackLocaleID           *string                 `cli:"opt --fallback-locale-id"`
 	FileFormat                 *string                 `cli:"opt --file-format"`
 	FormatOptions              *map[string]interface{} `cli:"opt --format-options"`
 	IncludeEmptyTranslations   bool                    `cli:"opt --include-empty-translations"`
@@ -1749,6 +1750,10 @@ func (cmd *LocaleDownload) Run() error {
 
 	if cmd.Encoding != nil {
 		params.Encoding = cmd.Encoding
+	}
+
+	if cmd.FallbackLocaleID != nil {
+		params.FallbackLocaleID = cmd.FallbackLocaleID
 	}
 
 	if cmd.FileFormat != nil {
