@@ -694,7 +694,7 @@ func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
 func (reducer *Reducer) unify(path string) map[string]string {
 	tagged := map[string]string{}
 
-	tokens := strings.Split(path, "/")
+	tokens := strings.Split(path, separator)
 	reductions := reducer.Reductions
 
 	if strings.Contains(reducer.SourceFile, "**") || reducer.fileContainsStar() {
