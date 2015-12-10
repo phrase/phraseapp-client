@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "1.1.5"
+const PHRASEAPP_CLIENT_VERSION = "1.1.6"
 
 func router(defaults map[string]string) *cli.Router {
 	r := cli.NewRouter()
@@ -181,11 +181,11 @@ func router(defaults map[string]string) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2015-11-26 14:00:43.3202751 +0100 CET\n")
-	fmt.Println("PhraseApp Client version:", "1.1.5")
-	fmt.Println("PhraseApp API Client revision:", "a5ec93ea76abbf612989fe52ecb19bd93a1f792f")
-	fmt.Println("PhraseApp Client revision:", "d95c7c82f456a19f07fd7234a4dbdce5bac7a468")
-	fmt.Println("PhraseApp Docs revision:", "677c1bf417e89ec65da2f103c378a46992f18f8b")
+	fmt.Printf("Built at 2015-12-10 13:19:07.820839022 +0100 CET\n")
+	fmt.Println("PhraseApp Client version:", "1.1.6")
+	fmt.Println("PhraseApp API Client revision:", "30c979881018578d2cf75fe663c1b92190744f85")
+	fmt.Println("PhraseApp Client revision:", "20fd4ba769c84dc99e85863764d24eb835fc165b")
+	fmt.Println("PhraseApp Docs revision:", "24e698fa9b1ef20d5b41e8a6aa9dc3c3a8f36dd9")
 	return nil
 }
 
@@ -3625,6 +3625,7 @@ type UploadCreate struct {
 
 	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
 	File               *string `cli:"opt --file"`
+	FileEncoding       *string `cli:"opt --file-encoding"`
 	FileFormat         *string `cli:"opt --file-format"`
 	LocaleID           *string `cli:"opt --locale-id"`
 	SkipUnverification *bool   `cli:"opt --skip-unverification"`
@@ -3660,6 +3661,10 @@ func (cmd *UploadCreate) Run() error {
 
 	if cmd.File != nil {
 		params.File = cmd.File
+	}
+
+	if cmd.FileEncoding != nil {
+		params.FileEncoding = cmd.FileEncoding
 	}
 
 	if cmd.FileFormat != nil {
