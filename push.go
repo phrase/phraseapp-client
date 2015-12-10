@@ -473,6 +473,11 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Upload
 		uploadParams.FileFormat = &format
 	}
 
+	fileEncoding := params.FileEncoding
+	if fileEncoding != "" {
+		uploadParams.FileEncoding = &fileEncoding
+	}
+
 	convertEmoji := params.ConvertEmoji
 	if convertEmoji != nil {
 		uploadParams.ConvertEmoji = convertEmoji
@@ -496,11 +501,6 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Upload
 	tags := params.Tags
 	if tags != nil && uploadParams.Tags == nil {
 		uploadParams.Tags = tags
-	}
-
-	fileEncoding := params.FileEncoding
-	if fileEncoding != nil && uploadParams.FileEncoding == nil {
-		uploadParams.FileEncoding = fileEncoding
 	}
 
 	updateTranslations := params.UpdateTranslations
