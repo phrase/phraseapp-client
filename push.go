@@ -56,6 +56,7 @@ type Source struct {
 
 type PushParams struct {
 	FileFormat   string `yaml:"file_format,omitempty"`
+	FileEncoding   string `yaml:"file_encoding,omitempty"`
 	LocaleID     string `yaml:"locale_id,omitempty"`
 	ConvertEmoji *bool  `yaml:"convert_emoji,omitempty"`
 	//FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
@@ -495,6 +496,11 @@ func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.Upload
 	tags := params.Tags
 	if tags != nil && uploadParams.Tags == nil {
 		uploadParams.Tags = tags
+	}
+
+	fileEncoding := params.FileEncoding
+	if fileEncoding != nil && uploadParams.FileEncoding == nil {
+		uploadParams.FileEncoding = fileEncoding
 	}
 
 	updateTranslations := params.UpdateTranslations
