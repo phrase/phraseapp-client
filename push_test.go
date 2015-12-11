@@ -166,44 +166,6 @@ func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
 	}
 }
 
-func TestGenerateLocaleForFile(t *testing.T) {
-	fmt.Println("Push#Source#generateLocaleForFile")
-	source := getBaseSource()
-
-	validPathOnFileSystem := "abc/defg"
-	localeFile := &LocaleFile{
-		Name: "english",
-		RFC:  "en",
-		ID:   "",
-		Path: "",
-	}
-	newLocaleFile, err := source.generateLocaleForFile(localeFile, validPathOnFileSystem)
-	if err != nil {
-		t.Errorf(err.Error())
-		t.Fail()
-	}
-
-	if newLocaleFile.ExistsRemote == false {
-		t.Errorf("Expected that Locale exists remote but was '%b'", newLocaleFile.ExistsRemote)
-		t.Fail()
-	}
-
-	if newLocaleFile.RFC != "en" {
-		t.Errorf("Expected LocaleCode to equal '%s' but was '%s'", "en", newLocaleFile.RFC)
-		t.Fail()
-	}
-
-	if newLocaleFile.Name != "english" {
-		t.Errorf("Expected LocaleName to equal '%s' but was '%s'", "english", newLocaleFile.Name)
-		t.Fail()
-	}
-
-	if newLocaleFile.ID != "en-locale-id" {
-		t.Errorf("Expected LocaleId to equal '%s' but was '%s'", "en-locale-id", newLocaleFile.ID)
-		t.Fail()
-	}
-}
-
 type Pattern struct {
 	File         string
 	Ext          string
@@ -456,19 +418,14 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedName: "english",
 		},
 	} {
-		reducer := &Reducer{
-			Tokens: Tokenize(pattern.File),
-		}
+
+		tokens := Tokenize(pattern.File)
+
 		fmt.Println(strings.Repeat("-", 10))
 		fmt.Println(idx+1, "\n  SourceFile:", pattern.File, "\n  TestPath:", pattern.TestPath)
 
 		pathTokens := Tokenize(pattern.TestPath)
-		localeFile, err := reducer.Reduce(pathTokens)
-		if err != nil {
-			fmt.Println(fmt.Sprintf("\tRFC:'%s', Name:'%s', Tag:'%s'", localeFile.RFC, localeFile.Name, localeFile.Tag))
-			t.Errorf(err.Error())
-			t.Fail()
-		}
+		localeFile := Reduce(tokens, pathTokens)
 
 		if localeFile.RFC != pattern.ExpectedRFC {
 			t.Errorf("Expected RFC to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedRFC, localeFile.RFC, idx+1)

@@ -210,26 +210,29 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		return nil, err
 	}
 
-	reducer := Reducer{
-		Tokens: Tokenize(source.File),
-	}
+	tokens := Tokenize(source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
 
 		pathTokens := Tokenize(path)
-		if len(pathTokens) < len(reducer.Tokens) {
+		if len(pathTokens) < len(tokens) {
 			continue
 		}
+		localeFile := Reduce(tokens, pathTokens)
 
-		temporaryLocaleFile, err := reducer.Reduce(pathTokens)
+		absolutePath, err := filepath.Abs(path)
 		if err != nil {
 			return nil, err
 		}
+		localeFile.Path = absolutePath
 
-		localeFile, err := source.generateLocaleForFile(temporaryLocaleFile, path)
-		if err != nil {
-			return nil, err
+		locale := source.getRemoteLocaleForLocaleFile(localeFile)
+		if locale != nil {
+			localeFile.ExistsRemote = true
+			localeFile.RFC = locale.Code
+			localeFile.Name = locale.Name
+			localeFile.ID = locale.ID
 		}
 
 		if Debug {
@@ -252,25 +255,6 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		return nil, fmt.Errorf(errmsg)
 	}
 	return localeFiles, nil
-}
-
-func (source *Source) generateLocaleForFile(localeFile *LocaleFile, path string) (*LocaleFile, error) {
-	locale := source.getRemoteLocaleForLocaleFile(localeFile)
-	if locale != nil {
-		localeFile.ExistsRemote = true
-		localeFile.RFC = locale.Code
-		localeFile.Name = locale.Name
-		localeFile.ID = locale.ID
-	}
-
-	absolutePath, err := filepath.Abs(path)
-	if err != nil {
-		return nil, err
-	}
-
-	localeFile.Path = absolutePath
-
-	return localeFile, nil
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
@@ -317,10 +301,6 @@ func (source *Source) glob() ([]string, error) {
 	return files, nil
 }
 
-type Reducer struct {
-	Tokens []string
-}
-
 func Tokenize(s string) []string {
 	tokens := []string{}
 	for _, token := range strings.Split(s, separator) {
@@ -332,33 +312,10 @@ func Tokenize(s string) []string {
 	return tokens
 }
 
-func (reducer *Reducer) Reduce(pathTokens []string) (*LocaleFile, error) {
-	tagged := reducer.Retrieve(pathTokens)
-
-	name := tagged["locale_name"]
-	rfc := tagged["locale_code"]
-	tag := tagged["tag"]
-
-	localeFile := &LocaleFile{}
-	if name != "" {
-		localeFile.Name = name
-	}
-
-	if rfc != "" {
-		localeFile.RFC = rfc
-	}
-
-	if tag != "" {
-		localeFile.Tag = tag
-	}
-
-	return localeFile, nil
-}
-
-func (reducer *Reducer) Retrieve(pathTokens []string) map[string]string {
+func Reduce(tokens, pathTokens []string) *LocaleFile {
 	tagged := map[string]string{}
 
-	for idx, token := range reducer.Tokens {
+	for idx, token := range tokens {
 		pathToken := pathTokens[idx]
 		if token == "*" {
 			continue
@@ -366,12 +323,13 @@ func (reducer *Reducer) Retrieve(pathTokens []string) map[string]string {
 		if token == "**" {
 			break
 		}
-		tagged = reducer.Tag(tagged, token, pathToken)
+		tagged = tag(tagged, token, pathToken)
 	}
-	if Contains(reducer.Tokens, "**") {
+
+	if Contains(tokens, "**") {
 		offset := 1
-		for idx := len(reducer.Tokens) - 1; idx >= 0; idx-- {
-			token := reducer.Tokens[idx]
+		for idx := len(tokens) - 1; idx >= 0; idx-- {
+			token := tokens[idx]
 			pathToken := pathTokens[len(pathTokens)-offset]
 			offset += 1
 
@@ -382,15 +340,33 @@ func (reducer *Reducer) Retrieve(pathTokens []string) map[string]string {
 				break
 			}
 
-			tagged = reducer.Tag(tagged, token, pathToken)
+			tagged = tag(tagged, token, pathToken)
 		}
 	}
 
-	return tagged
+	return &LocaleFile{
+		Name: tagged["locale_name"],
+		RFC:  tagged["locale_code"],
+		Tag:  tagged["tag"],
+	}
 }
 
-func (reducer *Reducer) Tag(tagged map[string]string, token, pathToken string) map[string]string {
-	match := reducer.convertToGroupRegexp(token)
+func tag(tagged map[string]string, token, pathToken string) map[string]string {
+	groups := placeholderRegexp.FindAllString(token, -1)
+	if len(groups) <= 0 {
+		return tagged
+	}
+
+	match := strings.Replace(token, ".", "[.]", -1)
+	if strings.HasPrefix(match, "*") {
+		match = strings.Replace(match, "*", ".*", -1)
+	}
+
+	for _, group := range groups {
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		match = strings.Replace(match, group, replacer, 1)
+	}
+
 	if match == "" {
 		return tagged
 	}
@@ -410,27 +386,6 @@ func (reducer *Reducer) Tag(tagged map[string]string, token, pathToken string) m
 
 	return tagged
 }
-
-func (reducer *Reducer) convertToGroupRegexp(part string) string {
-	groups := placeholderRegexp.FindAllString(part, -1)
-	if len(groups) <= 0 {
-		return ""
-	}
-
-	part = strings.Replace(part, ".", "[.]", -1)
-
-	if strings.HasPrefix(part, "*") {
-		part = strings.Replace(part, "*", ".*", -1)
-	}
-
-	for _, group := range groups {
-		replacer := fmt.Sprintf("(?P%s.+)", group)
-		part = strings.Replace(part, group, replacer, 1)
-	}
-
-	return part
-}
-
 
 // Print out
 func printSummary(summary *phraseapp.SummaryType) {
