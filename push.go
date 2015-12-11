@@ -71,9 +71,14 @@ func (source *Source) CheckPreconditions() error {
 	}
 
 	starCount := strings.Count(source.File, "*")
+	recCount := strings.Count(source.File, "**")
 
-	if starCount > 1 {
+	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
 		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
+	}
+
+	if recCount > 1 {
+		duplicatedPlaceholders = append(duplicatedPlaceholders, "**")
 	}
 
 	if len(duplicatedPlaceholders) > 0 {
@@ -328,7 +333,7 @@ func Tokenize(s string) []string {
 }
 
 func (reducer *Reducer) Reduce(pathTokens []string) (*LocaleFile, error) {
-	tagged := reducer.Tag(pathTokens)
+	tagged := reducer.Retrieve(pathTokens)
 
 	name := tagged["locale_name"]
 	rfc := tagged["locale_code"]
@@ -350,6 +355,62 @@ func (reducer *Reducer) Reduce(pathTokens []string) (*LocaleFile, error) {
 	return localeFile, nil
 }
 
+func (reducer *Reducer) Retrieve(pathTokens []string) map[string]string {
+	tagged := map[string]string{}
+
+	for idx, token := range reducer.Tokens {
+		pathToken := pathTokens[idx]
+		if token == "*" {
+			continue
+		}
+		if token == "**" {
+			break
+		}
+		tagged = reducer.Tag(tagged, token, pathToken)
+	}
+	if Contains(reducer.Tokens, "**") {
+		offset := 1
+		for idx := len(reducer.Tokens) - 1; idx >= 0; idx-- {
+			token := reducer.Tokens[idx]
+			pathToken := pathTokens[len(pathTokens)-offset]
+			offset += 1
+
+			if token == "*" {
+				continue
+			}
+			if token == "**" {
+				break
+			}
+
+			tagged = reducer.Tag(tagged, token, pathToken)
+		}
+	}
+
+	return tagged
+}
+
+func (reducer *Reducer) Tag(tagged map[string]string, token, pathToken string) map[string]string {
+	match := reducer.convertToGroupRegexp(token)
+	if match == "" {
+		return tagged
+	}
+
+	tmpRegexp, err := regexp.Compile(match)
+	if err != nil {
+		return tagged
+	}
+
+	namedMatches := tmpRegexp.SubexpNames()
+	subMatches := tmpRegexp.FindStringSubmatch(pathToken)
+	for i, subMatch := range subMatches {
+		if subMatch != "" {
+			tagged[namedMatches[i]] = strings.Trim(subMatch, separator)
+		}
+	}
+
+	return tagged
+}
+
 func (reducer *Reducer) convertToGroupRegexp(part string) string {
 	groups := placeholderRegexp.FindAllString(part, -1)
 	if len(groups) <= 0 {
@@ -357,6 +418,10 @@ func (reducer *Reducer) convertToGroupRegexp(part string) string {
 	}
 
 	part = strings.Replace(part, ".", "[.]", -1)
+
+	if strings.HasPrefix(part, "*") {
+		part = strings.Replace(part, "*", ".*", -1)
+	}
 
 	for _, group := range groups {
 		replacer := fmt.Sprintf("(?P%s.+)", group)
@@ -366,31 +431,6 @@ func (reducer *Reducer) convertToGroupRegexp(part string) string {
 	return part
 }
 
-func (reducer *Reducer) Tag(pathTokens []string) map[string]string {
-	tagged := map[string]string{}
-
-	for idx, token := range reducer.Tokens {
-		match := reducer.convertToGroupRegexp(token)
-		if match == "" {
-			continue
-		}
-
-		tmpRegexp, err := regexp.Compile(match)
-		if err != nil {
-			continue
-		}
-
-		namedMatches := tmpRegexp.SubexpNames()
-		subMatches := tmpRegexp.FindStringSubmatch(pathTokens[idx])
-		for i, subMatch := range subMatches {
-			if subMatch != "" {
-				tagged[namedMatches[i]] = strings.Trim(subMatch, separator)
-			}
-		}
-	}
-
-	return tagged
-}
 
 // Print out
 func printSummary(summary *phraseapp.SummaryType) {
