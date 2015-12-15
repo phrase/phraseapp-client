@@ -64,6 +64,7 @@ type PullParams struct {
 	KeepNotranslateTags        bool                    `yaml:"keep_notranslate_tags,omitempty"`
 	SkipUnverifiedTranslations bool                    `yaml:"skip_unverified_translations,omitempty"`
 	Tag                        string                  `yaml:"tag,omitempty"`
+	FallbackLocaleID           string                  `yaml:"fallback_locale_id,omitempty"`
 }
 
 func (target *Target) CheckPreconditions() error {
@@ -202,6 +203,11 @@ func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
 	encoding := params.Encoding
 	if encoding != "" {
 		downloadParams.Encoding = &encoding
+	}
+
+	fallbackLocaleID := params.FallbackLocaleID
+	if fallbackLocaleID != "" {
+		downloadParams.FallbackLocaleID = &fallbackLocaleID
 	}
 
 	return downloadParams
