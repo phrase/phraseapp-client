@@ -126,6 +126,9 @@ func (source *Source) Push(client *phraseapp.Client) error {
 				localeFile.ID = localeDetails.ID
 				localeFile.RFC = localeDetails.Code
 				localeFile.Name = localeDetails.Name
+			} else {
+				fmt.Printf("failed to create locale: %s\n", err)
+				continue
 			}
 		}
 
