@@ -149,6 +149,10 @@ func (source *Source) Push(client *phraseapp.Client) error {
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+	if localeFile.RFC == "" {
+		return nil, fmt.Errorf("no locale code specified")
+	}
+
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
