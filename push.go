@@ -313,6 +313,10 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 		if remote.Name == localeFile.Name {
 			return remote
 		}
+
+		if remote.Name == localeFile.RFC {
+			return remote
+		}
 	}
 	return nil
 }
