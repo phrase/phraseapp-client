@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func getBaseSource() *Source {
@@ -14,15 +15,7 @@ func getBaseSource() *Source {
 		AccessToken: "access-token",
 		FileFormat:  "yml",
 		Extension:   "",
-		Params: &PushParams{
-			FileFormat:         "",
-			LocaleID:           "",
-			ConvertEmoji:       nil,
-			SkipUnverification: nil,
-			SkipUploadTags:     nil,
-			Tags:               nil,
-			UpdateTranslations: nil,
-		},
+		Params: new(phraseapp.UploadParams),
 		RemoteLocales: getBaseLocales(),
 	}
 	source.Extension = filepath.Ext(source.File)
@@ -140,7 +133,8 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 func TestReplacePlaceholderInParams(t *testing.T) {
 	fmt.Println("Push#Source#ReplacePlaceholderInParams")
 	source := getBaseSource()
-	source.Params.LocaleID = "<locale_code>"
+	lid := "<locale_code>"
+	source.Params.LocaleID = &lid
 	localeFile := &LocaleFile{
 		Name: "en",
 		RFC:  "en",
