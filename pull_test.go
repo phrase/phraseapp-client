@@ -13,16 +13,7 @@ func getBaseTarget() *Target {
 		ProjectID:   "project-id",
 		AccessToken: "access-token",
 		FileFormat:  "yml",
-		Params: &PullParams{
-			FileFormat:                 "",
-			LocaleID:                   "",
-			Encoding:                   "",
-			ConvertEmoji:               false,
-			IncludeEmptyTranslations:   false,
-			KeepNotranslateTags:        false,
-			SkipUnverifiedTranslations: false,
-			Tag: "",
-		},
+		Params: new(PullParams),
 		RemoteLocales: getBaseLocales(),
 	}
 	return target
