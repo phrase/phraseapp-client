@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"fmt"
-	"github.com/phrase/phraseapp-go/phraseapp"
-	"gopkg.in/yaml.v1"
 	"sort"
+
+	"github.com/phrase/phraseapp-go/phraseapp"
+	"gopkg.in/yaml.v2"
 )
 
 func TestPullConfig(t *testing.T) {
