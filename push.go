@@ -23,23 +23,32 @@ func (cmd *PushCommand) Run() error {
 		cmd.Debug = false
 		Debug = true
 	}
-	client, err := ClientFromCmdCredentials(cmd.Credentials)
-	if err != nil {
-		return err
-	}
 
-	sources, err := SourcesFromConfig(cmd)
-	if err != nil {
-		return err
-	}
-
-	for _, source := range sources {
-		err := source.Push(client)
+	err := func() error {
+		client, err := ClientFromCmdCredentials(cmd.Credentials)
 		if err != nil {
 			return err
 		}
+
+		sources, err := SourcesFromConfig(cmd)
+		if err != nil {
+			return err
+		}
+
+		for _, source := range sources {
+			err := source.Push(client)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}()
+
+	if err != nil {
+		ReportError("Push Error", err.Error())
 	}
-	return nil
+
+	return err
 }
 
 type Sources []*Source
@@ -308,11 +317,9 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	if len(localeFiles) <= 0 {
 		abs, err := filepath.Abs(source.File)
 		if err != nil {
-			return nil, err
+			abs = source.File
 		}
-		errmsg := fmt.Sprintf("Could not find any files on your system that matches: '%s'", abs)
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
 	}
 	return localeFiles, nil
 }
@@ -488,9 +495,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
-		errmsg := "no sources for upload specified"
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
 	sources := config.Phraseapp.Push.Sources
@@ -522,9 +527,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	}
 
 	if len(validSources) <= 0 {
-		errmsg := "no sources could be identified! Refine the sources list in your config"
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no sources could be identified! Refine the sources list in your config")
 	}
 
 	return validSources, nil
