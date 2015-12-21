@@ -205,27 +205,11 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 }
 
 func (source *Source) SystemFiles() ([]string, error) {
-	filePaths := []string{}
 	if strings.Contains(source.File, "**") {
-		rec, err := source.recurse()
-		if err != nil {
-			return nil, err
-		}
-		filePaths = rec
+		return source.recurse()
 	}
 
-	globFiles, err := source.glob()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, f := range globFiles {
-		if !Contains(filePaths, f) {
-			filePaths = append(filePaths, f)
-		}
-	}
-
-	return filePaths, nil
+	return source.glob()
 }
 
 func (source *Source) glob() ([]string, error) {
@@ -258,17 +242,13 @@ func (source *Source) recurse() ([]string, error) {
 			ReportError("Push Error", errmsg)
 			return fmt.Errorf(errmsg)
 		}
-		if strings.HasSuffix(f.Name(), source.Extension) {
+		if !f.Mode().IsDir() && strings.HasSuffix(f.Name(), source.Extension) {
 			files = append(files, path)
 		}
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return files, nil
+	return files, err
 }
 
 func (source *Source) root() string {
