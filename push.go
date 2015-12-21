@@ -285,7 +285,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		if len(pathTokens) < len(tokens) {
 			continue
 		}
-		localeFile := Reduce(tokens, pathTokens)
+		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
 		if err != nil {
@@ -354,10 +354,10 @@ func splitPathToTokens(s string) []string {
 	return tokens
 }
 
-func Reduce(tokens, pathTokens []string) *LocaleFile {
-	tagged := map[string]string{}
+func extractParamsFromPathTokens(srcTokens, pathTokens []string) *LocaleFile {
+	localeFile := new(LocaleFile)
 
-	for idx, token := range tokens {
+	for idx, token := range srcTokens {
 		pathToken := pathTokens[idx]
 		if token == "*" {
 			continue
@@ -365,13 +365,13 @@ func Reduce(tokens, pathTokens []string) *LocaleFile {
 		if token == "**" {
 			break
 		}
-		tagged = tag(tagged, token, pathToken)
+		extractParamFromPathToken(localeFile, token, pathToken)
 	}
 
-	if Contains(tokens, "**") {
+	if Contains(srcTokens, "**") {
 		offset := 1
-		for idx := len(tokens) - 1; idx >= 0; idx-- {
-			token := tokens[idx]
+		for idx := len(srcTokens) - 1; idx >= 0; idx-- {
+			token := srcTokens[idx]
 			pathToken := pathTokens[len(pathTokens)-offset]
 			offset += 1
 
@@ -382,24 +382,20 @@ func Reduce(tokens, pathTokens []string) *LocaleFile {
 				break
 			}
 
-			tagged = tag(tagged, token, pathToken)
+			extractParamFromPathToken(localeFile, token, pathToken)
 		}
 	}
 
-	return &LocaleFile{
-		Name: tagged["locale_name"],
-		RFC:  tagged["locale_code"],
-		Tag:  tagged["tag"],
-	}
+	return localeFile
 }
 
-func tag(tagged map[string]string, token, pathToken string) map[string]string {
-	groups := placeholderRegexp.FindAllString(token, -1)
+func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken string) {
+	groups := placeholderRegexp.FindAllString(srcToken, -1)
 	if len(groups) <= 0 {
-		return tagged
+		return
 	}
 
-	match := strings.Replace(token, ".", "[.]", -1)
+	match := strings.Replace(srcToken, ".", "[.]", -1)
 	if strings.HasPrefix(match, "*") {
 		match = strings.Replace(match, "*", ".*", -1)
 	}
@@ -410,23 +406,29 @@ func tag(tagged map[string]string, token, pathToken string) map[string]string {
 	}
 
 	if match == "" {
-		return tagged
+		return
 	}
 
 	tmpRegexp, err := regexp.Compile(match)
 	if err != nil {
-		return tagged
+		return
 	}
 
 	namedMatches := tmpRegexp.SubexpNames()
 	subMatches := tmpRegexp.FindStringSubmatch(pathToken)
 	for i, subMatch := range subMatches {
-		if subMatch != "" {
-			tagged[namedMatches[i]] = strings.Trim(subMatch, separator)
+		value := strings.Trim(subMatch, separator)
+		switch namedMatches[i] {
+		case "locale_code":
+			localeFile.RFC = value
+		case "locale_name":
+			localeFile.Name = value
+		case "tag":
+			localeFile.Tag = value
+		default:
+			// ignore
 		}
 	}
-
-	return tagged
 }
 
 // Configuration
