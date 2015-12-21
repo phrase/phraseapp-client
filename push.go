@@ -9,7 +9,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -207,8 +206,6 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	if err != nil {
 		return err
 	}
-
-	printSummary(&aUpload.Summary)
 
 	return nil
 }
@@ -430,36 +427,6 @@ func tag(tagged map[string]string, token, pathToken string) map[string]string {
 	}
 
 	return tagged
-}
-
-// Print out
-func printSummary(summary *phraseapp.SummaryType) {
-	newItems := []int64{
-		summary.LocalesCreated,
-		summary.TranslationsUpdated,
-		summary.TranslationKeysCreated,
-		summary.TranslationsCreated,
-	}
-	var changed bool
-	for _, item := range newItems {
-		if item > 0 {
-			changed = true
-		}
-	}
-	if changed || Debug {
-		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-		fmt.Print("\n")
-	}
-}
-
-func printMessage(msg, stat string) {
-	fmt.Print(msg)
-	ct.Foreground(ct.Green, true)
-	fmt.Print(stat)
-	ct.ResetColor()
 }
 
 // Configuration
