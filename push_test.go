@@ -74,8 +74,7 @@ func TestSourceFields(t *testing.T) {
 func TestSourceLocaleFilesOne(t *testing.T) {
 	fmt.Println("Push#Source#LocaleFiles#1")
 	source := getBaseSource()
-	virtualFiles, _ := source.SystemFiles()
-	localeFiles, err := source.LocaleFiles(virtualFiles)
+	localeFiles, err := source.LocaleFiles()
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -104,8 +103,7 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 	fmt.Println("Push#Source#LocaleFiles#2")
 	source := getBaseSource()
 	source.File = "./**/<locale_name>.yml"
-	virtualFiles, _ := source.SystemFiles()
-	localeFiles, err := source.LocaleFiles(virtualFiles)
+	localeFiles, err := source.LocaleFiles()
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -420,13 +418,13 @@ func TestReducerPatterns(t *testing.T) {
 		},
 	} {
 
-		tokens := Tokenize(pattern.File)
+		tokens := splitPathToTokens(pattern.File)
 
 		fmt.Println(strings.Repeat("-", 10))
 		fmt.Println(idx+1, "\n  SourceFile:", pattern.File, "\n  TestPath:", pattern.TestPath)
 
-		pathTokens := Tokenize(pattern.TestPath)
-		localeFile := Reduce(tokens, pathTokens)
+		pathTokens := splitPathToTokens(pattern.TestPath)
+		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
 		if localeFile.RFC != pattern.ExpectedRFC {
 			t.Errorf("Expected RFC to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedRFC, localeFile.RFC, idx+1)
