@@ -277,7 +277,7 @@ func (source *Source) recurse() ([]string, error) {
 }
 
 func (source *Source) root() string {
-	parts := strings.Split(source.File, separator)
+	parts := Tokenize(source.File)
 	rootParts := TakeWhile(parts, func(x string) bool {
 		return x != "**"
 	})
