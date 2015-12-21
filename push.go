@@ -133,9 +133,9 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		err = source.uploadFile(client, localeFile)
 		if err != nil {
 			return err
-		} else {
-			sharedMessage("push", localeFile)
 		}
+
+		sharedMessage("push", localeFile)
 
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -202,12 +202,8 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		}
 	}
 
-	aUpload, err := client.UploadCreate(source.ProjectID, params)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := client.UploadCreate(source.ProjectID, params)
+	return err
 }
 
 func (source *Source) SystemFiles() ([]string, error) {
