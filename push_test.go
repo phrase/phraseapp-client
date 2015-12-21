@@ -74,7 +74,8 @@ func TestSourceFields(t *testing.T) {
 func TestSourceLocaleFilesOne(t *testing.T) {
 	fmt.Println("Push#Source#LocaleFiles#1")
 	source := getBaseSource()
-	localeFiles, err := source.LocaleFiles()
+	virtualFiles, _ := source.SystemFiles()
+	localeFiles, err := source.LocaleFiles(virtualFiles)
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -103,8 +104,8 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 	fmt.Println("Push#Source#LocaleFiles#2")
 	source := getBaseSource()
 	source.File = "./**/<locale_name>.yml"
-
-	localeFiles, err := source.LocaleFiles()
+	virtualFiles, _ := source.SystemFiles()
+	localeFiles, err := source.LocaleFiles(virtualFiles)
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())

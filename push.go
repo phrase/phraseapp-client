@@ -102,7 +102,12 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	}
 	source.RemoteLocales = remoteLocales
 
-	localeFiles, err := source.LocaleFiles()
+	virtualFiles, err := source.SystemFiles()
+	if err != nil {
+		return err
+	}
+
+	localeFiles, err := source.LocaleFiles(virtualFiles)
 	if err != nil {
 		return err
 	}
@@ -204,12 +209,86 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 	return nil
 }
 
-func (source *Source) LocaleFiles() (LocaleFiles, error) {
-	filePaths, err := source.glob()
+func (source *Source) SystemFiles() ([]string, error) {
+	filePaths := []string{}
+	if strings.Contains(source.File, "**") {
+		rec, err := source.recurse()
+		if err != nil {
+			return nil, err
+		}
+		filePaths = rec
+	}
+
+	globFiles, err := source.glob()
 	if err != nil {
 		return nil, err
 	}
 
+	for _, f := range globFiles {
+		if !Contains(filePaths, f) {
+			filePaths = append(filePaths, f)
+		}
+	}
+
+	return filePaths, nil
+}
+
+func (source *Source) glob() ([]string, error) {
+	withoutPlaceholder := placeholderRegexp.ReplaceAllString(source.File, "*")
+	tokens := Tokenize(withoutPlaceholder)
+
+	fileHead := tokens[len(tokens)-1]
+	if strings.HasPrefix(fileHead, ".") {
+		tokens[len(tokens)-1] = "*" + fileHead
+	}
+	pattern := strings.Join(tokens, separator)
+
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	if Debug {
+		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
+	}
+
+	return files, nil
+}
+
+func (source *Source) recurse() ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
+			ReportError("Push Error", errmsg)
+			return fmt.Errorf(errmsg)
+		}
+		if strings.HasSuffix(f.Name(), source.Extension) {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+func (source *Source) root() string {
+	parts := strings.Split(source.File, separator)
+	rootParts := TakeWhile(parts, func(x string) bool {
+		return x != "**"
+	})
+	root := strings.Join(rootParts, separator)
+	if root == "" {
+		root = "."
+	}
+	return root
+}
+
+func (source *Source) LocaleFiles(filePaths []string) (LocaleFiles, error) {
 	tokens := Tokenize(source.File)
 
 	var localeFiles LocaleFiles
@@ -277,28 +356,6 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 		}
 	}
 	return nil
-}
-
-func (source *Source) glob() ([]string, error) {
-	withoutPlaceholder := placeholderRegexp.ReplaceAllString(source.File, "*")
-	tokens := Tokenize(withoutPlaceholder)
-
-	fileHead := tokens[len(tokens)-1]
-	if strings.HasPrefix(fileHead, ".") {
-		tokens[len(tokens)-1] = "*" + fileHead
-	}
-	pattern := strings.Join(tokens, separator)
-
-	files, err := filepath.Glob(pattern)
-	if err != nil {
-		return nil, err
-	}
-
-	if Debug {
-		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
-	}
-
-	return files, nil
 }
 
 func Tokenize(s string) []string {
