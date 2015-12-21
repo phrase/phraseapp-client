@@ -102,12 +102,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	}
 	source.RemoteLocales = remoteLocales
 
-	virtualFiles, err := source.SystemFiles()
-	if err != nil {
-		return err
-	}
-
-	localeFiles, err := source.LocaleFiles(virtualFiles)
+	localeFiles, err := source.LocaleFiles()
 	if err != nil {
 		return err
 	}
@@ -288,7 +283,13 @@ func (source *Source) root() string {
 	return root
 }
 
-func (source *Source) LocaleFiles(filePaths []string) (LocaleFiles, error) {
+// Return all locale files from disk that match the source pattern.
+func (source *Source) LocaleFiles() (LocaleFiles, error) {
+	filePaths, err := source.SystemFiles()
+	if err != nil {
+		return nil, err
+	}
+
 	tokens := Tokenize(source.File)
 
 	var localeFiles LocaleFiles
