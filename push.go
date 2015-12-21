@@ -230,7 +230,7 @@ func (source *Source) SystemFiles() ([]string, error) {
 
 func (source *Source) glob() ([]string, error) {
 	withoutPlaceholder := placeholderRegexp.ReplaceAllString(source.File, "*")
-	tokens := Tokenize(withoutPlaceholder)
+	tokens := splitPathToTokens(withoutPlaceholder)
 
 	fileHead := tokens[len(tokens)-1]
 	if strings.HasPrefix(fileHead, ".") {
@@ -272,7 +272,7 @@ func (source *Source) recurse() ([]string, error) {
 }
 
 func (source *Source) root() string {
-	parts := Tokenize(source.File)
+	parts := splitPathToTokens(source.File)
 	rootParts := TakeWhile(parts, func(x string) bool {
 		return x != "**"
 	})
@@ -290,12 +290,12 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		return nil, err
 	}
 
-	tokens := Tokenize(source.File)
+	tokens := splitPathToTokens(source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
 
-		pathTokens := Tokenize(path)
+		pathTokens := splitPathToTokens(path)
 		if len(pathTokens) < len(tokens) {
 			continue
 		}
@@ -359,7 +359,7 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	return nil
 }
 
-func Tokenize(s string) []string {
+func splitPathToTokens(s string) []string {
 	tokens := []string{}
 	for _, token := range strings.Split(s, separator) {
 		if token == "." || token == "" {
