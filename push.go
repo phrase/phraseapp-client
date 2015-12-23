@@ -9,7 +9,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -23,23 +22,32 @@ func (cmd *PushCommand) Run() error {
 		cmd.Debug = false
 		Debug = true
 	}
-	client, err := ClientFromCmdCredentials(cmd.Credentials)
-	if err != nil {
-		return err
-	}
 
-	sources, err := SourcesFromConfig(cmd)
-	if err != nil {
-		return err
-	}
-
-	for _, source := range sources {
-		err := source.Push(client)
+	err := func() error {
+		client, err := ClientFromCmdCredentials(cmd.Credentials)
 		if err != nil {
 			return err
 		}
+
+		sources, err := SourcesFromConfig(cmd)
+		if err != nil {
+			return err
+		}
+
+		for _, source := range sources {
+			err := source.Push(client)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}()
+
+	if err != nil {
+		ReportError("Push Error", err.Error())
 	}
-	return nil
+
+	return err
 }
 
 type Sources []*Source
@@ -125,9 +133,9 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		err = source.uploadFile(client, localeFile)
 		if err != nil {
 			return err
-		} else {
-			sharedMessage("push", localeFile)
 		}
+
+		sharedMessage("push", localeFile)
 
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -194,73 +202,105 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		}
 	}
 
-	aUpload, err := client.UploadCreate(source.ProjectID, params)
-	if err != nil {
-		return err
-	}
-
-	printSummary(&aUpload.Summary)
-
-	return nil
+	_, err := client.UploadCreate(source.ProjectID, params)
+	return err
 }
 
-func (source *Source) LocaleFiles() (LocaleFiles, error) {
-	recursiveFiles := []string{}
+func (source *Source) SystemFiles() ([]string, error) {
 	if strings.Contains(source.File, "**") {
-		rec, err := source.recurse()
-		if err != nil {
-			return nil, err
-		}
-		recursiveFiles = rec
+		return source.recurse()
 	}
 
-	globFiles, err := source.glob()
+	return source.glob()
+}
+
+func (source *Source) glob() ([]string, error) {
+	withoutPlaceholder := placeholderRegexp.ReplaceAllString(source.File, "*")
+	tokens := splitPathToTokens(withoutPlaceholder)
+
+	fileHead := tokens[len(tokens)-1]
+	if strings.HasPrefix(fileHead, ".") {
+		tokens[len(tokens)-1] = "*" + fileHead
+	}
+	pattern := strings.Join(tokens, separator)
+
+	files, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
 	}
 
-	filePaths := []string{}
-	for _, f := range globFiles {
-		if !Contains(filePaths, f) {
-			filePaths = append(filePaths, f)
-		}
-	}
-	for _, f := range recursiveFiles {
-		if !Contains(filePaths, f) {
-			filePaths = append(filePaths, f)
-		}
+	if Debug {
+		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
 	}
 
-	reducer := Reducer{
-		SourceFile: source.File,
-		Extension:  source.Extension,
-	}
-	reducer.Initialize()
+	return files, nil
+}
 
-	if err := reducer.Reduce(); err != nil {
+func (source *Source) recurse() ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
+			ReportError("Push Error", errmsg)
+			return fmt.Errorf(errmsg)
+		}
+		if !f.Mode().IsDir() && strings.HasSuffix(f.Name(), source.Extension) {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
+}
+
+func (source *Source) root() string {
+	parts := splitPathToTokens(source.File)
+	rootParts := TakeWhile(parts, func(x string) bool {
+		return x != "**"
+	})
+	root := strings.Join(rootParts, separator)
+	if root == "" {
+		root = "."
+	}
+	return root
+}
+
+// Return all locale files from disk that match the source pattern.
+func (source *Source) LocaleFiles() (LocaleFiles, error) {
+	filePaths, err := source.SystemFiles()
+	if err != nil {
 		return nil, err
 	}
+
+	tokens := splitPathToTokens(source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		if !reducer.MatchesPath(path) {
+
+		pathTokens := splitPathToTokens(path)
+		if len(pathTokens) < len(tokens) {
 			continue
 		}
+		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
-		temporaryLocaleFile, err := reducer.Eval(path)
+		absolutePath, err := filepath.Abs(path)
 		if err != nil {
 			return nil, err
 		}
+		localeFile.Path = absolutePath
 
-		localeFile, err := source.generateLocaleForFile(temporaryLocaleFile, path)
-		if err != nil {
-			return nil, err
+		locale := source.getRemoteLocaleForLocaleFile(localeFile)
+		if locale != nil {
+			localeFile.ExistsRemote = true
+			localeFile.RFC = locale.Code
+			localeFile.Name = locale.Name
+			localeFile.ID = locale.ID
 		}
 
 		if Debug {
 			fmt.Println(fmt.Sprintf(
 				"RFC:'%s', Name:'%s', Tag;'%s', Pattern:'%s'",
-				localeFile.RFC, localeFile.Name, localeFile.Tag, reducer.Matcher.String(),
+				localeFile.RFC, localeFile.Name, localeFile.Tag,
 			))
 		}
 
@@ -270,32 +310,11 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 	if len(localeFiles) <= 0 {
 		abs, err := filepath.Abs(source.File)
 		if err != nil {
-			return nil, err
+			abs = source.File
 		}
-		errmsg := fmt.Sprintf("Could not find any files on your system that matches: '%s'", abs)
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
 	}
 	return localeFiles, nil
-}
-
-func (source *Source) generateLocaleForFile(localeFile *LocaleFile, path string) (*LocaleFile, error) {
-	locale := source.getRemoteLocaleForLocaleFile(localeFile)
-	if locale != nil {
-		localeFile.ExistsRemote = true
-		localeFile.RFC = locale.Code
-		localeFile.Name = locale.Name
-		localeFile.ID = locale.ID
-	}
-
-	absolutePath, err := filepath.Abs(path)
-	if err != nil {
-		return nil, err
-	}
-
-	localeFile.Path = absolutePath
-
-	return localeFile, nil
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
@@ -320,66 +339,95 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	return nil
 }
 
-func (source *Source) fileWithoutPlaceholder() string {
-	return strings.TrimSuffix(placeholderRegexp.ReplaceAllString(source.File, "*"), source.Extension)
-}
-
-func (source *Source) extensionWithoutPlaceholder() string {
-	if placeholderRegexp.MatchString(source.Extension) {
-		return ""
-	}
-	return "*" + source.Extension
-}
-
-func (source *Source) glob() ([]string, error) {
-	pattern := source.fileWithoutPlaceholder() + source.extensionWithoutPlaceholder()
-
-	files, err := filepath.Glob(pattern)
-	if err != nil {
-		return nil, err
-	}
-
-	if Debug {
-		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
-	}
-
-	return files, nil
-}
-
-func (source *Source) recurse() ([]string, error) {
-	files := []string{}
-	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
-			ReportError("Push Error", errmsg)
-			return fmt.Errorf(errmsg)
+func splitPathToTokens(s string) []string {
+	tokens := []string{}
+	for _, token := range strings.Split(s, separator) {
+		if token == "." || token == "" {
+			continue
 		}
-		if strings.HasSuffix(f.Name(), source.Extension) {
-			files = append(files, path)
+		tokens = append(tokens, token)
+	}
+	return tokens
+}
+
+func extractParamsFromPathTokens(srcTokens, pathTokens []string) *LocaleFile {
+	localeFile := new(LocaleFile)
+
+	for idx, token := range srcTokens {
+		pathToken := pathTokens[idx]
+		if token == "*" {
+			continue
 		}
-		return nil
-	})
+		if token == "**" {
+			break
+		}
+		extractParamFromPathToken(localeFile, token, pathToken)
+	}
 
+	if Contains(srcTokens, "**") {
+		offset := 1
+		for idx := len(srcTokens) - 1; idx >= 0; idx-- {
+			token := srcTokens[idx]
+			pathToken := pathTokens[len(pathTokens)-offset]
+			offset += 1
+
+			if token == "*" {
+				continue
+			}
+			if token == "**" {
+				break
+			}
+
+			extractParamFromPathToken(localeFile, token, pathToken)
+		}
+	}
+
+	return localeFile
+}
+
+func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken string) {
+	groups := placeholderRegexp.FindAllString(srcToken, -1)
+	if len(groups) <= 0 {
+		return
+	}
+
+	match := strings.Replace(srcToken, ".", "[.]", -1)
+	if strings.HasPrefix(match, "*") {
+		match = strings.Replace(match, "*", ".*", -1)
+	}
+
+	for _, group := range groups {
+		replacer := fmt.Sprintf("(?P%s.+)", group)
+		match = strings.Replace(match, group, replacer, 1)
+	}
+
+	if match == "" {
+		return
+	}
+
+	tmpRegexp, err := regexp.Compile(match)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return files, nil
-}
-
-func (source *Source) root() string {
-	parts := strings.Split(source.File, separator)
-	rootParts := TakeWhile(parts, func(x string) bool {
-		return x != "**"
-	})
-	root := strings.Join(rootParts, separator)
-	if root == "" {
-		root = "."
+	namedMatches := tmpRegexp.SubexpNames()
+	subMatches := tmpRegexp.FindStringSubmatch(pathToken)
+	for i, subMatch := range subMatches {
+		value := strings.Trim(subMatch, separator)
+		switch namedMatches[i] {
+		case "locale_code":
+			localeFile.RFC = value
+		case "locale_name":
+			localeFile.Name = value
+		case "tag":
+			localeFile.Tag = value
+		default:
+			// ignore
+		}
 	}
-	return root
 }
 
-// Config, params and printing
+// Configuration
 type PushConfig struct {
 	Phraseapp struct {
 		AccessToken string `yaml:"access_token"`
@@ -412,9 +460,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	fileFormat := config.Phraseapp.FileFormat
 
 	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
-		errmsg := "no sources for upload specified"
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
 	sources := config.Phraseapp.Push.Sources
@@ -446,9 +492,7 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	}
 
 	if len(validSources) <= 0 {
-		errmsg := "no sources could be identified! Refine the sources list in your config"
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no sources could be identified! Refine the sources list in your config")
 	}
 
 	return validSources, nil
@@ -459,357 +503,4 @@ func (source *Source) GetLocaleID() string {
 		return *source.Params.LocaleID
 	}
 	return ""
-}
-
-// Print out
-func printSummary(summary *phraseapp.SummaryType) {
-	newItems := []int64{
-		summary.LocalesCreated,
-		summary.TranslationsUpdated,
-		summary.TranslationKeysCreated,
-		summary.TranslationsCreated,
-	}
-	var changed bool
-	for _, item := range newItems {
-		if item > 0 {
-			changed = true
-		}
-	}
-	if changed || Debug {
-		printMessage("Locales created: ", fmt.Sprintf("%d", summary.LocalesCreated))
-		printMessage(" - Keys created: ", fmt.Sprintf("%d", summary.TranslationKeysCreated))
-		printMessage(" - Translations created: ", fmt.Sprintf("%d", summary.TranslationsCreated))
-		printMessage(" - Translations updated: ", fmt.Sprintf("%d", summary.TranslationsUpdated))
-		fmt.Print("\n")
-	}
-}
-
-func printMessage(msg, stat string) {
-	fmt.Print(msg)
-	ct.Foreground(ct.Green, true)
-	fmt.Print(stat)
-	ct.ResetColor()
-}
-
-// Reducer Algorithm:
-// reducer := &Reducer{
-// 		SourceFile: file,
-// 		Extension: extension,
-// }
-// reducer.Initialize()
-// reducer.Reduce()
-// if reducer.MatchesPath(path) {
-// 		reducer.Eval(path)
-// }
-type Reducer struct {
-	SourceFile string
-	Extension  string
-	Tokens     []string
-	Reductions []*Reduction
-	Matcher    *regexp.Regexp
-}
-
-type Reduction struct {
-	Original string
-	Matcher  *regexp.Regexp
-}
-
-func (reducer *Reducer) Initialize() {
-	tokens := []string{}
-	for _, token := range strings.Split(reducer.SourceFile, "/") {
-		if token == "." || token == "" {
-			continue
-		}
-		tokens = append(tokens, token)
-	}
-	reducer.Tokens = tokens
-}
-
-func (reducer *Reducer) Reduce() error {
-	reducer.Reductions = []*Reduction{}
-	heads := []string{}
-	for _, token := range reducer.Tokens {
-		head, matcher, err := reducer.toRegexp(token)
-		if err != nil {
-			return err
-		}
-		heads = append(heads, head)
-		reducer.Reductions = append(reducer.Reductions, &Reduction{
-			Original: token,
-			Matcher:  matcher,
-		})
-	}
-
-	reMatcher, err := reducer.wholeMatcher(heads)
-	if err != nil {
-		return err
-	}
-	reducer.Matcher = reMatcher
-
-	return nil
-}
-
-func (reducer *Reducer) MatchesPath(path string) bool {
-	return reducer.Matcher.MatchString(path)
-}
-
-func (reducer *Reducer) Eval(path string) (*LocaleFile, error) {
-	tagged := reducer.unify(path)
-
-	name := tagged["locale_name"]
-	rfc := tagged["locale_code"]
-	tag := tagged["tag"]
-
-	localeFile := &LocaleFile{}
-	if name != "" {
-		localeFile.Name = name
-	}
-
-	if rfc != "" {
-		localeFile.RFC = rfc
-	}
-
-	if tag != "" {
-		localeFile.Tag = tag
-	}
-
-	return localeFile, nil
-}
-
-// Private Reducer Methods
-func (reducer *Reducer) toRegexp(token string) (string, *regexp.Regexp, error) {
-	// <locale_code>.yml => <locale_code>__PHRASEAPP_REGEXP_DOT__yml
-	head := escapeRegexp(token)
-	// <locale_code>__PHRASEAPP_REGEXP_DOT__yml => (?P<locale_code>.+)__PHRASEAPP_REGEXP_DOT__yml
-	nextRegexp := reducer.convertToGroupRegexp(head)
-	if nextRegexp != "" {
-		head = nextRegexp
-	}
-	// (?P<locale_code>.+)__PHRASEAPP_REGEXP_DOT__yml => (?P<locale_code>.+)[.]yml
-	head = convertRegexp(head)
-
-	// Edge case: [.]strings => .*[.]strings
-	if reducer.isLastToken(head) && strings.HasPrefix(head, "[.]") {
-		head = ".*" + head
-	}
-	matcher, err := regexp.Compile(head)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return head, matcher, nil
-}
-
-func (reducer *Reducer) isLastToken(head string) bool {
-	return strings.Contains(head, strings.TrimLeft(reducer.Extension, "."))
-}
-
-func (reducer *Reducer) convertToGroupRegexp(part string) string {
-	groups := placeholderRegexp.FindAllString(part, -1)
-	if len(groups) <= 0 {
-		return ""
-	}
-
-	for _, group := range groups {
-		replacer := fmt.Sprintf("(?P%s.+)", group)
-		part = strings.Replace(part, group, replacer, 1)
-	}
-
-	return part
-}
-
-func (reducer *Reducer) wholeMatcher(heads []string) (*regexp.Regexp, error) {
-	matcherString := strings.Join(heads, "[/\\\\]")
-
-	if strings.HasPrefix(matcherString, "[/\\\\]") {
-		matcherString = strings.TrimLeft(matcherString, "[/\\\\]")
-	}
-	if strings.HasSuffix(matcherString, "[/\\\\]") {
-		matcherString = strings.TrimRight(matcherString, "[/\\\\]")
-	}
-
-	reMatcher, err := regexp.Compile(matcherString)
-	if err != nil {
-		return nil, err
-	}
-	return reMatcher, nil
-}
-
-// ** can endlessly pump at any position
-// initialization assumption: A Regexp validated the input path, the input is assumed to be correct.
-// 		1. start leftmost until a ** occurs
-// 			1.1 ./**/<tag>/<locale_name>/<locale_code>.yml -> nothing happens
-// 			1.2 ./<locale_name>/<tag>/**/<locale_code>.yml -> unifiy <locale_name> and <tag>, break at **
-// 			1.3 ./<locale_name>/**/<tag>/<locale_code>.yml -> unify <locale_name>, break at **
-//		=> the left hand side of ** is fully unified
-//
-// 		2. start rightmost until the ** occurs
-// 			2.1 ./<locale_name>/<tag>/**/<locale_code>.yml -> unifiy <locale_code>, break at **
-// 			2.2 ./**/<tag>/<locale_name>/*.yml -> unify <locale_name> and <tag>, break at **
-// 			2.3 ./<locale_name>/**/<tag>/<locale_code>.yml -> unify <tag> and <locale_code>
-func (reducer *Reducer) unify(path string) map[string]string {
-	tagged := map[string]string{}
-
-	tokens := strings.Split(path, separator)
-	reductions := reducer.Reductions
-
-	if strings.Contains(reducer.SourceFile, "**") || reducer.fileContainsStar() {
-		for idx, reduction := range reductions {
-			if reduction.Original == "**" {
-				break
-			}
-			if reduction.Original == "*" {
-				continue
-			}
-			partlyTagged := reducer.tagMatches(reduction, tokens[idx])
-			tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
-		}
-	}
-
-	offset := 0
-	for i := len(reductions) - 1; i >= 0; i-- {
-		reduction := reductions[i]
-		if reduction.Original == "**" {
-			break
-		}
-		if reduction.Original == "*" {
-			offset += 1
-			continue
-		}
-		idx := len(tokens) - offset - 1
-		partlyTagged := reducer.tagMatches(reduction, tokens[idx])
-		tagged = reducer.updateTaggedMatches(tagged, partlyTagged)
-		offset += 1
-	}
-
-	return tagged
-}
-
-func (reducer *Reducer) fileContainsStar() bool {
-	last := reducer.Reductions[len(reducer.Reductions)-1]
-	return strings.Contains(reducer.SourceFile, "*") && !strings.Contains(last.Original, "*")
-}
-
-func (reducer *Reducer) tagMatches(reduction *Reduction, token string) map[string]string {
-	tagged := map[string]string{}
-	namedMatches := reduction.Matcher.SubexpNames()
-	subMatches := reduction.Matcher.FindStringSubmatch(token)
-	for i, subMatch := range subMatches {
-		if subMatch != "" {
-			tagged[namedMatches[i]] = subMatch
-		}
-	}
-	return tagged
-}
-
-func (reducer *Reducer) updateTaggedMatches(original, updater map[string]string) map[string]string {
-	localeCode := updater["locale_code"]
-	localeName := updater["locale_name"]
-	tag := updater["tag"]
-
-	if original["locale_code"] == "" {
-		original["locale_code"] = strings.Trim(localeCode, "/")
-	}
-
-	if original["locale_name"] == "" {
-		original["locale_name"] = strings.Trim(localeName, "/")
-	}
-
-	if original["tag"] == "" {
-		original["tag"] = strings.Trim(tag, "/")
-	}
-	return original
-}
-
-// Escaping of Regexp
-func escapeRegexp(token string) string {
-	for _, e := range regexpMapping {
-		token = strings.Replace(token, e.Symbol, e.Escaper(), -1)
-	}
-	return token
-}
-
-func convertRegexp(token string) string {
-	for _, e := range regexpMapping {
-		token = strings.Replace(token, e.Escaper(), e.SymbolAsRegexp, -1)
-	}
-	return token
-}
-
-type RegexpEscaping struct {
-	Symbol         string
-	Replacer       string
-	SymbolAsRegexp string
-}
-
-func (regexpEscaping *RegexpEscaping) Escaper() string {
-	return fmt.Sprintf("__PHRASEAPP_REGEXP_%s__", regexpEscaping.Replacer)
-}
-
-var regexpMapping = []*RegexpEscaping{
-	&RegexpEscaping{
-		Symbol:         "**",
-		Replacer:       "DOUBLE_STAR",
-		SymbolAsRegexp: ".*",
-	},
-	&RegexpEscaping{
-		Symbol:         "*",
-		Replacer:       "SINGLE_STAR",
-		SymbolAsRegexp: ".*",
-	},
-	&RegexpEscaping{
-		Symbol:         "+",
-		Replacer:       "PLUS",
-		SymbolAsRegexp: "[+]",
-	},
-	&RegexpEscaping{
-		Symbol:         "?",
-		Replacer:       "QUESTION_MARK",
-		SymbolAsRegexp: "[?]",
-	},
-	&RegexpEscaping{
-		Symbol:         ".",
-		Replacer:       "DOT",
-		SymbolAsRegexp: "[.]",
-	},
-	&RegexpEscaping{
-		Symbol:         "^",
-		Replacer:       "CARET",
-		SymbolAsRegexp: "\\^",
-	},
-	&RegexpEscaping{
-		Symbol:         "(",
-		Replacer:       "OPEN_BRACKET",
-		SymbolAsRegexp: "[(]",
-	},
-	&RegexpEscaping{
-		Symbol:         ")",
-		Replacer:       "CLOSE_BRACKET",
-		SymbolAsRegexp: "[)]",
-	},
-	&RegexpEscaping{
-		Symbol:         "[",
-		Replacer:       "OPEN_SQUARE_BRACKET",
-		SymbolAsRegexp: "\\[",
-	},
-	&RegexpEscaping{
-		Symbol:         "]",
-		Replacer:       "CLOSE_SQUARE_BRACKET",
-		SymbolAsRegexp: "\\]",
-	},
-	&RegexpEscaping{
-		Symbol:         "{",
-		Replacer:       "OPEN_CURLY_BRACKET",
-		SymbolAsRegexp: "[{]",
-	},
-	&RegexpEscaping{
-		Symbol:         "}",
-		Replacer:       "CLOSE_CURLY_BRACKET",
-		SymbolAsRegexp: "[}]",
-	},
-	&RegexpEscaping{
-		Symbol:         "|",
-		Replacer:       "PIPE",
-		SymbolAsRegexp: "[|]",
-	},
 }
