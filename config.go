@@ -7,7 +7,7 @@ import (
 	"os/user"
 	"path"
 
-	"gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v2"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
 )

@@ -49,22 +49,12 @@ type Source struct {
 	ProjectID     string      `yaml:"project_id,omitempty"`
 	AccessToken   string      `yaml:"access_token,omitempty"`
 	FileFormat    string      `yaml:"file_format,omitempty"`
-	Params        *PushParams `yaml:"params"`
+	Params        *phraseapp.UploadParams `yaml:"params"`
+
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
 }
 
-type PushParams struct {
-	FileFormat   string `yaml:"file_format,omitempty"`
-	FileEncoding   string `yaml:"file_encoding,omitempty"`
-	LocaleID     string `yaml:"locale_id,omitempty"`
-	ConvertEmoji *bool  `yaml:"convert_emoji,omitempty"`
-	//FormatOptions      *map[string]interface{} `yaml:"format_options,omitempty"`
-	SkipUnverification *bool   `yaml:"skip_unverification,omitempty"`
-	SkipUploadTags     *bool   `yaml:"skip_upload_tags,omitempty"`
-	Tags               *string `yaml:"tags,omitempty"`
-	UpdateTranslations *bool   `yaml:"update_translations,omitempty"`
-}
 
 var separator = string(os.PathSeparator)
 
@@ -185,17 +175,26 @@ func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string 
 }
 
 func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile) error {
-	uploadParams, err := source.setUploadParams(localeFile)
-	if err != nil {
-		return err
-	}
-
 	if Debug {
 		fmt.Fprintln(os.Stdout, "Source file pattern:", source.File)
 		fmt.Fprintln(os.Stdout, "Actual file location:", localeFile.Path)
 	}
 
-	aUpload, err := client.UploadCreate(source.ProjectID, uploadParams)
+	params := new(phraseapp.UploadParams)
+	*params = *source.Params
+
+	params.File = &localeFile.Path
+
+	if params.LocaleID == nil {
+		switch {
+		case localeFile.ID != "":
+			params.LocaleID = &localeFile.ID
+		case localeFile.RFC != "":
+			params.LocaleID = &localeFile.RFC
+		}
+	}
+
+	aUpload, err := client.UploadCreate(source.ProjectID, params)
 	if err != nil {
 		return err
 	}
@@ -431,8 +430,17 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 		if source.AccessToken == "" {
 			source.AccessToken = token
 		}
-		if source.FileFormat == "" {
-			source.FileFormat = fileFormat
+		if source.Params == nil {
+			source.Params = new(phraseapp.UploadParams)
+		}
+
+		if source.Params.FileFormat == nil {
+			switch {
+			case source.FileFormat != "":
+				source.Params.FileFormat = &source.FileFormat
+			case fileFormat != "":
+				source.Params.FileFormat = &fileFormat
+			}
 		}
 		validSources = append(validSources, source)
 	}
@@ -447,79 +455,10 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 }
 
 func (source *Source) GetLocaleID() string {
-	if source.Params != nil {
-		return source.Params.LocaleID
+	if source.Params != nil && source.Params.LocaleID != nil {
+		return *source.Params.LocaleID
 	}
 	return ""
-}
-
-func (source *Source) setUploadParams(localeFile *LocaleFile) (*phraseapp.UploadParams, error) {
-	uploadParams := new(phraseapp.UploadParams)
-	uploadParams.File = &localeFile.Path
-	uploadParams.FileFormat = &source.FileFormat
-
-	if localeFile.ID != "" {
-		uploadParams.LocaleID = &localeFile.ID
-	} else if localeFile.RFC != "" {
-		uploadParams.LocaleID = &localeFile.RFC
-	}
-
-	if localeFile.Tag != "" {
-		uploadParams.Tags = &localeFile.Tag
-	}
-
-	if source.Params == nil {
-		return uploadParams, nil
-	}
-
-	params := source.Params
-
-	localeID := params.LocaleID
-	if localeID != "" {
-		uploadParams.LocaleID = &localeID
-	}
-
-	format := params.FileFormat
-	if format != "" {
-		uploadParams.FileFormat = &format
-	}
-
-	fileEncoding := params.FileEncoding
-	if fileEncoding != "" {
-		uploadParams.FileEncoding = &fileEncoding
-	}
-
-	convertEmoji := params.ConvertEmoji
-	if convertEmoji != nil {
-		uploadParams.ConvertEmoji = convertEmoji
-	}
-
-	//	formatOptions := params.FormatOptions
-	//	if formatOptions != nil {
-	//		uploadParams.FormatOptions = formatOptions
-	//	}
-
-	skipUnverification := params.SkipUnverification
-	if skipUnverification != nil {
-		uploadParams.SkipUnverification = skipUnverification
-	}
-
-	skipUploadTags := params.SkipUploadTags
-	if skipUploadTags != nil {
-		uploadParams.SkipUploadTags = skipUploadTags
-	}
-
-	tags := params.Tags
-	if tags != nil && uploadParams.Tags == nil {
-		uploadParams.Tags = tags
-	}
-
-	updateTranslations := params.UpdateTranslations
-	if updateTranslations != nil {
-		uploadParams.UpdateTranslations = updateTranslations
-	}
-
-	return uploadParams, nil
 }
 
 // Print out

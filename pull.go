@@ -55,17 +55,22 @@ type Target struct {
 }
 
 type PullParams struct {
-	FileFormat                 string                  `yaml:"file_format,omitempty"`
-	LocaleID                   string                  `yaml:"locale_id,omitempty"`
-	Encoding                   string                  `yaml:"encoding,omitempty"`
-	ConvertEmoji               bool                    `yaml:"convert_emoji,omitempty"`
-	FormatOptions              *map[string]interface{} `yaml:"format_options,omitempty"`
-	IncludeEmptyTranslations   bool                    `yaml:"include_empty_translations,omitempty"`
-	KeepNotranslateTags        bool                    `yaml:"keep_notranslate_tags,omitempty"`
-	SkipUnverifiedTranslations bool                    `yaml:"skip_unverified_translations,omitempty"`
-	Tag                        string                  `yaml:"tag,omitempty"`
-	FallbackLocaleID           string                  `yaml:"fallback_locale_id,omitempty"`
+	phraseapp.LocaleDownloadParams
+	LocaleID string
 }
+
+func (params *PullParams) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var aux struct {
+		LocaleID string `yaml:"locale_id,omitempty"`
+	}
+	if err := unmarshal(&aux); err != nil {
+		return err
+	}
+	params.LocaleID = aux.LocaleID
+
+	return unmarshal(&params.LocaleDownloadParams)
+}
+
 
 func (target *Target) CheckPreconditions() error {
 	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
@@ -142,7 +147,12 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 }
 
 func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
-	downloadParams := target.setDownloadParams()
+	downloadParams := new(phraseapp.LocaleDownloadParams)
+	*downloadParams = target.Params.LocaleDownloadParams
+
+	if downloadParams.FileFormat == nil {
+		downloadParams.FileFormat = &localeFile.FileFormat
+	}
 
 	if Debug {
 		fmt.Fprintln(os.Stderr, "Target file pattern:", target.File)
@@ -167,50 +177,6 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		return err
 	}
 	return nil
-}
-
-func (target *Target) setDownloadParams() *phraseapp.LocaleDownloadParams {
-	downloadParams := new(phraseapp.LocaleDownloadParams)
-	downloadParams.FileFormat = &target.FileFormat
-
-	params := target.Params
-
-	if target.Params == nil {
-		return downloadParams
-	}
-
-	format := params.FileFormat
-	if format != "" {
-		downloadParams.FileFormat = &format
-	}
-
-	downloadParams.ConvertEmoji = params.ConvertEmoji
-
-	formatOptions := params.FormatOptions
-	if formatOptions != nil {
-		downloadParams.FormatOptions = formatOptions
-	}
-
-	downloadParams.IncludeEmptyTranslations = params.IncludeEmptyTranslations
-	downloadParams.KeepNotranslateTags = params.KeepNotranslateTags
-	downloadParams.SkipUnverifiedTranslations = params.SkipUnverifiedTranslations
-
-	tag := params.Tag
-	if tag != "" {
-		downloadParams.Tag = &tag
-	}
-
-	encoding := params.Encoding
-	if encoding != "" {
-		downloadParams.Encoding = &encoding
-	}
-
-	fallbackLocaleID := params.FallbackLocaleID
-	if fallbackLocaleID != "" {
-		downloadParams.FallbackLocaleID = &fallbackLocaleID
-	}
-
-	return downloadParams
 }
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
@@ -275,8 +241,8 @@ func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error
 }
 
 func (t *Target) GetFormat() string {
-	if t.Params != nil && t.Params.FileFormat != "" {
-		return t.Params.FileFormat
+	if t.Params != nil && t.Params.FileFormat != nil {
+		return *t.Params.FileFormat
 	}
 	if t.FileFormat != "" {
 		return t.FileFormat
@@ -292,8 +258,8 @@ func (t *Target) GetLocaleID() string {
 }
 
 func (t *Target) GetTag() string {
-	if t.Params != nil {
-		return t.Params.Tag
+	if t.Params != nil && t.Params.Tag != nil {
+		return *t.Params.Tag
 	}
 	return ""
 }
