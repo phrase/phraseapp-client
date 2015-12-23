@@ -126,6 +126,9 @@ func (source *Source) Push(client *phraseapp.Client) error {
 				localeFile.ID = localeDetails.ID
 				localeFile.RFC = localeDetails.Code
 				localeFile.Name = localeDetails.Name
+			} else {
+				fmt.Printf("failed to create locale: %s\n", err)
+				continue
 			}
 		}
 
@@ -146,6 +149,10 @@ func (source *Source) Push(client *phraseapp.Client) error {
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+	if localeFile.RFC == "" {
+		return nil, fmt.Errorf("no locale code specified")
+	}
+
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
@@ -304,6 +311,10 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 		}
 
 		if remote.Name == localeFile.Name {
+			return remote
+		}
+
+		if remote.Name == localeFile.RFC {
 			return remote
 		}
 	}
