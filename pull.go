@@ -65,16 +65,18 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
+	var ok bool
+	cfgErrStr := "configuration key %q has invalid value\nsee https://phraseapp.com/docs/developers/cli/configuration/"
 	for k, v := range m {
 		switch k {
 		case "file":
-			tgt.File = v.(string)
+			if tgt.File, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "project_id":
-			tgt.ProjectID = v.(string)
+			if tgt.ProjectID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "access_token":
-			tgt.AccessToken = v.(string)
+			if tgt.AccessToken, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "file_format":
-			tgt.FileFormat = v.(string)
+			if tgt.FileFormat, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "params":
 			ps := map[string]interface{}{}
 			for k, v := range v.(map[interface{}]interface{}) {
@@ -82,7 +84,7 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 			tgt.Params = new(PullParams)
 			if v, found := ps["locale_id"]; found {
-				tgt.Params.LocaleID = v.(string)
+				if tgt.Params.LocaleID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, "locale_id") }
 				// Must delete the param from the map as the LocaleDownloadParams type
 				// doesn't support this one and the apply method would return an error.
 				delete(ps, "locale_id")

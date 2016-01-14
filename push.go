@@ -70,19 +70,24 @@ func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
+	var ok bool
+	cfgErrStr := "configuration key %q has invalid value\nsee https://phraseapp.com/docs/developers/cli/configuration/"
 	for k, v := range m {
 		switch k {
 		case "file":
-			src.File = v.(string)
+			if src.File, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "project_id":
-			src.ProjectID = v.(string)
+			if src.ProjectID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "access_token":
-			src.AccessToken = v.(string)
+			if src.AccessToken, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "file_format":
-			src.FileFormat = v.(string)
+			if src.FileFormat, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
 		case "params":
+			raw, ok := v.(map[interface{}]interface{});
+			if !ok { return fmt.Errorf(cfgErrStr, k) }
+
 			ps := map[string]interface{}{}
-			for k, v := range v.(map[interface{}]interface{}) {
+			for k, v := range raw {
 				ps[k.(string)] = v
 			}
 			src.Params = new(phraseapp.UploadParams)
