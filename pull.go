@@ -91,7 +91,7 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				return err
 			}
 		default:
-			return fmt.Errorf("configuration key %q invalid in params", k)
+			return fmt.Errorf("configuration key %q invalid\nsee https://phraseapp.com/docs/developers/cli/configuration/", k)
 		}
 	}
 
