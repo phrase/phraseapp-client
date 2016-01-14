@@ -14,7 +14,7 @@ import (
 )
 
 type PullCommand struct {
-	Credentials
+	*phraseapp.Config
 }
 
 func (cmd *PullCommand) Run() error {
@@ -24,7 +24,7 @@ func (cmd *PullCommand) Run() error {
 		Debug = true
 	}
 
-	client, err := ClientFromCmdCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -266,48 +266,28 @@ func (t *Target) GetTag() string {
 	return ""
 }
 
-// Configuration
-type PullConfig struct {
-	Phraseapp struct {
-		AccessToken string `yaml:"access_token"`
-		ProjectID   string `yaml:"project_id"`
-		FileFormat  string `yaml:"file_format,omitempty"`
-		Pull        struct {
-			Targets Targets
-		}
-	}
-}
-
 func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		return nil, err
-	}
-
-	var config *PullConfig
-
-	err = yaml.Unmarshal([]byte(content), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	if cmd.Token != "" {
-		token = cmd.Token
-	}
-	projectId := config.Phraseapp.ProjectID
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
+	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
 		errmsg := "no targets for download specified"
 		ReportError("Pull Error", errmsg)
 		return nil, fmt.Errorf(errmsg)
 	}
 
-	targets := config.Phraseapp.Pull.Targets
+	tmp := struct{
+		Targets  Targets
+	}{}
+	err := yaml.Unmarshal(cmd.Config.Targets, &tmp)
+	if err != nil {
+		return nil, err
+	}
+	tgts := tmp.Targets
+
+	token := cmd.Credentials.Token
+	projectId := cmd.Config.ProjectID
+	fileFormat := cmd.Config.FileFormat
 
 	validTargets := []*Target{}
-	for _, target := range targets {
+	for _, target := range tgts {
 		if target == nil {
 			continue
 		}

@@ -14,7 +14,7 @@ import (
 )
 
 type PushCommand struct {
-	Credentials
+	*phraseapp.Config
 }
 
 func (cmd *PushCommand) Run() error {
@@ -25,7 +25,7 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	err := func() error {
-		client, err := ClientFromCmdCredentials(cmd.Credentials)
+		client, err := phraseapp.NewClient(cmd.Config.Credentials)
 		if err != nil {
 			return err
 		}
@@ -450,46 +450,28 @@ func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken strin
 	}
 }
 
-// Configuration
-type PushConfig struct {
-	Phraseapp struct {
-		AccessToken string `yaml:"access_token"`
-		ProjectID   string `yaml:"project_id"`
-		FileFormat  string `yaml:"file_format,omitempty"`
-		Push        struct {
-			Sources Sources
-		}
-	}
-}
-
 func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
-	content, err := ConfigContent()
+	if cmd.Config.Sources == nil || len(cmd.Config.Sources) == 0 {
+		errmsg := "no sources for upload specified"
+		ReportError("Push Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
+	}
+
+	tmp := struct {
+		Sources Sources
+	}{}
+	err := yaml.Unmarshal(cmd.Config.Sources, &tmp)
 	if err != nil {
 		return nil, err
 	}
+	srcs := tmp.Sources
 
-	var config *PushConfig
-
-	err = yaml.Unmarshal([]byte(content), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	if cmd.Token != "" {
-		token = cmd.Token
-	}
-	projectId := config.Phraseapp.ProjectID
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
-		return nil, fmt.Errorf("no sources for upload specified")
-	}
-
-	sources := config.Phraseapp.Push.Sources
+	token := cmd.Credentials.Token
+	projectId := cmd.Config.ProjectID
+	fileFormat := cmd.Config.FileFormat
 
 	validSources := []*Source{}
-	for _, source := range sources {
+	for _, source := range srcs {
 		if source == nil {
 			continue
 		}
