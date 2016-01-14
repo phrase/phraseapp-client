@@ -54,16 +54,48 @@ func (cmd *PushCommand) Run() error {
 type Sources []*Source
 
 type Source struct {
-	File          string      `yaml:"file,omitempty"`
-	ProjectID     string      `yaml:"project_id,omitempty"`
-	AccessToken   string      `yaml:"access_token,omitempty"`
-	FileFormat    string      `yaml:"file_format,omitempty"`
-	Params        *phraseapp.UploadParams `yaml:"params"`
+	File          string
+	ProjectID     string
+	AccessToken   string
+	FileFormat    string
+	Params        *phraseapp.UploadParams
 
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
 }
 
+func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	m := map[string]interface{}{}
+	if err := unmarshal(m); err != nil {
+		return err
+	}
+
+	for k, v := range m {
+		switch k {
+		case "file":
+			src.File = v.(string)
+		case "project_id":
+			src.ProjectID = v.(string)
+		case "access_token":
+			src.AccessToken = v.(string)
+		case "file_format":
+			src.FileFormat = v.(string)
+		case "params":
+			ps := map[string]interface{}{}
+			for k, v := range v.(map[interface{}]interface{}) {
+				ps[k.(string)] = v
+			}
+			src.Params = new(phraseapp.UploadParams)
+			if err := src.Params.ApplyValuesFromMap(ps); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("configuration key %q invalid in params", k)
+		}
+	}
+
+	return nil
+}
 
 var separator = string(os.PathSeparator)
 

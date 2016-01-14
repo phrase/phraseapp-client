@@ -46,11 +46,11 @@ func (cmd *PullCommand) Run() error {
 type Targets []*Target
 
 type Target struct {
-	File          string      `yaml:"file,omitempty"`
-	ProjectID     string      `yaml:"project_id,omitempty"`
-	AccessToken   string      `yaml:"access_token,omitempty"`
-	FileFormat    string      `yaml:"file_format,omitempty"`
-	Params        *PullParams `yaml:"params"`
+	File          string
+	ProjectID     string
+	AccessToken   string
+	FileFormat    string
+	Params        *PullParams
 	RemoteLocales []*phraseapp.Locale
 }
 
@@ -59,18 +59,44 @@ type PullParams struct {
 	LocaleID string
 }
 
-func (params *PullParams) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var aux struct {
-		LocaleID string `yaml:"locale_id,omitempty"`
-	}
-	if err := unmarshal(&aux); err != nil {
+func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	m := map[string]interface{}{}
+	if err := unmarshal(m); err != nil {
 		return err
 	}
-	params.LocaleID = aux.LocaleID
 
-	return unmarshal(&params.LocaleDownloadParams)
+	for k, v := range m {
+		switch k {
+		case "file":
+			tgt.File = v.(string)
+		case "project_id":
+			tgt.ProjectID = v.(string)
+		case "access_token":
+			tgt.AccessToken = v.(string)
+		case "file_format":
+			tgt.FileFormat = v.(string)
+		case "params":
+			ps := map[string]interface{}{}
+			for k, v := range v.(map[interface{}]interface{}) {
+				ps[k.(string)] = v
+			}
+			tgt.Params = new(PullParams)
+			if v, found := ps["locale_id"]; found {
+				tgt.Params.LocaleID = v.(string)
+				// Must delete the param from the map as the LocaleDownloadParams type
+				// doesn't support this one and the apply method would return an error.
+				delete(ps, "locale_id")
+			}
+			if err := tgt.Params.ApplyValuesFromMap(ps); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("configuration key %q invalid in params", k)
+		}
+	}
+
+	return nil
 }
-
 
 func (target *Target) CheckPreconditions() error {
 	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
