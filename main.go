@@ -55,7 +55,7 @@ func validateVersion() {
 
 	switch {
 	case PHRASEAPP_CLIENT_VERSION == "test":
-		fmt.Fprintf(os.Stderr, "You're running a development version of the PhraseApp CLI tool!\n\n")
+		fmt.Fprintf(os.Stderr, "You're running a development version of the PhraseApp CLI client!\n\n")
 	case err == nil && version != PHRASEAPP_CLIENT_VERSION:
 		fmt.Fprintf(os.Stderr, "Please consider updating the PhraseApp CLI client (%s < %s)\nSee https://phraseapp.com/en/cli\n\n", PHRASEAPP_CLIENT_VERSION, version)
 	default:
