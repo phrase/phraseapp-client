@@ -148,7 +148,9 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 
 func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
-	*downloadParams = target.Params.LocaleDownloadParams
+	if target.Params != nil {
+		*downloadParams = target.Params.LocaleDownloadParams
+	}
 
 	if downloadParams.FileFormat == nil {
 		downloadParams.FileFormat = &localeFile.FileFormat
