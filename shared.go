@@ -192,3 +192,31 @@ func ReportError(name string, message string) {
 	resp.Body.Close()
 
 }
+
+const cfgValueErrStr = "configuration key %q has invalid value\nsee https://phraseapp.com/docs/developers/cli/configuration/"
+const cfgKeyErrStr = "configuration key %q has invalid type\nsee https://phraseapp.com/docs/developers/cli/configuration/"
+
+func validateIsString(k string, v interface{}) (string, error) {
+	s, ok := v.(string)
+	if !ok {
+		return "", fmt.Errorf(cfgValueErrStr, k)
+	}
+	return s, nil
+}
+
+func validateIsRawMap(k string, v interface{}) (map[string]interface{}, error) {
+	raw, ok := v.(map[interface{}]interface{})
+	if !ok {
+		return nil, fmt.Errorf(cfgValueErrStr, k)
+	}
+
+	ps := map[string]interface{}{}
+	for mk, mv := range raw {
+		s, ok := mk.(string)
+		if !ok {
+			return nil, fmt.Errorf(cfgKeyErrStr, fmt.Sprintf("%s.%v", k, mk))
+		}
+		ps[s] = mv
+	}
+	return ps, nil
+}

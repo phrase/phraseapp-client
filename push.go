@@ -70,32 +70,36 @@ func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	var ok bool
-	cfgErrStr := "configuration key %q has invalid value\nsee https://phraseapp.com/docs/developers/cli/configuration/"
+	var err error
 	for k, v := range m {
 		switch k {
 		case "file":
-			if src.File, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
+			if src.File, err = validateIsString(k, v); err != nil {
+				return err
+			}
 		case "project_id":
-			if src.ProjectID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
+			if src.ProjectID, err = validateIsString(k, v); err != nil {
+				return err
+			}
 		case "access_token":
-			if src.AccessToken, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
+			if src.AccessToken, err = validateIsString(k, v); err != nil {
+				return err
+			}
 		case "file_format":
-			if src.FileFormat, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
+			if src.FileFormat, err = validateIsString(k, v); err != nil {
+				return err
+			}
 		case "params":
-			raw, ok := v.(map[interface{}]interface{});
-			if !ok { return fmt.Errorf(cfgErrStr, k) }
-
-			ps := map[string]interface{}{}
-			for k, v := range raw {
-				ps[k.(string)] = v
+			m, err := validateIsRawMap(k, v)
+			if err != nil {
+				return err
 			}
 			src.Params = new(phraseapp.UploadParams)
-			if err := src.Params.ApplyValuesFromMap(ps); err != nil {
+			if err := src.Params.ApplyValuesFromMap(m); err != nil {
 				return err
 			}
 		default:
-			return fmt.Errorf("configuration key %q invalid\nsee https://phraseapp.com/docs/developers/cli/configuration/", k)
+			return fmt.Errorf(cfgValueErrStr, k)
 		}
 	}
 

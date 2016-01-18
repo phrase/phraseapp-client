@@ -65,35 +65,44 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	var ok bool
-	cfgErrStr := "configuration key %q has invalid value\nsee https://phraseapp.com/docs/developers/cli/configuration/"
+	var err error
 	for k, v := range m {
 		switch k {
 		case "file":
-			if tgt.File, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
-		case "project_id":
-			if tgt.ProjectID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
-		case "access_token":
-			if tgt.AccessToken, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
-		case "file_format":
-			if tgt.FileFormat, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, k) }
-		case "params":
-			ps := map[string]interface{}{}
-			for k, v := range v.(map[interface{}]interface{}) {
-				ps[k.(string)] = v
+			if tgt.File, err = validateIsString(k, v); err != nil {
+				return err
 			}
-			tgt.Params = new(PullParams)
-			if v, found := ps["locale_id"]; found {
-				if tgt.Params.LocaleID, ok = v.(string); !ok { return fmt.Errorf(cfgErrStr, "locale_id") }
+		case "project_id":
+			if tgt.ProjectID, err = validateIsString(k, v); err != nil {
+				return err
+			}
+		case "access_token":
+			if tgt.AccessToken, err = validateIsString(k, v); err != nil {
+				return err
+			}
+		case "file_format":
+			if tgt.FileFormat, err = validateIsString(k, v); err != nil {
+				return err
+			}
+		case "params":
+			m, err := validateIsRawMap(k, v)
+			if err != nil {
+				return err
+			}
+			if v, found := m["locale_id"]; found {
+				if tgt.Params.LocaleID, err = validateIsString("params.locale_id", v); err != nil {
+					return err
+				}
 				// Must delete the param from the map as the LocaleDownloadParams type
 				// doesn't support this one and the apply method would return an error.
-				delete(ps, "locale_id")
+				delete(m, "locale_id")
 			}
-			if err := tgt.Params.ApplyValuesFromMap(ps); err != nil {
+			tgt.Params = new(PullParams)
+			if err := tgt.Params.ApplyValuesFromMap(m); err != nil {
 				return err
 			}
 		default:
-			return fmt.Errorf("configuration key %q invalid\nsee https://phraseapp.com/docs/developers/cli/configuration/", k)
+			return fmt.Errorf(cfgValueErrStr, k)
 		}
 	}
 
