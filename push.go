@@ -290,10 +290,10 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		}
 
 		if Debug {
-			fmt.Println(fmt.Sprintf(
-				"RFC:'%s', Name:'%s', Tag;'%s', Pattern:'%s'",
-				localeFile.RFC, localeFile.Name, localeFile.Tag,
-			))
+			fmt.Printf(
+				"RFC:%q, Name:%q, ID:%q, Tag:%q\n",
+				localeFile.RFC, localeFile.Name, localeFile.ID, localeFile.Tag,
+			)
 		}
 
 		localeFiles = append(localeFiles, localeFile)
