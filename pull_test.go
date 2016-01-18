@@ -102,7 +102,7 @@ func TestTargetLocaleFiles(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 	} else {
-		t.Errorf("LocaleFiles should contain %s and not %s", expectedFiles, localeFiles)
+		t.Errorf("LocaleFiles should contain %v and not %v", expectedFiles, localeFiles)
 	}
 }
 

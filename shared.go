@@ -159,7 +159,7 @@ func TakeWhile(seq []string, predicate func(string) bool) []string {
 
 func Exists(absPath string) error {
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return fmt.Errorf("no such file or directory:", absPath)
+		return fmt.Errorf("no such file or directory: %s", absPath)
 	}
 	return nil
 }

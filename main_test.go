@@ -56,8 +56,10 @@ phraseapp:
 	}
 
 	sourceParams := config.Phraseapp.Push.Sources[0].Params
-	if sourceParams.FileFormat == nil || *sourceParams.FileFormat != "strings" {
-		t.Errorf("Expected FileFormat of first target to be %s and not %s", "strings", sourceParams.FileFormat)
+	if sourceParams.FileFormat == nil {
+		t.Errorf("Expected FileFormat of first target to be %s, not nil", "strings")
+	} else if *sourceParams.FileFormat != "strings" {
+		t.Errorf("Expected FileFormat of first target to be %s, not %s", "strings", *sourceParams.FileFormat)
 	}
 }
 
