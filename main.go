@@ -37,8 +37,9 @@ func validateVersion() {
 	var version string
 	stat, err := os.Stat(PHRASEAPP_VERSION_TMP_FILE)
 	if PHRASEAPP_CLIENT_VERSION == "test" {
-		// do nothing, we're in development mode
-	} else if os.IsNotExist(err) || time.Now().Sub(stat.ModTime()) > time.Hour {
+		fmt.Fprintf(os.Stderr, "You're running a development version of the PhraseApp CLI client!\n\n")
+		return
+	} else if os.IsNotExist(err) || time.Since(stat.ModTime()) > time.Hour {
 		// fetch new version, if not done so or over an hour ago
 		version, err = getCurrentVersion()
 		if err == nil { // persist the version for the next hour
@@ -53,13 +54,8 @@ func validateVersion() {
 		}
 	}
 
-	switch {
-	case PHRASEAPP_CLIENT_VERSION == "test":
-		fmt.Fprintf(os.Stderr, "You're running a development version of the PhraseApp CLI client!\n\n")
-	case err == nil && version != PHRASEAPP_CLIENT_VERSION:
+	if err == nil && version != PHRASEAPP_CLIENT_VERSION {
 		fmt.Fprintf(os.Stderr, "Please consider updating the PhraseApp CLI client (%s < %s)\nSee https://phraseapp.com/en/cli\n\n", PHRASEAPP_CLIENT_VERSION, version)
-	default:
-		// ignore errors (and up to date versions of course).
 	}
 }
 
