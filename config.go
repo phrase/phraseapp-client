@@ -15,7 +15,7 @@ const configName = ".phraseapp.yml"
 func ReadConfig() (*phraseapp.Config, error) {
 	cfg := new(phraseapp.Config)
 
-	content, err := ConfigContent()
+	content, err := configContent()
 	switch {
 	case err != nil:
 		return nil, err
@@ -26,7 +26,7 @@ func ReadConfig() (*phraseapp.Config, error) {
 	}
 }
 
-func ConfigContent() ([]byte, error) {
+func configContent() ([]byte, error) {
 	path, err := configPath()
 	switch {
 	case err != nil:
