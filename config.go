@@ -3,7 +3,6 @@ package main
 import (
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 
 	"gopkg.in/yaml.v2"
@@ -12,7 +11,6 @@ import (
 )
 
 const configName = ".phraseapp.yml"
-const defaultDir = "./"
 
 func ReadConfig() (*phraseapp.Config, error) {
 	content, err := ConfigContent()
@@ -52,7 +50,7 @@ func configPath() (string, error) {
 		return possiblePath, nil
 	}
 
-	return defaultConfigDir()
+	return defaultConfigDir(), nil
 }
 
 func readFile(path string) ([]byte, error) {
@@ -63,12 +61,4 @@ func readFile(path string) ([]byte, error) {
 	defer file.Close()
 
 	return ioutil.ReadAll(file)
-}
-
-func defaultConfigDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", nil
-	}
-	return path.Join(usr.HomeDir, defaultDir, configName), nil
 }
