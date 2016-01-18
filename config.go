@@ -13,23 +13,29 @@ import (
 const configName = ".phraseapp.yml"
 
 func ReadConfig() (*phraseapp.Config, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		content = []byte("{}")
-	}
-
 	cfg := new(phraseapp.Config)
-	return cfg, yaml.Unmarshal(content, cfg)
-}
 
+	content, err := ConfigContent()
+	switch {
+	case err != nil:
+		return nil, err
+	case content == nil:
+		return cfg, nil
+	default:
+		return cfg, yaml.Unmarshal(content, cfg)
+	}
+}
 
 func ConfigContent() ([]byte, error) {
 	path, err := configPath()
-	if err != nil {
-		return []byte(""), err
+	switch {
+	case err != nil:
+		return nil, err
+	case path == "":
+		return nil, nil
+	default:
+		return ioutil.ReadFile(path)
 	}
-
-	return readFile(path)
 }
 
 func configPath() (string, error) {
@@ -50,15 +56,11 @@ func configPath() (string, error) {
 		return possiblePath, nil
 	}
 
-	return defaultConfigDir(), nil
-}
-
-func readFile(path string) ([]byte, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
+	possiblePath = defaultConfigDir()
+	if _, err := os.Stat(possiblePath); err != nil && !os.IsNotExist(err) {
+		return "", nil
 	}
-	defer file.Close()
 
-	return ioutil.ReadAll(file)
+	return possiblePath, nil
 }
+
