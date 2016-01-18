@@ -178,7 +178,6 @@ func ReportError(name string, message string) {
 
 	body, err := json.Marshal(bs)
 	if err != nil {
-		fmt.Errorf("Error: %s", err)
 		return
 	}
 
@@ -188,7 +187,7 @@ func ReportError(name string, message string) {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Errorf("Error: %s", err)
+		return
 	}
 	resp.Body.Close()
 
