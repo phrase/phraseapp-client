@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"unicode/utf8"
 )
 
 type PushCommand struct {
@@ -331,9 +332,39 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	return nil
 }
 
+func splitString(s string, set string) ([]string) {
+	if len(set) == 1 {
+		return strings.Split(s, set)
+	}
+
+	slist := []string{}
+	charSet := map[rune]bool{}
+
+	for _, r := range set {
+		charSet[r] = true
+	}
+
+	start := 0
+	for i, r := range s {
+		if _, found := charSet[r]; found {
+			slist = append(slist, s[start:i])
+			start = i+utf8.RuneLen(r)
+		}
+	}
+	if start < len(s) {
+		slist = append(slist, s[start:])
+	}
+
+	return slist
+}
+
 func splitPathToTokens(s string) []string {
 	tokens := []string{}
-	for _, token := range strings.Split(s, separator) {
+	splitSet := separator
+	if separator == "\\" {
+		splitSet = "\\/"
+	}
+	for _, token := range splitString(s, splitSet) {
 		if token == "." || token == "" {
 			continue
 		}

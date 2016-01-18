@@ -443,3 +443,25 @@ func TestReducerPatterns(t *testing.T) {
 	}
 	fmt.Println(strings.Repeat("-", 10))
 }
+
+func TestSplitString(t *testing.T) {
+	tt := []struct {
+		str string
+		cut string
+		exp []string
+	}{
+		{"a/b/c/d", "/\\", []string{"a", "b", "c", "d"}},
+		{"a/b\\c/d", "/\\", []string{"a", "b", "c", "d"}},
+		{"/a/b/c/d/", "/\\", []string{"", "a", "b", "c", "d"}},
+		{"a/b/日\\本/語/d", "/\\", []string{"a", "b", "日", "本", "語", "d"}},
+		{"a/b/日\\c本c/語/d", "/\\本", []string{"a", "b", "日", "c", "c", "語", "d"}},
+	}
+
+	for i := range tt {
+		got := splitString(tt[i].str, tt[i].cut)
+		if len(got) != len(tt[i].exp) {
+			t.Errorf("expected %d elements for %q, got %d", len(tt[i].exp), tt[i].str, len(got))
+		}
+	}
+
+}
