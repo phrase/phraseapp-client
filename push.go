@@ -215,15 +215,7 @@ func (source *Source) SystemFiles() ([]string, error) {
 }
 
 func (source *Source) glob() ([]string, error) {
-	withoutPlaceholder := placeholderRegexp.ReplaceAllString(source.File, "*")
-	tokens := splitPathToTokens(withoutPlaceholder)
-
-	fileHead := tokens[len(tokens)-1]
-	if strings.HasPrefix(fileHead, ".") {
-		tokens[len(tokens)-1] = "*" + fileHead
-	}
-	pattern := strings.Join(tokens, separator)
-
+	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
 	files, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
