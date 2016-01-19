@@ -72,7 +72,7 @@ func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		"project_id":   &src.ProjectID,
 		"access_token": &src.AccessToken,
 		"file_format":  &src.FileFormat,
-		"params":       m,
+		"params":       &m,
 	})
 	if err != nil {
 		return err

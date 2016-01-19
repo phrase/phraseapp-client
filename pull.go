@@ -66,7 +66,7 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		"project_id": &tgt.ProjectID,
 		"access_token": &tgt.AccessToken,
 		"file_format": &tgt.FileFormat,
-		"params": m,
+		"params": &m,
 	})
 	if err != nil {
 		return err
