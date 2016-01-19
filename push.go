@@ -9,8 +9,9 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"unicode/utf8"
+
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 type PushCommand struct {
@@ -54,11 +55,11 @@ func (cmd *PushCommand) Run() error {
 type Sources []*Source
 
 type Source struct {
-	File          string
-	ProjectID     string
-	AccessToken   string
-	FileFormat    string
-	Params        *phraseapp.UploadParams
+	File        string
+	ProjectID   string
+	AccessToken string
+	FileFormat  string
+	Params      *phraseapp.UploadParams
 
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
@@ -66,42 +67,19 @@ type Source struct {
 
 func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	m := map[string]interface{}{}
-	if err := unmarshal(m); err != nil {
+	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
+		"file":         &src.File,
+		"project_id":   &src.ProjectID,
+		"access_token": &src.AccessToken,
+		"file_format":  &src.FileFormat,
+		"params":       m,
+	})
+	if err != nil {
 		return err
 	}
 
-	var err error
-	for k, v := range m {
-		switch k {
-		case "file":
-			if src.File, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "project_id":
-			if src.ProjectID, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "access_token":
-			if src.AccessToken, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "file_format":
-			if src.FileFormat, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "params":
-			m, err := validateIsRawMap(k, v)
-			if err != nil {
-				return err
-			}
-			src.Params = new(phraseapp.UploadParams)
-			if err := src.Params.ApplyValuesFromMap(m); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf(cfgValueErrStr, k)
-		}
-	}
+	src.Params = new(phraseapp.UploadParams)
+	return src.Params.ApplyValuesFromMap(m)
 
 	return nil
 }
@@ -373,7 +351,7 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	return nil
 }
 
-func splitString(s string, set string) ([]string) {
+func splitString(s string, set string) []string {
 	if len(set) == 1 {
 		return strings.Split(s, set)
 	}
@@ -389,7 +367,7 @@ func splitString(s string, set string) ([]string) {
 	for i, r := range s {
 		if _, found := charSet[r]; found {
 			slist = append(slist, s[start:i])
-			start = i+utf8.RuneLen(r)
+			start = i + utf8.RuneLen(r)
 		}
 	}
 	if start < len(s) {

@@ -61,52 +61,28 @@ type PullParams struct {
 
 func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	m := map[string]interface{}{}
-	if err := unmarshal(m); err != nil {
+	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
+		"file": &tgt.File,
+		"project_id": &tgt.ProjectID,
+		"access_token": &tgt.AccessToken,
+		"file_format": &tgt.FileFormat,
+		"params": m,
+	})
+	if err != nil {
 		return err
 	}
 
-	var err error
-	for k, v := range m {
-		switch k {
-		case "file":
-			if tgt.File, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "project_id":
-			if tgt.ProjectID, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "access_token":
-			if tgt.AccessToken, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "file_format":
-			if tgt.FileFormat, err = validateIsString(k, v); err != nil {
-				return err
-			}
-		case "params":
-			m, err := validateIsRawMap(k, v)
-			if err != nil {
-				return err
-			}
-			if v, found := m["locale_id"]; found {
-				if tgt.Params.LocaleID, err = validateIsString("params.locale_id", v); err != nil {
-					return err
-				}
-				// Must delete the param from the map as the LocaleDownloadParams type
-				// doesn't support this one and the apply method would return an error.
-				delete(m, "locale_id")
-			}
-			tgt.Params = new(PullParams)
-			if err := tgt.Params.ApplyValuesFromMap(m); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf(cfgValueErrStr, k)
+	tgt.Params = new(PullParams)
+	if v, found := m["locale_id"]; found {
+		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
+			return err
 		}
+		// Must delete the param from the map as the LocaleDownloadParams type
+		// doesn't support this one and the apply method would return an error.
+		delete(m, "locale_id")
 	}
+	return tgt.Params.ApplyValuesFromMap(m)
 
-	return nil
 }
 
 func (target *Target) CheckPreconditions() error {
@@ -310,8 +286,8 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 		return nil, fmt.Errorf(errmsg)
 	}
 
-	tmp := struct{
-		Targets  Targets
+	tmp := struct {
+		Targets Targets
 	}{}
 	err := yaml.Unmarshal(cmd.Config.Targets, &tmp)
 	if err != nil {
