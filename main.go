@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 func Run() {
 	validateVersion()
 
-	cfg, err := ReadConfig()
+	cfg, err := phraseapp.ReadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(2)
