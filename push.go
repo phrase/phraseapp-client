@@ -80,8 +80,6 @@ func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	src.Params = new(phraseapp.UploadParams)
 	return src.Params.ApplyValuesFromMap(m)
-
-	return nil
 }
 
 var separator = string(os.PathSeparator)
