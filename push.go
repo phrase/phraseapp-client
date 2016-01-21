@@ -9,12 +9,13 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/phrase/phraseapp-go/phraseapp"
 	"unicode/utf8"
+
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 type PushCommand struct {
-	Credentials
+	*phraseapp.Config
 }
 
 func (cmd *PushCommand) Run() error {
@@ -25,7 +26,7 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	err := func() error {
-		client, err := ClientFromCmdCredentials(cmd.Credentials)
+		client, err := phraseapp.NewClient(cmd.Config.Credentials)
 		if err != nil {
 			return err
 		}
@@ -54,16 +55,32 @@ func (cmd *PushCommand) Run() error {
 type Sources []*Source
 
 type Source struct {
-	File          string      `yaml:"file,omitempty"`
-	ProjectID     string      `yaml:"project_id,omitempty"`
-	AccessToken   string      `yaml:"access_token,omitempty"`
-	FileFormat    string      `yaml:"file_format,omitempty"`
-	Params        *phraseapp.UploadParams `yaml:"params"`
+	File        string
+	ProjectID   string
+	AccessToken string
+	FileFormat  string
+	Params      *phraseapp.UploadParams
 
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
 }
 
+func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	m := map[string]interface{}{}
+	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
+		"file":         &src.File,
+		"project_id":   &src.ProjectID,
+		"access_token": &src.AccessToken,
+		"file_format":  &src.FileFormat,
+		"params":       &m,
+	})
+	if err != nil {
+		return err
+	}
+
+	src.Params = new(phraseapp.UploadParams)
+	return src.Params.ApplyValuesFromMap(m)
+}
 
 var separator = string(os.PathSeparator)
 
@@ -332,7 +349,7 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	return nil
 }
 
-func splitString(s string, set string) ([]string) {
+func splitString(s string, set string) []string {
 	if len(set) == 1 {
 		return strings.Split(s, set)
 	}
@@ -348,7 +365,7 @@ func splitString(s string, set string) ([]string) {
 	for i, r := range s {
 		if _, found := charSet[r]; found {
 			slist = append(slist, s[start:i])
-			start = i+utf8.RuneLen(r)
+			start = i + utf8.RuneLen(r)
 		}
 	}
 	if start < len(s) {
@@ -450,46 +467,28 @@ func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken strin
 	}
 }
 
-// Configuration
-type PushConfig struct {
-	Phraseapp struct {
-		AccessToken string `yaml:"access_token"`
-		ProjectID   string `yaml:"project_id"`
-		FileFormat  string `yaml:"file_format,omitempty"`
-		Push        struct {
-			Sources Sources
-		}
-	}
-}
-
 func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
-	content, err := ConfigContent()
+	if cmd.Config.Sources == nil || len(cmd.Config.Sources) == 0 {
+		errmsg := "no sources for upload specified"
+		ReportError("Push Error", errmsg)
+		return nil, fmt.Errorf(errmsg)
+	}
+
+	tmp := struct {
+		Sources Sources
+	}{}
+	err := yaml.Unmarshal(cmd.Config.Sources, &tmp)
 	if err != nil {
 		return nil, err
 	}
+	srcs := tmp.Sources
 
-	var config *PushConfig
-
-	err = yaml.Unmarshal([]byte(content), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	if cmd.Token != "" {
-		token = cmd.Token
-	}
-	projectId := config.Phraseapp.ProjectID
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Push == nil || config.Phraseapp.Push.Sources == nil {
-		return nil, fmt.Errorf("no sources for upload specified")
-	}
-
-	sources := config.Phraseapp.Push.Sources
+	token := cmd.Credentials.Token
+	projectId := cmd.Config.ProjectID
+	fileFormat := cmd.Config.FileFormat
 
 	validSources := []*Source{}
-	for _, source := range sources {
+	for _, source := range srcs {
 		if source == nil {
 			continue
 		}

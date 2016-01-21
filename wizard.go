@@ -325,8 +325,8 @@ func pullConfig(data *WizardData) error {
 var client *phraseapp.Client
 
 func selectFormat(data *WizardData) error {
-	auth := phraseapp.Credentials{Token: data.AccessToken}
-	client, err := phraseapp.NewClient(auth, nil)
+	auth := &phraseapp.Credentials{Token: data.AccessToken}
+	client, err := phraseapp.NewClient(auth)
 	if err != nil {
 		return err
 	}
@@ -485,10 +485,10 @@ type ChannelEnd struct {
 }
 
 func selectProjectStep(data *WizardData) error {
-	auth := phraseapp.Credentials{Token: data.AccessToken, Host: data.Host}
+	auth := &phraseapp.Credentials{Token: data.AccessToken, Host: data.Host}
 	fmt.Println("Please select your project:")
 	var err error
-	client, err = phraseapp.NewClient(auth, nil)
+	client, err = phraseapp.NewClient(auth)
 
 	var wg sync.WaitGroup
 	out := make(chan []phraseapp.Project, 1)

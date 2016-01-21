@@ -14,7 +14,7 @@ import (
 )
 
 type PullCommand struct {
-	Credentials
+	*phraseapp.Config
 }
 
 func (cmd *PullCommand) Run() error {
@@ -24,7 +24,7 @@ func (cmd *PullCommand) Run() error {
 		Debug = true
 	}
 
-	client, err := ClientFromCmdCredentials(cmd.Credentials)
+	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -46,11 +46,11 @@ func (cmd *PullCommand) Run() error {
 type Targets []*Target
 
 type Target struct {
-	File          string      `yaml:"file,omitempty"`
-	ProjectID     string      `yaml:"project_id,omitempty"`
-	AccessToken   string      `yaml:"access_token,omitempty"`
-	FileFormat    string      `yaml:"file_format,omitempty"`
-	Params        *PullParams `yaml:"params"`
+	File          string
+	ProjectID     string
+	AccessToken   string
+	FileFormat    string
+	Params        *PullParams
 	RemoteLocales []*phraseapp.Locale
 }
 
@@ -59,18 +59,31 @@ type PullParams struct {
 	LocaleID string
 }
 
-func (params *PullParams) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var aux struct {
-		LocaleID string `yaml:"locale_id,omitempty"`
-	}
-	if err := unmarshal(&aux); err != nil {
+func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	m := map[string]interface{}{}
+	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
+		"file": &tgt.File,
+		"project_id": &tgt.ProjectID,
+		"access_token": &tgt.AccessToken,
+		"file_format": &tgt.FileFormat,
+		"params": &m,
+	})
+	if err != nil {
 		return err
 	}
-	params.LocaleID = aux.LocaleID
 
-	return unmarshal(&params.LocaleDownloadParams)
+	tgt.Params = new(PullParams)
+	if v, found := m["locale_id"]; found {
+		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
+			return err
+		}
+		// Must delete the param from the map as the LocaleDownloadParams type
+		// doesn't support this one and the apply method would return an error.
+		delete(m, "locale_id")
+	}
+	return tgt.Params.ApplyValuesFromMap(m)
+
 }
-
 
 func (target *Target) CheckPreconditions() error {
 	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
@@ -266,48 +279,28 @@ func (t *Target) GetTag() string {
 	return ""
 }
 
-// Configuration
-type PullConfig struct {
-	Phraseapp struct {
-		AccessToken string `yaml:"access_token"`
-		ProjectID   string `yaml:"project_id"`
-		FileFormat  string `yaml:"file_format,omitempty"`
-		Pull        struct {
-			Targets Targets
-		}
-	}
-}
-
 func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
-	content, err := ConfigContent()
-	if err != nil {
-		return nil, err
-	}
-
-	var config *PullConfig
-
-	err = yaml.Unmarshal([]byte(content), &config)
-	if err != nil {
-		return nil, err
-	}
-
-	token := config.Phraseapp.AccessToken
-	if cmd.Token != "" {
-		token = cmd.Token
-	}
-	projectId := config.Phraseapp.ProjectID
-	fileFormat := config.Phraseapp.FileFormat
-
-	if &config.Phraseapp.Pull == nil || config.Phraseapp.Pull.Targets == nil {
+	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
 		errmsg := "no targets for download specified"
 		ReportError("Pull Error", errmsg)
 		return nil, fmt.Errorf(errmsg)
 	}
 
-	targets := config.Phraseapp.Pull.Targets
+	tmp := struct {
+		Targets Targets
+	}{}
+	err := yaml.Unmarshal(cmd.Config.Targets, &tmp)
+	if err != nil {
+		return nil, err
+	}
+	tgts := tmp.Targets
+
+	token := cmd.Credentials.Token
+	projectId := cmd.Config.ProjectID
+	fileFormat := cmd.Config.FileFormat
 
 	validTargets := []*Target{}
-	for _, target := range targets {
+	for _, target := range tgts {
 		if target == nil {
 			continue
 		}

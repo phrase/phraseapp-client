@@ -1,69 +1,11 @@
 package main
 
 import (
-	"testing"
-
 	"fmt"
 	"sort"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"gopkg.in/yaml.v2"
 )
-
-func TestPullConfig(t *testing.T) {
-	pullConfig := `
-phraseapp:
-  pull:
-    targets:
-      -
-        file: ./locales/file.yml
-        params:
-          file_format: strings
-          locale_id: en
-`
-	config := &PullConfig{}
-	err := yaml.Unmarshal([]byte(pullConfig), &config)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	targetParams := config.Phraseapp.Pull.Targets[0].Params
-	if targetParams.FileFormat == nil {
-		t.Errorf("FileFormat not set")
-	} else if *targetParams.FileFormat != "strings" {
-		t.Errorf("Expected FileFormat of first target to be %s and not %s", "strings", *targetParams.FileFormat)
-	}
-
-	if targetParams.LocaleID  != "en" {
-		t.Errorf("Expected LocaleID of first target to be %s and not %s", "en", targetParams.LocaleID)
-	}
-}
-
-func TestPushConfig(t *testing.T) {
-	pushConfig := `
-phraseapp:
-  push:
-    sources:
-      -
-        file: ./locales/file.yml
-        params:
-          file_format: strings
-`
-	config := &PushConfig{}
-	err := yaml.Unmarshal([]byte(pushConfig), &config)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	sourceParams := config.Phraseapp.Push.Sources[0].Params
-	if sourceParams.FileFormat == nil {
-		t.Errorf("Expected FileFormat of first target to be %s, not nil", "strings")
-	} else if *sourceParams.FileFormat != "strings" {
-		t.Errorf("Expected FileFormat of first target to be %s, not %s", "strings", *sourceParams.FileFormat)
-	}
-}
-
-
 
 func getBaseLocales() []*phraseapp.Locale {
 	return []*phraseapp.Locale{

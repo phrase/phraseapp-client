@@ -3,12 +3,14 @@ package main
 import (
 	"os"
 
-	"github.com/dynport/dgtk/cli"
-	"time"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func main() {
@@ -18,8 +20,13 @@ func main() {
 func Run() {
 	validateVersion()
 
-	callArgs, _ := ConfigCallArgs()
-	err := router(callArgs).RunWithArgs()
+	cfg, err := phraseapp.ReadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		os.Exit(2)
+	}
+
+	err = router(cfg).RunWithArgs()
 	switch err {
 	case cli.ErrorHelpRequested, cli.ErrorNoRoute:
 		os.Exit(1)
@@ -45,7 +52,7 @@ func validateVersion() {
 		if err == nil { // persist the version for the next hour
 			err = ioutil.WriteFile(PHRASEAPP_VERSION_TMP_FILE, []byte(version), 0600)
 		}
-	} else if (err == nil) {
+	} else if err == nil {
 		// otherwise load the version (fetched less than an hour ago) from the temp file
 		var buf []byte
 		buf, err = ioutil.ReadFile(PHRASEAPP_VERSION_TMP_FILE)
@@ -61,7 +68,9 @@ func validateVersion() {
 
 func getCurrentVersion() (string, error) {
 	req, err := http.NewRequest("HEAD", "https://github.com/phrase/phraseapp-client/releases/latest", nil)
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 
 	transport := http.Transport{}
 	resp, err := transport.RoundTrip(req)
@@ -87,4 +96,3 @@ func getCurrentVersion() (string, error) {
 	}
 	return "", fmt.Errorf("no valid version segment found")
 }
-
