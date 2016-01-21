@@ -159,7 +159,7 @@ func TakeWhile(seq []string, predicate func(string) bool) []string {
 
 func Exists(absPath string) error {
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return fmt.Errorf("no such file or directory:", absPath)
+		return fmt.Errorf("no such file or directory: %s", absPath)
 	}
 	return nil
 }
@@ -178,7 +178,6 @@ func ReportError(name string, message string) {
 
 	body, err := json.Marshal(bs)
 	if err != nil {
-		fmt.Errorf("Error: %s", err)
 		return
 	}
 
@@ -188,7 +187,7 @@ func ReportError(name string, message string) {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Errorf("Error: %s", err)
+		return
 	}
 	resp.Body.Close()
 

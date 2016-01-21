@@ -79,7 +79,7 @@ func (target *Target) CheckPreconditions() error {
 
 	if strings.Count(target.File, "*") > 0 {
 		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!",
+			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n"+
 			"http://docs.phraseapp.com/developers/cli/configuration/#targets",
 		)
 	}
@@ -148,7 +148,9 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 
 func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
 	downloadParams := new(phraseapp.LocaleDownloadParams)
-	*downloadParams = target.Params.LocaleDownloadParams
+	if target.Params != nil {
+		*downloadParams = target.Params.LocaleDownloadParams
+	}
 
 	if downloadParams.FileFormat == nil {
 		downloadParams.FileFormat = &localeFile.FileFormat
