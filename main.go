@@ -26,8 +26,13 @@ func Run() {
 		os.Exit(2)
 	}
 
-	err = router(cfg).RunWithArgs()
-	switch err {
+	r, err := router(cfg)
+	if err != nil {
+		printErr(err)
+		os.Exit(3)
+	}
+
+	switch err := r.RunWithArgs(); err {
 	case cli.ErrorHelpRequested, cli.ErrorNoRoute:
 		os.Exit(1)
 	case nil:
