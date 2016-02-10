@@ -484,8 +484,8 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	srcs := tmp.Sources
 
 	token := cmd.Credentials.Token
-	projectId := cmd.Config.ProjectID
-	fileFormat := cmd.Config.FileFormat
+	projectId := cmd.Config.DefaultProjectID
+	fileFormat := cmd.Config.DefaultFileFormat
 
 	validSources := []*Source{}
 	for _, source := range srcs {
