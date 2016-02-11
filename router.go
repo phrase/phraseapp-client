@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "1.1.10"
+const PHRASEAPP_CLIENT_VERSION = "1.1.11"
 
 func router(cfg *phraseapp.Config) *cli.Router {
 	r := cli.NewRouter()
@@ -418,11 +418,11 @@ func router(cfg *phraseapp.Config) *cli.Router {
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2016-02-08 12:22:23.17965581 +0100 CET\n")
-	fmt.Println("PhraseApp Client version:", "1.1.10")
-	fmt.Println("PhraseApp API Client revision:", "bc3bb842f1ef88d846a66cd3f2e64d3e3ff3edc4")
-	fmt.Println("PhraseApp Client revision:", "3a26373ae3efe050d85d7d0833398fde87c85f89")
-	fmt.Println("PhraseApp Docs revision:", "509eaae478f03a2110146345db57da95cd0eccd9")
+	fmt.Printf("Built at 2016-02-11 12:36:07.715436034 +0100 CET\n")
+	fmt.Println("PhraseApp Client version:", "1.1.11")
+	fmt.Println("PhraseApp API Client revision:", "2c32a624c8c112945c5a8f001add441945fbb6e0")
+	fmt.Println("PhraseApp Client revision:", "cd43fdb3d97b8658de259f4f6f97b11571a390aa")
+	fmt.Println("PhraseApp Docs revision:", "5f9b1b39e1d74820264284d6290a5fd6f850113e")
 	return nil
 }
 
@@ -1562,15 +1562,15 @@ func (cmd *LocaleDelete) Run() error {
 type LocaleDownload struct {
 	*phraseapp.Config
 
-	ConvertEmoji               bool                    `cli:"opt --convert-emoji"`
-	Encoding                   *string                 `cli:"opt --encoding"`
-	FallbackLocaleID           *string                 `cli:"opt --fallback-locale-id"`
-	FileFormat                 *string                 `cli:"opt --file-format"`
-	FormatOptions              *map[string]interface{} `cli:"opt --format-options"`
-	IncludeEmptyTranslations   bool                    `cli:"opt --include-empty-translations"`
-	KeepNotranslateTags        bool                    `cli:"opt --keep-notranslate-tags"`
-	SkipUnverifiedTranslations bool                    `cli:"opt --skip-unverified-translations"`
-	Tag                        *string                 `cli:"opt --tag"`
+	ConvertEmoji               bool              `cli:"opt --convert-emoji"`
+	Encoding                   *string           `cli:"opt --encoding"`
+	FallbackLocaleID           *string           `cli:"opt --fallback-locale-id"`
+	FileFormat                 *string           `cli:"opt --file-format"`
+	FormatOptions              map[string]string `cli:"opt --format-options"`
+	IncludeEmptyTranslations   bool              `cli:"opt --include-empty-translations"`
+	KeepNotranslateTags        bool              `cli:"opt --keep-notranslate-tags"`
+	SkipUnverifiedTranslations bool              `cli:"opt --skip-unverified-translations"`
+	Tag                        *string           `cli:"opt --tag"`
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3016,15 +3016,16 @@ func (cmd *TranslationsVerify) Run() error {
 type UploadCreate struct {
 	*phraseapp.Config
 
-	ConvertEmoji       *bool   `cli:"opt --convert-emoji"`
-	File               *string `cli:"opt --file"`
-	FileEncoding       *string `cli:"opt --file-encoding"`
-	FileFormat         *string `cli:"opt --file-format"`
-	LocaleID           *string `cli:"opt --locale-id"`
-	SkipUnverification *bool   `cli:"opt --skip-unverification"`
-	SkipUploadTags     *bool   `cli:"opt --skip-upload-tags"`
-	Tags               *string `cli:"opt --tags"`
-	UpdateTranslations *bool   `cli:"opt --update-translations"`
+	ConvertEmoji       *bool             `cli:"opt --convert-emoji"`
+	File               *string           `cli:"opt --file"`
+	FileEncoding       *string           `cli:"opt --file-encoding"`
+	FileFormat         *string           `cli:"opt --file-format"`
+	FormatOptions      map[string]string `cli:"opt --format-options"`
+	LocaleID           *string           `cli:"opt --locale-id"`
+	SkipUnverification *bool             `cli:"opt --skip-unverification"`
+	SkipUploadTags     *bool             `cli:"opt --skip-upload-tags"`
+	Tags               *string           `cli:"opt --tags"`
+	UpdateTranslations *bool             `cli:"opt --update-translations"`
 
 	ProjectID string `cli:"arg required"`
 }
@@ -3054,6 +3055,10 @@ func (cmd *UploadCreate) Run() error {
 
 	if cmd.FileFormat != nil {
 		params.FileFormat = cmd.FileFormat
+	}
+
+	if cmd.FormatOptions != nil {
+		params.FormatOptions = cmd.FormatOptions
 	}
 
 	if cmd.LocaleID != nil {
