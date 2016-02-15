@@ -465,6 +465,39 @@ func TestSplitString(t *testing.T) {
 	}
 }
 
+func TestCheckPreconditions(t *testing.T) {
+	tt := []struct {
+		pattern    string
+		fileformat string
+		expError   string
+	}{
+		{"", "", "File patterns may not be empty!"},
+		{"a/b/c", ".foo", "'a/b/c' does not have the required extension."},
+		{"<locale_name>/<locale_name>.foo", ".foo", "<locale_name> can only occur once in a file pattern!"},
+		{"<locale_code>/<locale_code>.foo", ".foo", "<locale_code> can only occur once in a file pattern!"},
+		{"<tag>/<tag>.foo", ".foo", "<tag> can only occur once in a file pattern!"},
+		{"a/**/b/**/c.t", ".t", "** can only occur once in a file pattern!"},
+		{"a/*/b/**/d/*/c.t", ".t", "* can only occur once in a file pattern!"},
+		{"<locale_name>/<locale_code>/**/a/<tag>/*/c.t", ".t", ""},
+	}
+
+	for _, tti := range tt {
+		src := new(Source)
+		src.File = tti.pattern
+		src.FileFormat = tti.fileformat
+
+		err := src.CheckPreconditions()
+		switch {
+		case tti.expError == "" && err != nil:
+			t.Errorf("%s: didn't expect an error, but got: %s", tti.pattern, err)
+		case tti.expError != "" && err == nil:
+			t.Errorf("%s: expected an error, but got none", tti.pattern)
+		case err != nil && ! strings.HasPrefix(err.Error(), tti.expError):
+			t.Errorf("%s: expected error to have prefix %q, got: %q", tti.pattern, tti.expError, err)
+		}
+	}
+}
+
 func TestSystemFiles(t *testing.T) {
 	tt := []struct {
 		pattern  string

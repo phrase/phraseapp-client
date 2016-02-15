@@ -99,7 +99,8 @@ func (source *Source) CheckPreconditions() error {
 	starCount := strings.Count(source.File, "*")
 	recCount := strings.Count(source.File, "**")
 
-	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
+	// starCount contains the `**` so that must be taken into account.
+	if starCount - (recCount * 2) > 1 {
 		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
 	}
 
