@@ -6,6 +6,10 @@ import (
 	"strings"
 	"testing"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"net/http/httptest"
+	"net/http"
+	"io"
+	"path"
 )
 
 func getBaseSource() *Source {
@@ -625,5 +629,70 @@ func TestLocaleFiles(t *testing.T) {
 		for k, _ := range pathFileMap {
 			t.Errorf("%s: didn't see expected file at %s", src.File, k)
 		}
+	}
+}
+
+type testHandler struct {
+	lastFilename string
+	lastLocaleID string
+	lastTag string
+}
+
+func (th *testHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	req.ParseMultipartForm(64)
+
+	getVal := func(key string) string {
+		val := req.MultipartForm.Value[key]
+		if len(val) > 0 {
+			return val[0]
+		}
+		return ""
+	}
+
+	th.lastFilename = req.MultipartForm.File["file"][0].Filename
+	th.lastLocaleID = getVal("locale_id")
+	th.lastTag = getVal("tags")
+
+	resp.WriteHeader(http.StatusCreated)
+	io.WriteString(resp, `{}`)
+}
+
+func TestUploadFile(t *testing.T) {
+	th := new(testHandler)
+
+	srv := httptest.NewServer(th)
+
+	c := new(phraseapp.Client)
+	c.Credentials = new(phraseapp.Credentials)
+	c.Credentials.Host = srv.URL
+	c.Credentials.Token = "some_token"
+
+	src := new(Source)
+	src.Params = new(phraseapp.UploadParams)
+	tags := "a,b"
+	src.Params.Tags = &tags
+
+	file := new(LocaleFile)
+	file.Path = "testdata/a/b/c/d.txt"
+	file.ID = "locale_id"
+	file.RFC = "locale-code"
+	file.Tag = "sometag"
+
+	err := src.uploadFile(c, file)
+	if err != nil {
+		t.Errorf("didn't expect an error, got: %s", err)
+	}
+
+	expPath := path.Base(file.Path)
+	expTags := "a,b,sometag"
+
+	if th.lastFilename != expPath {
+		t.Errorf("expected file path %q, got %q", expPath, th.lastFilename)
+	}
+	if th.lastLocaleID != file.ID {
+		t.Errorf("expected locale id %q, got %q", file.ID, th.lastLocaleID)
+	}
+	if th.lastTag != expTags {
+		t.Errorf("expected tag %q, got %q", expTags, th.lastTag)
 	}
 }

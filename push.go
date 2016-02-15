@@ -221,6 +221,15 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		}
 	}
 
+	if localeFile.Tag != "" {
+		var v string
+		if params.Tags != nil {
+			v = *params.Tags + ","
+		}
+		v += localeFile.Tag
+		params.Tags = &v
+	}
+
 	_, err := client.UploadCreate(source.ProjectID, params)
 	return err
 }
