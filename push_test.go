@@ -463,5 +463,53 @@ func TestSplitString(t *testing.T) {
 			t.Errorf("expected %d elements for %q, got %d", len(tt[i].exp), tt[i].str, len(got))
 		}
 	}
+}
 
+func TestSystemFiles(t *testing.T) {
+	tt := []struct {
+		pattern  string
+		expFiles []string
+	}{
+		{"a/b/c/d.txt", []string{"a/b/c/d.txt"}},
+		{"a/b/c/d.*", []string{"a/b/c/d.txt", "a/b/c/d.jpg"}},
+		{"a/b/*/d.txt", []string{"a/b/c/d.txt", "a/b/x/d.txt"}},
+		{"a/b/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt"}},
+		{"a/*/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+		{"a/*/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
+
+		{"a/**/d.txt", []string{"a/d.txt", "a/b/d.txt", "a/b/c/d.txt", "a/y/c/d.txt", "a/b/x/d.txt"}},
+		{"a/**/*/d.txt", []string{"a/b/d.txt", "a/b/c/d.txt", "a/b/x/d.txt", "a/y/c/d.txt"}},
+		{"a/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+		{"a/**/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
+		{"a/*/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+	}
+
+	for _, tti := range tt {
+		src := new(Source)
+		src.File = filepath.Join("testdata", tti.pattern)
+		src.Extension = filepath.Ext(tti.pattern)
+
+		matches, err := src.SystemFiles()
+		if err != nil {
+			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
+			continue
+		}
+
+		exp := map[string]bool{}
+		for _, f := range tti.expFiles {
+			exp[filepath.Join("testdata", f)] = true
+		}
+
+		for _, got := range matches {
+			if _, found := exp[got]; !found {
+				t.Errorf("%s: got unexpected file %q", src.File, got)
+				continue
+			}
+			delete(exp, got)
+		}
+
+		for k, _ := range exp {
+			t.Errorf("%s: expected to get file %q, but it didn't appear", src.File, k)
+		}
+	}
 }

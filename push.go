@@ -225,54 +225,117 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 }
 
 func (source *Source) SystemFiles() ([]string, error) {
-	if strings.Contains(source.File, "**") {
-		return source.recurse()
+	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
+	parts := strings.SplitN(pattern, "**", 2)
+	var pre, post string
+
+	pre = parts[0]
+	// strip trailing path separators
+	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre) - 1]) {
+		pre = pre[0:len(pre) - 1]
 	}
 
-	return source.glob()
-}
+	if len(parts) == 2 {
+		post = parts[1]
+		for len(post) > 0 && os.IsPathSeparator(post[0]) {
+			post = post[1:]
+		}
+	}
 
-func (source *Source) glob() ([]string, error) {
-	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
-	files, err := filepath.Glob(pattern)
+	candidates, err := filepath.Glob(pre)
 	if err != nil {
 		return nil, err
 	}
 
-	if Debug {
-		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
+	var matches []string
+	if post != "" {
+		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1))
+		tokenCountPre := len(splitPathIntoSegments(pre))
+
+		for _, cand := range candidates {
+			if !isDir(cand) {
+				continue
+			}
+
+			cands, err := findFilesInPath(cand)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, c := range cands {
+				if validateFileCandidate(tokens, tokenCountPre, c) {
+					matches = append(matches, c)
+				}
+			}
+		}
+	} else {
+		matches = candidates
 	}
 
-	return files, nil
+	return matches, nil
 }
 
-func (source *Source) recurse() ([]string, error) {
-	files := []string{}
-	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
-			ReportError("Push Error", errmsg)
-			return fmt.Errorf(errmsg)
+func isDir(path string) bool {
+	stat, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return stat.IsDir()
+}
+
+func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) bool {
+	candTokens := splitPathIntoSegments(cand)
+	candTokenCnt := len(candTokens)
+
+	if candTokenCnt < (len(tokens) + ignoreTokenCnt) {
+		return false
+	}
+	candTokens = candTokens[ignoreTokenCnt:]
+
+	for i := 1; i <= len(tokens); i++ {
+		expT, gotT := tokens[len(tokens) - i], candTokens[len(candTokens) - i]
+		switch {
+		case strings.Contains(expT, "*"):
+			matched, err := regexp.MatchString(expT, gotT)
+			if err != nil {
+				panic(err)
+			}
+			if !matched {
+				return false
+			}
+		case expT != gotT:
+			return false
 		}
-		if !f.Mode().IsDir() && strings.HasSuffix(f.Name(), source.Extension) {
+	}
+
+	return true
+}
+
+func splitPathIntoSegments(path string) []string {
+	segments := []string{}
+	start := 0
+	for i := range path {
+		if os.IsPathSeparator(path[i]) {
+			segments = append(segments, path[start:i])
+			start = i + 1
+		}
+	}
+	return append(segments, path[start:])
+}
+
+func findFilesInPath(root string) ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !f.Mode().IsDir() {
 			files = append(files, path)
 		}
 		return nil
 	})
 
 	return files, err
-}
-
-func (source *Source) root() string {
-	parts := splitPathToTokens(source.File)
-	rootParts := TakeWhile(parts, func(x string) bool {
-		return x != "**"
-	})
-	root := strings.Join(rootParts, separator)
-	if root == "" {
-		root = "."
-	}
-	return root
 }
 
 // Return all locale files from disk that match the source pattern.
