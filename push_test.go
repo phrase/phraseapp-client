@@ -513,3 +513,84 @@ func TestSystemFiles(t *testing.T) {
 		}
 	}
 }
+
+type localeFile struct {
+	path string
+	code string
+	name string
+	tag  string
+}
+
+func TestLocaleFiles(t *testing.T) {
+	tt := []struct {
+		pattern string
+		files   []localeFile
+	}{
+		{"a/b/c/d.txt", []localeFile{{"a/b/c/d.txt", "", "", ""}}},
+		{"a/<locale_code>/c/d.txt", []localeFile{
+			{"a/b/c/d.txt", "b", "", ""},
+			{"a/y/c/d.txt", "y", "YY", ""}}}, // local_code sets the name
+		{"a/<locale_name>/c/d.txt", []localeFile{
+			{"a/b/c/d.txt", "", "b", ""},
+			{"a/y/c/d.txt", "", "y", ""}}},
+		{"a/<tag>/c/d.txt", []localeFile{
+			{"a/b/c/d.txt", "", "", "b"},
+			{"a/y/c/d.txt", "", "", "y"}}},
+		{"a/<locale_code>/<locale_name>/<tag>.txt", []localeFile{
+			{"a/b/c/d.txt", "b", "c", "d"},
+			{"a/b/c/e.txt", "b", "c", "e"},
+			{"a/b/x/d.txt", "b", "x", "d"},
+			{"a/y/c/d.txt", "y", "YY", "d"}}},
+		{"b/<locale_name>/c/<tag>.txt", []localeFile{
+			{"b/YY/c/d.txt", "y", "YY", "d"}}},
+	}
+
+	for _, tti := range tt {
+		src := new(Source)
+		src.File = filepath.Join("testdata", tti.pattern)
+		src.Extension = filepath.Ext(tti.pattern)
+
+		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY" })
+		files, err := src.LocaleFiles()
+		if err != nil {
+			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
+			continue
+		}
+
+		if len(files) != len(tti.files) {
+			t.Errorf("expected %d files, got %d", len(tti.files), len(files))
+		}
+
+		pathFileMap := map[string]localeFile{}
+		for i := range tti.files {
+			abs, err := filepath.Abs(filepath.Join("testdata", tti.files[i].path))
+			if err != nil {
+				t.Fatalf("didn't expect error, got: %s", err)
+			}
+			pathFileMap[abs] = tti.files[i]
+		}
+
+		for _, lf := range files {
+			expFile, found := pathFileMap[lf.Path]
+			if !found {
+				t.Errorf("%s: file at path %s not expected", src.File, lf.Path)
+				continue
+			}
+
+			delete(pathFileMap, lf.Path)
+			if lf.RFC != expFile.code {
+				t.Errorf("%s: expected code %q, got %q", src.File, expFile.code, lf.RFC)
+			}
+			if lf.Name != expFile.name {
+				t.Errorf("%s: expected name %q, got %q", src.File, expFile.name, lf.Name)
+			}
+			if lf.Tag != expFile.tag {
+				t.Errorf("%s: expected tag %q, got %q", src.File, expFile.tag, lf.Tag)
+			}
+		}
+
+		for k, _ := range pathFileMap {
+			t.Errorf("%s: didn't see expected file at %s", src.File, k)
+		}
+	}
+}

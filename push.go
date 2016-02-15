@@ -349,11 +349,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-
 		pathTokens := splitPathToTokens(path)
-		if len(pathTokens) < len(tokens) {
-			continue
-		}
 		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
@@ -405,7 +401,7 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 			return remote
 		}
 
-		if remote.Name == localeFile.RFC {
+		if remote.Code == localeFile.RFC {
 			return remote
 		}
 	}
