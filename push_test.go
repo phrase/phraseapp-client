@@ -552,10 +552,11 @@ func TestSystemFiles(t *testing.T) {
 }
 
 type localeFile struct {
-	path string
-	code string
-	name string
-	tag  string
+	path         string
+	code         string
+	name         string
+	tag          string
+	localeExists bool
 }
 
 func TestLocaleFiles(t *testing.T) {
@@ -563,23 +564,33 @@ func TestLocaleFiles(t *testing.T) {
 		pattern string
 		files   []localeFile
 	}{
-		{"a/b/c/d.txt", []localeFile{{"a/b/c/d.txt", "", "", ""}}},
+		{"a/b/c/d.txt", []localeFile{{"a/b/c/d.txt", "", "", "", false}}},
 		{"a/<locale_code>/c/d.txt", []localeFile{
-			{"a/b/c/d.txt", "b", "", ""},
-			{"a/y/c/d.txt", "y", "YY", ""}}}, // local_code sets the name
+			{"a/b/c/d.txt", "b", "", "", false},
+			{"a/y/c/d.txt", "y", "YY", "", true}}}, // local_code sets the name
 		{"a/<locale_name>/c/d.txt", []localeFile{
-			{"a/b/c/d.txt", "", "b", ""},
-			{"a/y/c/d.txt", "", "y", ""}}},
+			{"a/b/c/d.txt", "", "b", "", false},
+			{"a/y/c/d.txt", "", "y", "", false}}},
 		{"a/<tag>/c/d.txt", []localeFile{
-			{"a/b/c/d.txt", "", "", "b"},
-			{"a/y/c/d.txt", "", "", "y"}}},
+			{"a/b/c/d.txt", "", "", "b", false},
+			{"a/y/c/d.txt", "", "", "y", false}}},
 		{"a/<locale_code>/<locale_name>/<tag>.txt", []localeFile{
-			{"a/b/c/d.txt", "b", "c", "d"},
-			{"a/b/c/e.txt", "b", "c", "e"},
-			{"a/b/x/d.txt", "b", "x", "d"},
-			{"a/y/c/d.txt", "y", "YY", "d"}}},
+			{"a/b/c/d.txt", "b", "c", "d", false},
+			{"a/b/c/e.txt", "b", "c", "e", false},
+			{"a/b/x/d.txt", "b", "x", "d", false},
+			{"a/y/c/d.txt", "y", "c", "d", false}}},
 		{"b/<locale_name>/c/<tag>.txt", []localeFile{
-			{"b/YY/c/d.txt", "y", "YY", "d"}}},
+			{"b/YY/c/d.txt", "y", "YY", "d", true}}},
+
+
+		// This shows a toxic example of the pattern mechanism!
+		{"b/YY/foo.<locale_name>.json", []localeFile{
+			{"b/YY/foo.bar.json", "", "bar", "", false},
+		}},
+		{"b/YY/<locale_name>.json", []localeFile{
+			{"b/YY/foo.json", "", "foo", "", false},
+			{"b/YY/foo.bar.json", "", "foo.bar", "", false}, // weird locale!
+		}},
 	}
 
 	for _, tti := range tt {
@@ -616,13 +627,20 @@ func TestLocaleFiles(t *testing.T) {
 
 			delete(pathFileMap, lf.Path)
 			if lf.RFC != expFile.code {
-				t.Errorf("%s: expected code %q, got %q", src.File, expFile.code, lf.RFC)
+				t.Errorf("%s: expected code %q for %q, got %q", src.File, expFile.code, expFile.path, lf.RFC)
 			}
 			if lf.Name != expFile.name {
-				t.Errorf("%s: expected name %q, got %q", src.File, expFile.name, lf.Name)
+				t.Errorf("%s: expected name %q for %q, got %q", src.File, expFile.name, expFile.path, lf.Name)
 			}
 			if lf.Tag != expFile.tag {
-				t.Errorf("%s: expected tag %q, got %q", src.File, expFile.tag, lf.Tag)
+				t.Errorf("%s: expected tag %q for %q, got %q", src.File, expFile.tag, expFile.path, lf.Tag)
+			}
+			if lf.ExistsRemote != expFile.localeExists {
+				if expFile.localeExists {
+					t.Errorf("%s: expected locale to exist remote, it didn't", src.File)
+				}else {
+					t.Errorf("%s: expected locale to not exist remote, it does", src.File)
+				}
 			}
 		}
 
@@ -694,5 +712,54 @@ func TestUploadFile(t *testing.T) {
 	}
 	if th.lastTag != expTags {
 		t.Errorf("expected tag %q, got %q", expTags, th.lastTag)
+	}
+}
+
+func TestRemoteLocaleForLocaleFile(t *testing.T) {
+	rlEN := &phraseapp.Locale{ID: "en-locale-id", Name: "english", Code: "en"}
+	rlDE := &phraseapp.Locale{ID: "de-locale-id", Name: "deutsch", Code: "de"}
+	tt := []struct {
+		srcLocaleID string
+		remotes     []*phraseapp.Locale
+		code        string
+		name        string
+		expLocales  *phraseapp.Locale
+	}{
+		{"", nil, "en", "english", nil},
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "", "", nil},
+		{"en-locale-id", []*phraseapp.Locale{rlEN, rlDE}, "", "", rlEN},
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "en", "", rlEN},
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "", "english", rlEN},
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "en", "english", rlEN},
+		{"en-locale-id", []*phraseapp.Locale{rlEN, rlDE}, "en", "english", rlEN},
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "", "deutsch", rlDE},
+
+		{"<locale_code>glish", []*phraseapp.Locale{rlEN, rlDE}, "", "", nil},
+		{"<locale_code>glish", []*phraseapp.Locale{rlEN, rlDE}, "en", "english", rlEN},
+		{"<locale_code>glish", []*phraseapp.Locale{rlEN, rlDE}, "de", "deutsch", nil},
+
+		// let's leave the happy path and create obscure situations
+		{"", []*phraseapp.Locale{rlEN, rlDE}, "en", "deutsch", nil},
+		{"de-locale-id", []*phraseapp.Locale{rlEN, rlDE}, "en", "", nil},
+		{"de-locale-id", []*phraseapp.Locale{rlEN, rlDE}, "", "english", nil},
+	}
+
+	for i, tti := range tt {
+		src := new(Source)
+		src.Params = new(phraseapp.UploadParams)
+		src.Params.LocaleID = &tti.srcLocaleID
+		src.RemoteLocales = tti.remotes
+		lf := new(LocaleFile)
+		lf.Name = tti.name
+		lf.RFC = tti.code
+		r := src.getRemoteLocaleForLocaleFile(lf)
+		switch {
+		case tti.expLocales == nil && r != nil:
+			t.Errorf("%d: didn't expect an locale, got %q", i, r.ID)
+		case tti.expLocales != nil && r == nil:
+			t.Errorf("%d: expected locale %q, but got none", i, tti.expLocales.ID)
+		case tti.expLocales != nil && r != nil && tti.expLocales.ID != r.ID:
+			t.Errorf("%d: expected locale %q, but got %q", i, tti.expLocales.ID, r.ID)
+		}
 	}
 }
