@@ -87,9 +87,9 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 	absPath, _ := filepath.Abs("./tests/en.yml")
 	expectedFiles := []*LocaleFile{
 		&LocaleFile{
-			Name: "",
+			Name: "english",
 			RFC:  "en",
-			ID:   "",
+			ID:   "en-locale-id",
 			Path: absPath,
 		},
 	}
