@@ -397,25 +397,62 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
-	for _, remote := range source.RemoteLocales {
-		if remote.Name == source.GetLocaleID() || remote.ID == source.GetLocaleID() {
-			return remote
-		}
+	candidates := source.RemoteLocales
 
-		localeName := source.replacePlaceholderInParams(localeFile)
-		if localeName != "" && strings.Contains(remote.Name, localeName) {
-			return remote
-		}
+	filterApplied := false
 
-		if remote.Name == localeFile.Name {
-			return remote
+	filter := func(cands []*phraseapp.Locale, preCond string, pred func(cand *phraseapp.Locale) bool) []*phraseapp.Locale {
+		if preCond == "" {
+			return cands
 		}
-
-		if remote.Code == localeFile.RFC {
-			return remote
+		filterApplied = true
+		tmpCands := []*phraseapp.Locale{}
+		for _, cand := range cands {
+			if pred(cand) {
+				tmpCands = append(tmpCands, cand)
+			}
 		}
+		return tmpCands
 	}
-	return nil
+
+	localeName := source.replacePlaceholderInParams(localeFile)
+	if localeName != "" {
+		// This means the name can contain the value specified in LocaleID, with
+		// `<locale_code>` being substituted by the value of the currently handled
+		// localeFile (like push only locales with name `en-US`).
+		candidates = filter(candidates, localeName, func(cand *phraseapp.Locale) bool {
+			return strings.Contains(cand.Name, localeName)
+		})
+	} else {
+		localeID := source.GetLocaleID()
+		candidates = filter(candidates, localeID, func(cand *phraseapp.Locale) bool {
+			return cand.Name == localeID || cand.ID == localeID
+		})
+	}
+
+	candidates = filter(candidates, localeFile.Name, func(cand *phraseapp.Locale) bool {
+		return cand.Name == localeFile.Name
+	})
+
+	candidates = filter(candidates, localeFile.RFC, func(cand *phraseapp.Locale) bool {
+		return cand.Code == localeFile.RFC
+	})
+
+	// If no filter was applied the candidates list still contains all remote
+	// locales, while actually nothing matches.
+	if !filterApplied {
+		return nil
+	}
+
+	switch len(candidates) {
+	case 0:
+		return nil
+	case 1:
+		return candidates[0]
+	default:
+		// TODO I guess this should return an error, as this is a problem.
+		return candidates[0]
+	}
 }
 
 func splitString(s string, set string) []string {
