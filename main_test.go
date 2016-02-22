@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"sort"
-
-	"github.com/phrase/phraseapp-go/phraseapp"
-	"testing"
-	"os"
-	"io/ioutil"
-	"io"
-	"bytes"
-	"github.com/dynport/dgtk/cli"
-	"strings"
 	"bufio"
+	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"sort"
+	"strings"
+	"testing"
+
+	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func getBaseLocales() []*phraseapp.Locale {
@@ -65,7 +65,7 @@ func captureStderr(f func() error) (string, error) {
 
 	outC := make(chan string)
 	// copy the output in a separate goroutine so printing can't block indefinitely
-	go func(outC chan <- string) {
+	go func(outC chan<- string) {
 		defer close(outC)
 
 		buf := bytes.NewBuffer(nil)
@@ -157,7 +157,7 @@ func searchFieldWithPredecessor(flds []string, pre string) (string, bool) {
 	case len(flds) - 1:
 		return "", false
 	default:
-		return strings.Trim(flds[i + 1], ")"), true
+		return strings.Trim(flds[i+1], ")"), true
 	}
 
 }
@@ -220,7 +220,6 @@ func TestCLIHelp_FileFormatDefault(t *testing.T) {
 		"--file-format": "FILE_FORMAT",
 	})
 }
-
 
 func TestCLIHelp_FileFormatDefaultTwice(t *testing.T) {
 	cfg := new(phraseapp.Config)
@@ -288,7 +287,7 @@ func TestCLIHelp_PerPageSettings(t *testing.T) {
 	}
 
 	matchDefaultExpectations(t, defaults, map[string]string{
-		"--page": "2",
+		"--page":     "2",
 		"--per-page": "12",
 	})
 }
@@ -309,7 +308,7 @@ func TestCLIHelp_PerPageSettingsOverride(t *testing.T) {
 	}
 
 	matchDefaultExpectations(t, defaults, map[string]string{
-		"--page": "3",
+		"--page":     "3",
 		"--per-page": "42",
 	})
 }

@@ -100,7 +100,7 @@ func (source *Source) CheckPreconditions() error {
 	recCount := strings.Count(source.File, "**")
 
 	// starCount contains the `**` so that must be taken into account.
-	if starCount - (recCount * 2) > 1 {
+	if starCount-(recCount*2) > 1 {
 		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
 	}
 
@@ -241,8 +241,8 @@ func (source *Source) SystemFiles() ([]string, error) {
 
 	pre = parts[0]
 	// strip trailing path separators
-	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre) - 1]) {
-		pre = pre[0:len(pre) - 1]
+	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre)-1]) {
+		pre = pre[0 : len(pre)-1]
 	}
 
 	if len(parts) == 2 {
@@ -303,7 +303,7 @@ func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) boo
 	candTokens = candTokens[ignoreTokenCnt:]
 
 	for i := 1; i <= len(tokens); i++ {
-		expT, gotT := tokens[len(tokens) - i], candTokens[len(candTokens) - i]
+		expT, gotT := tokens[len(tokens)-i], candTokens[len(candTokens)-i]
 		switch {
 		case strings.Contains(expT, "*"):
 			matched, err := regexp.MatchString(expT, gotT)

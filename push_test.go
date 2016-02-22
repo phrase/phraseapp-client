@@ -1,25 +1,27 @@
 package main
 
 import (
-	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
+
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"net/http/httptest"
-	"net/http"
-	"io"
-	"path"
 )
 
 func getBaseSource() *Source {
 	source := &Source{
-		File:        "./tests/<locale_code>.yml",
-		ProjectID:   "project-id",
-		AccessToken: "access-token",
-		FileFormat:  "yml",
-		Extension:   "",
-		Params: new(phraseapp.UploadParams),
+		File:          "./tests/<locale_code>.yml",
+		ProjectID:     "project-id",
+		AccessToken:   "access-token",
+		FileFormat:    "yml",
+		Extension:     "",
+		Params:        new(phraseapp.UploadParams),
 		RemoteLocales: getBaseLocales(),
 	}
 	source.Extension = filepath.Ext(source.File)
@@ -27,7 +29,6 @@ func getBaseSource() *Source {
 }
 
 func TestPushPreconditions(t *testing.T) {
-	fmt.Println("Push#Source#CheckPreconditions")
 	source := getBaseSource()
 	for _, file := range []string{
 		"",
@@ -54,7 +55,6 @@ func TestPushPreconditions(t *testing.T) {
 }
 
 func TestSourceFields(t *testing.T) {
-	fmt.Println("Push#Source#Fields")
 	source := getBaseSource()
 
 	if source.File != "./tests/<locale_code>.yml" {
@@ -76,7 +76,6 @@ func TestSourceFields(t *testing.T) {
 }
 
 func TestSourceLocaleFilesOne(t *testing.T) {
-	fmt.Println("Push#Source#LocaleFiles#1")
 	source := getBaseSource()
 	localeFiles, err := source.LocaleFiles()
 
@@ -104,7 +103,6 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 }
 
 func TestSourceLocaleFilesTwo(t *testing.T) {
-	fmt.Println("Push#Source#LocaleFiles#2")
 	source := getBaseSource()
 	source.File = "./**/<locale_name>.yml"
 	localeFiles, err := source.LocaleFiles()
@@ -133,7 +131,6 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 }
 
 func TestReplacePlaceholderInParams(t *testing.T) {
-	fmt.Println("Push#Source#ReplacePlaceholderInParams")
 	source := getBaseSource()
 	lid := "<locale_code>"
 	source.Params.LocaleID = &lid
@@ -150,7 +147,6 @@ func TestReplacePlaceholderInParams(t *testing.T) {
 	}
 }
 func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
-	fmt.Println("Push#Source#getRemoteLocaleForLocaleFile")
 	source := getBaseSource()
 	localeFile := &LocaleFile{
 		Name: "english",
@@ -179,60 +175,59 @@ type Pattern struct {
 }
 
 func TestReducerPatterns(t *testing.T) {
-	fmt.Println("Push#Reducer")
 	for idx, pattern := range []*Pattern{
-		&Pattern{
+		{
 			File:        "./.abc/<locale_code>.yml",
 			Ext:         "yml",
 			TestPath:    ".abc/en.yml",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:        "./abc+/defg./}{x/][etc??/<locale_code>.yml",
 			Ext:         "yml",
 			TestPath:    "abc+/defg./}{x/][etc??/en.yml",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:     "./*.yml",
 			Ext:      "yml",
 			TestPath: "en.yml",
 		},
-		&Pattern{
+		{
 			File:     "./locales/?*.yml",
 			Ext:      "yml",
 			TestPath: "locales/?en.yml",
 		},
-		&Pattern{
+		{
 			File:     "./locales/en.yml",
 			Ext:      "yml",
 			TestPath: "locales/en.yml",
 		},
-		&Pattern{
+		{
 			File:     "./locales/.yml",
 			Ext:      "yml",
 			TestPath: "locales/en.yml",
 		},
-		&Pattern{
+		{
 			File:        "./abc/defg/<locale_code>.lproj/.strings",
 			Ext:         "strings",
 			TestPath:    "abc/defg/en.lproj/Localizable.strings",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:        "./locales/<locale_code>.yml",
 			Ext:         "yml",
 			TestPath:    "locales/en.yml",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:        "./config/<tag>/<locale_code>.yml",
 			Ext:         "yml",
 			TestPath:    "config/abc/en.yml",
 			ExpectedRFC: "en",
 			ExpectedTag: "abc",
 		},
-		&Pattern{
+		{
 			File:         "./config/<locale_name>/<locale_code>.yml",
 			Ext:          "yml",
 			TestPath:     "config/german/de.yml",
@@ -240,47 +235,47 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "",
 			ExpectedName: "german",
 		},
-		&Pattern{
+		{
 			File:        "./config/<locale_code>/*.yml",
 			Ext:         "yml",
 			TestPath:    "config/en/english.yml",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:        "./no_tag/<tag>/<locale_code>.lproj/Localizable.strings",
 			Ext:         "strings",
 			TestPath:    "no_tag/abc/en.lproj/Localizable.strings",
 			ExpectedRFC: "en",
 			ExpectedTag: "abc",
 		},
-		&Pattern{
+		{
 			File:        "./abc/<locale_code>.lproj/.strings",
 			Ext:         "strings",
 			TestPath:    "abc/en.lproj/Localizable.strings",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:        "./abc/<locale_code>.lproj/<tag>.strings",
 			Ext:         "strings",
 			TestPath:    "abc/en.lproj/MyStoryboard.strings",
 			ExpectedRFC: "en",
 			ExpectedTag: "MyStoryboard",
 		},
-		&Pattern{
+		{
 			File:        "./*/<tag>/<locale_code>-values/Strings.xml",
 			Ext:         "xml",
 			TestPath:    "no_tag/abc/en-values/Strings.xml",
 			ExpectedRFC: "en",
 			ExpectedTag: "abc",
 		},
-		&Pattern{
+		{
 			File:        "./*/<tag>/play.<locale_code>",
 			Ext:         "<locale_code>",
 			TestPath:    "no_tag/abc/play.en",
 			ExpectedRFC: "en",
 			ExpectedTag: "abc",
 		},
-		&Pattern{
+		{
 			File:         "./*/<tag>/<locale_name>.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "no_tag/abc/play.en",
@@ -288,7 +283,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "abc",
 			ExpectedName: "play",
 		},
-		&Pattern{
+		{
 			File:         "./abc/<locale_code>/<tag>.<locale_name>",
 			Ext:          "strings",
 			TestPath:     "abc/en/MyStoryboard.english",
@@ -296,27 +291,26 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "MyStoryboard",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./**/*.<locale_name>",
 			Ext:          "<locale_name>",
 			TestPath:     "abc/defg/hijk/some_name.english",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:        "./**/<tag>.<locale_code>",
 			Ext:         "<locale_code>",
 			TestPath:    "abc/defg/hijk/someTag.en",
 			ExpectedRFC: "en",
 			ExpectedTag: "someTag",
 		},
-
-		&Pattern{
+		{
 			File:        "./lang/<locale_code>/**/*.php",
 			Ext:         "php",
 			TestPath:    "lang/en/hijk/bla/bla/someName.php",
 			ExpectedRFC: "en",
 		},
-		&Pattern{
+		{
 			File:         "./**/xyz/<locale_name>/<tag>.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "abc/xyz/english/someTag.en",
@@ -324,7 +318,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/<tag>/**/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/someTag/abc/defg/filename.en",
@@ -332,7 +326,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./**/<tag>/<locale_name>/<locale_code>.yml",
 			Ext:          "yml",
 			TestPath:     "abc/defg/someTag/english/en.yml",
@@ -340,7 +334,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/<tag>/**/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/someTag/abc/defg/filename.en",
@@ -348,7 +342,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/**/<tag>/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/abc/defg/someTag/filename.en",
@@ -356,7 +350,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>_more/**/<tag>no_tag/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english_more/abc/defg/someTagno_tag/filename.en",
@@ -364,7 +358,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/**/<tag>/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/abc/defg/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/someTag/filename.en",
@@ -372,7 +366,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/<tag>/**/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/someTag/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/filename.en",
@@ -380,7 +374,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./**/<locale_name>/<tag>/*.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/english/someTag/filename.en",
@@ -388,7 +382,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/**/*/<tag>/main.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/abc/defg/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/someTag/main.en",
@@ -396,7 +390,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./**/<locale_code>/<locale_name>/*/<tag>/main.yml",
 			Ext:          "<locale_code>",
 			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/en/english/hahah/someTag/main.yml",
@@ -404,7 +398,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./<locale_name>/*/<tag>/**/main.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "english/xyz/someTag/haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/main.en",
@@ -412,7 +406,7 @@ func TestReducerPatterns(t *testing.T) {
 			ExpectedTag:  "someTag",
 			ExpectedName: "english",
 		},
-		&Pattern{
+		{
 			File:         "./**/<locale_name>/*/<tag>.<locale_code>",
 			Ext:          "<locale_code>",
 			TestPath:     "haha/haha/haha/haha/hahah/hahah/hahah/hahah/hahah/english/hahah/someTag.en",
@@ -424,28 +418,21 @@ func TestReducerPatterns(t *testing.T) {
 
 		tokens := splitPathToTokens(pattern.File)
 
-		fmt.Println(strings.Repeat("-", 10))
-		fmt.Println(idx+1, "\n  SourceFile:", pattern.File, "\n  TestPath:", pattern.TestPath)
-
 		pathTokens := splitPathToTokens(pattern.TestPath)
 		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
 		if localeFile.RFC != pattern.ExpectedRFC {
 			t.Errorf("Expected RFC to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedRFC, localeFile.RFC, idx+1)
-			t.Fail()
 		}
 
 		if localeFile.Tag != pattern.ExpectedTag {
 			t.Errorf("Expected Tag to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedTag, localeFile.Tag, idx+1)
-			t.Fail()
 		}
 
 		if localeFile.Name != pattern.ExpectedName {
 			t.Errorf("Expected LocaleName to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedName, localeFile.Name, idx+1)
-			t.Fail()
 		}
 	}
-	fmt.Println(strings.Repeat("-", 10))
 }
 
 func TestSplitString(t *testing.T) {
@@ -496,13 +483,15 @@ func TestCheckPreconditions(t *testing.T) {
 			t.Errorf("%s: didn't expect an error, but got: %s", tti.pattern, err)
 		case tti.expError != "" && err == nil:
 			t.Errorf("%s: expected an error, but got none", tti.pattern)
-		case err != nil && ! strings.HasPrefix(err.Error(), tti.expError):
+		case err != nil && !strings.HasPrefix(err.Error(), tti.expError):
 			t.Errorf("%s: expected error to have prefix %q, got: %q", tti.pattern, tti.expError, err)
 		}
 	}
 }
 
 func TestSystemFiles(t *testing.T) {
+	d := setupLocalesFiles(t)
+	defer os.RemoveAll(d)
 	tt := []struct {
 		pattern  string
 		expFiles []string
@@ -523,7 +512,7 @@ func TestSystemFiles(t *testing.T) {
 
 	for _, tti := range tt {
 		src := new(Source)
-		src.File = filepath.Join("testdata", tti.pattern)
+		src.File = filepath.Join(d, tti.pattern)
 		src.Extension = filepath.Ext(tti.pattern)
 
 		matches, err := src.SystemFiles()
@@ -534,7 +523,7 @@ func TestSystemFiles(t *testing.T) {
 
 		exp := map[string]bool{}
 		for _, f := range tti.expFiles {
-			exp[filepath.Join("testdata", f)] = true
+			exp[filepath.Join(d, f)] = true
 		}
 
 		for _, got := range matches {
@@ -559,7 +548,32 @@ type localeFile struct {
 	localeExists bool
 }
 
+func setupFiles(t *testing.T, files ...string) (dir string) {
+	d, err := ioutil.TempDir("/tmp", "phrase-push-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, n := range files {
+		p := filepath.Join(d, n)
+		if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := ioutil.WriteFile(p, nil, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return d
+}
+
+func setupLocalesFiles(t *testing.T) (dir string) {
+	return setupFiles(t, "a/b/c/d.jpg", "a/b/c/d.txt", "a/b/c/e.txt", "a/b/d.txt", "a/b/x/d.txt", "a/d.txt", "a/y/c/d.txt", "b/YY/c/d.txt", "b/YY/foo.bar.json", "b/YY/foo.json")
+}
+
 func TestLocaleFiles(t *testing.T) {
+	d := setupLocalesFiles(t)
+	defer os.RemoveAll(d)
+
 	tt := []struct {
 		pattern string
 		files   []localeFile
@@ -582,7 +596,6 @@ func TestLocaleFiles(t *testing.T) {
 		{"b/<locale_name>/c/<tag>.txt", []localeFile{
 			{"b/YY/c/d.txt", "y", "YY", "d", true}}},
 
-
 		// This shows a toxic example of the pattern mechanism!
 		{"b/YY/foo.<locale_name>.json", []localeFile{
 			{"b/YY/foo.bar.json", "", "bar", "", false},
@@ -595,10 +608,10 @@ func TestLocaleFiles(t *testing.T) {
 
 	for _, tti := range tt {
 		src := new(Source)
-		src.File = filepath.Join("testdata", tti.pattern)
+		src.File = filepath.Join(d, tti.pattern)
 		src.Extension = filepath.Ext(tti.pattern)
 
-		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY" })
+		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY"})
 		files, err := src.LocaleFiles()
 		if err != nil {
 			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
@@ -611,7 +624,7 @@ func TestLocaleFiles(t *testing.T) {
 
 		pathFileMap := map[string]localeFile{}
 		for i := range tti.files {
-			abs, err := filepath.Abs(filepath.Join("testdata", tti.files[i].path))
+			abs, err := filepath.Abs(filepath.Join(d, tti.files[i].path))
 			if err != nil {
 				t.Fatalf("didn't expect error, got: %s", err)
 			}
@@ -638,7 +651,7 @@ func TestLocaleFiles(t *testing.T) {
 			if lf.ExistsRemote != expFile.localeExists {
 				if expFile.localeExists {
 					t.Errorf("%s: expected locale to exist remote, it didn't", src.File)
-				}else {
+				} else {
 					t.Errorf("%s: expected locale to not exist remote, it does", src.File)
 				}
 			}
@@ -653,7 +666,7 @@ func TestLocaleFiles(t *testing.T) {
 type testHandler struct {
 	lastFilename string
 	lastLocaleID string
-	lastTag string
+	lastTag      string
 }
 
 func (th *testHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
@@ -676,6 +689,8 @@ func (th *testHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 func TestUploadFile(t *testing.T) {
+	d := setupFiles(t, "a/b/c/d.txt")
+	defer os.RemoveAll(d)
 	th := new(testHandler)
 
 	srv := httptest.NewServer(th)
@@ -691,7 +706,7 @@ func TestUploadFile(t *testing.T) {
 	src.Params.Tags = &tags
 
 	file := new(LocaleFile)
-	file.Path = "testdata/a/b/c/d.txt"
+	file.Path = filepath.Join(d, "a/b/c/d.txt")
 	file.ID = "locale_id"
 	file.RFC = "locale-code"
 	file.Tag = "sometag"

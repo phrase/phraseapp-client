@@ -4,407 +4,307 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "1.1.11"
+const PHRASEAPP_CLIENT_VERSION = "test"
 
-func router(cfg *phraseapp.Config) *cli.Router {
+func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r := cli.NewRouter()
 
-	r.Register("authorization/create", &AuthorizationCreate{Config: cfg}, "Create a new authorization.")
-
-	r.Register("authorization/delete", &AuthorizationDelete{Config: cfg}, "Delete an existing authorization. API calls using that token will stop working.")
-
-	r.Register("authorization/show", &AuthorizationShow{Config: cfg}, "Get details on a single authorization.")
-
-	r.Register("authorization/update", &AuthorizationUpdate{Config: cfg}, "Update an existing authorization.")
-
-	actionAuthorizationsList := &AuthorizationsList{Config: cfg}
-	if cfg.Page != nil {
-		actionAuthorizationsList.Page = *cfg.Page
+	if cmd, err := newAuthorizationCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("authorization/create", cmd, "Create a new authorization.")
 	}
-	if cfg.PerPage != nil {
-		actionAuthorizationsList.PerPage = *cfg.PerPage
+
+	r.Register("authorization/delete", newAuthorizationDelete(cfg), "Delete an existing authorization. API calls using that token will stop working.")
+
+	r.Register("authorization/show", newAuthorizationShow(cfg), "Get details on a single authorization.")
+
+	if cmd, err := newAuthorizationUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("authorization/update", cmd, "Update an existing authorization.")
 	}
-	r.Register("authorizations/list", actionAuthorizationsList, "List all your authorizations.")
 
-	actionBlacklistedKeyCreate := &BlacklistedKeyCreate{Config: cfg}
-	actionBlacklistedKeyCreate.ProjectID = cfg.ProjectID
-	r.Register("blacklisted_key/create", actionBlacklistedKeyCreate, "Create a new rule for blacklisting keys.")
+	r.Register("authorizations/list", newAuthorizationsList(cfg), "List all your authorizations.")
 
-	actionBlacklistedKeyDelete := &BlacklistedKeyDelete{Config: cfg}
-	actionBlacklistedKeyDelete.ProjectID = cfg.ProjectID
-	r.Register("blacklisted_key/delete", actionBlacklistedKeyDelete, "Delete an existing rule for blacklisting keys.")
-
-	actionBlacklistedKeyShow := &BlacklistedKeyShow{Config: cfg}
-	actionBlacklistedKeyShow.ProjectID = cfg.ProjectID
-	r.Register("blacklisted_key/show", actionBlacklistedKeyShow, "Get details on a single rule for blacklisting keys for a given project.")
-
-	actionBlacklistedKeyUpdate := &BlacklistedKeyUpdate{Config: cfg}
-	actionBlacklistedKeyUpdate.ProjectID = cfg.ProjectID
-	r.Register("blacklisted_key/update", actionBlacklistedKeyUpdate, "Update an existing rule for blacklisting keys.")
-
-	actionBlacklistedKeysList := &BlacklistedKeysList{Config: cfg}
-	actionBlacklistedKeysList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionBlacklistedKeysList.Page = *cfg.Page
+	if cmd, err := newBlacklistedKeyCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("blacklisted_key/create", cmd, "Create a new rule for blacklisting keys.")
 	}
-	if cfg.PerPage != nil {
-		actionBlacklistedKeysList.PerPage = *cfg.PerPage
+
+	r.Register("blacklisted_key/delete", newBlacklistedKeyDelete(cfg), "Delete an existing rule for blacklisting keys.")
+
+	r.Register("blacklisted_key/show", newBlacklistedKeyShow(cfg), "Get details on a single rule for blacklisting keys for a given project.")
+
+	if cmd, err := newBlacklistedKeyUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("blacklisted_key/update", cmd, "Update an existing rule for blacklisting keys.")
 	}
-	r.Register("blacklisted_keys/list", actionBlacklistedKeysList, "List all rules for blacklisting keys for the given project.")
 
-	actionCommentCreate := &CommentCreate{Config: cfg}
-	actionCommentCreate.ProjectID = cfg.ProjectID
-	r.Register("comment/create", actionCommentCreate, "Create a new comment for a key.")
+	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
 
-	actionCommentDelete := &CommentDelete{Config: cfg}
-	actionCommentDelete.ProjectID = cfg.ProjectID
-	r.Register("comment/delete", actionCommentDelete, "Delete an existing comment.")
-
-	actionCommentMarkCheck := &CommentMarkCheck{Config: cfg}
-	actionCommentMarkCheck.ProjectID = cfg.ProjectID
-	r.Register("comment/mark/check", actionCommentMarkCheck, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
-
-	actionCommentMarkRead := &CommentMarkRead{Config: cfg}
-	actionCommentMarkRead.ProjectID = cfg.ProjectID
-	r.Register("comment/mark/read", actionCommentMarkRead, "Mark a comment as read.")
-
-	actionCommentMarkUnread := &CommentMarkUnread{Config: cfg}
-	actionCommentMarkUnread.ProjectID = cfg.ProjectID
-	r.Register("comment/mark/unread", actionCommentMarkUnread, "Mark a comment as unread.")
-
-	actionCommentShow := &CommentShow{Config: cfg}
-	actionCommentShow.ProjectID = cfg.ProjectID
-	r.Register("comment/show", actionCommentShow, "Get details on a single comment.")
-
-	actionCommentUpdate := &CommentUpdate{Config: cfg}
-	actionCommentUpdate.ProjectID = cfg.ProjectID
-	r.Register("comment/update", actionCommentUpdate, "Update an existing comment.")
-
-	actionCommentsList := &CommentsList{Config: cfg}
-	actionCommentsList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionCommentsList.Page = *cfg.Page
+	if cmd, err := newCommentCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/create", cmd, "Create a new comment for a key.")
 	}
-	if cfg.PerPage != nil {
-		actionCommentsList.PerPage = *cfg.PerPage
+
+	r.Register("comment/delete", newCommentDelete(cfg), "Delete an existing comment.")
+
+	r.Register("comment/mark/check", newCommentMarkCheck(cfg), "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+
+	r.Register("comment/mark/read", newCommentMarkRead(cfg), "Mark a comment as read.")
+
+	r.Register("comment/mark/unread", newCommentMarkUnread(cfg), "Mark a comment as unread.")
+
+	r.Register("comment/show", newCommentShow(cfg), "Get details on a single comment.")
+
+	if cmd, err := newCommentUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/update", cmd, "Update an existing comment.")
 	}
-	r.Register("comments/list", actionCommentsList, "List all comments for a key.")
 
-	actionFormatsList := &FormatsList{Config: cfg}
-	if cfg.Page != nil {
-		actionFormatsList.Page = *cfg.Page
+	r.Register("comments/list", newCommentsList(cfg), "List all comments for a key.")
+
+	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
+
+	if cmd, err := newKeyCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("key/create", cmd, "Create a new key.")
 	}
-	if cfg.PerPage != nil {
-		actionFormatsList.PerPage = *cfg.PerPage
+
+	r.Register("key/delete", newKeyDelete(cfg), "Delete an existing key.")
+
+	r.Register("key/show", newKeyShow(cfg), "Get details on a single key for a given project.")
+
+	if cmd, err := newKeyUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("key/update", cmd, "Update an existing key.")
 	}
-	r.Register("formats/list", actionFormatsList, "Get a handy list of all localization file formats supported in PhraseApp.")
 
-	actionKeyCreate := &KeyCreate{Config: cfg}
-	actionKeyCreate.ProjectID = cfg.ProjectID
-	r.Register("key/create", actionKeyCreate, "Create a new key.")
-
-	actionKeyDelete := &KeyDelete{Config: cfg}
-	actionKeyDelete.ProjectID = cfg.ProjectID
-	r.Register("key/delete", actionKeyDelete, "Delete an existing key.")
-
-	actionKeyShow := &KeyShow{Config: cfg}
-	actionKeyShow.ProjectID = cfg.ProjectID
-	r.Register("key/show", actionKeyShow, "Get details on a single key for a given project.")
-
-	actionKeyUpdate := &KeyUpdate{Config: cfg}
-	actionKeyUpdate.ProjectID = cfg.ProjectID
-	r.Register("key/update", actionKeyUpdate, "Update an existing key.")
-
-	actionKeysDelete := &KeysDelete{Config: cfg}
-	actionKeysDelete.ProjectID = cfg.ProjectID
-	r.Register("keys/delete", actionKeysDelete, "Delete all keys matching query. Same constraints as list. Please limit the number of affected keys to about 1,000 as you might experience timeouts otherwise.")
-
-	actionKeysList := &KeysList{Config: cfg}
-	actionKeysList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionKeysList.Page = *cfg.Page
+	if cmd, err := newKeysDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("keys/delete", cmd, "Delete all keys matching query. Same constraints as list. Please limit the number of affected keys to about 1,000 as you might experience timeouts otherwise.")
 	}
-	if cfg.PerPage != nil {
-		actionKeysList.PerPage = *cfg.PerPage
+
+	if cmd, err := newKeysList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("keys/list", cmd, "List all keys for the given project. Alternatively you can POST requests to /search.")
 	}
-	r.Register("keys/list", actionKeysList, "List all keys for the given project. Alternatively you can POST requests to /search.")
 
-	actionKeysSearch := &KeysSearch{Config: cfg}
-	actionKeysSearch.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionKeysSearch.Page = *cfg.Page
+	if cmd, err := newKeysSearch(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("keys/search", cmd, "Search keys for the given project matching query.")
 	}
-	if cfg.PerPage != nil {
-		actionKeysSearch.PerPage = *cfg.PerPage
+
+	if cmd, err := newKeysTag(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("keys/tag", cmd, "Tags all keys matching query. Same constraints as list.")
 	}
-	r.Register("keys/search", actionKeysSearch, "Search keys for the given project matching query.")
 
-	actionKeysTag := &KeysTag{Config: cfg}
-	actionKeysTag.ProjectID = cfg.ProjectID
-	r.Register("keys/tag", actionKeysTag, "Tags all keys matching query. Same constraints as list.")
-
-	actionKeysUntag := &KeysUntag{Config: cfg}
-	actionKeysUntag.ProjectID = cfg.ProjectID
-	r.Register("keys/untag", actionKeysUntag, "Removes specified tags from keys matching query.")
-
-	actionLocaleCreate := &LocaleCreate{Config: cfg}
-	actionLocaleCreate.ProjectID = cfg.ProjectID
-	r.Register("locale/create", actionLocaleCreate, "Create a new locale.")
-
-	actionLocaleDelete := &LocaleDelete{Config: cfg}
-	actionLocaleDelete.ProjectID = cfg.ProjectID
-	r.Register("locale/delete", actionLocaleDelete, "Delete an existing locale.")
-
-	actionLocaleDownload := &LocaleDownload{Config: cfg}
-	actionLocaleDownload.ProjectID = cfg.ProjectID
-	r.Register("locale/download", actionLocaleDownload, "Download a locale in a specific file format.")
-
-	actionLocaleShow := &LocaleShow{Config: cfg}
-	actionLocaleShow.ProjectID = cfg.ProjectID
-	r.Register("locale/show", actionLocaleShow, "Get details on a single locale for a given project.")
-
-	actionLocaleUpdate := &LocaleUpdate{Config: cfg}
-	actionLocaleUpdate.ProjectID = cfg.ProjectID
-	r.Register("locale/update", actionLocaleUpdate, "Update an existing locale.")
-
-	actionLocalesList := &LocalesList{Config: cfg}
-	actionLocalesList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionLocalesList.Page = *cfg.Page
+	if cmd, err := newKeysUntag(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("keys/untag", cmd, "Removes specified tags from keys matching query.")
 	}
-	if cfg.PerPage != nil {
-		actionLocalesList.PerPage = *cfg.PerPage
+
+	if cmd, err := newLocaleCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/create", cmd, "Create a new locale.")
 	}
-	r.Register("locales/list", actionLocalesList, "List all locales for the given project.")
 
-	actionOrderConfirm := &OrderConfirm{Config: cfg}
-	actionOrderConfirm.ProjectID = cfg.ProjectID
-	r.Register("order/confirm", actionOrderConfirm, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+	r.Register("locale/delete", newLocaleDelete(cfg), "Delete an existing locale.")
 
-	actionOrderCreate := &OrderCreate{Config: cfg}
-	actionOrderCreate.ProjectID = cfg.ProjectID
-	r.Register("order/create", actionOrderCreate, "Create a new order. Access token scope must include <code>orders.create</code>.")
-
-	actionOrderDelete := &OrderDelete{Config: cfg}
-	actionOrderDelete.ProjectID = cfg.ProjectID
-	r.Register("order/delete", actionOrderDelete, "Cancel an existing order. Must not yet be confirmed.")
-
-	actionOrderShow := &OrderShow{Config: cfg}
-	actionOrderShow.ProjectID = cfg.ProjectID
-	r.Register("order/show", actionOrderShow, "Get details on a single order.")
-
-	actionOrdersList := &OrdersList{Config: cfg}
-	actionOrdersList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionOrdersList.Page = *cfg.Page
+	if cmd, err := newLocaleDownload(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/download", cmd, "Download a locale in a specific file format.")
 	}
-	if cfg.PerPage != nil {
-		actionOrdersList.PerPage = *cfg.PerPage
+
+	r.Register("locale/show", newLocaleShow(cfg), "Get details on a single locale for a given project.")
+
+	if cmd, err := newLocaleUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/update", cmd, "Update an existing locale.")
 	}
-	r.Register("orders/list", actionOrdersList, "List all orders for the given project.")
 
-	r.Register("project/create", &ProjectCreate{Config: cfg}, "Create a new project.")
+	r.Register("locales/list", newLocalesList(cfg), "List all locales for the given project.")
 
-	r.Register("project/delete", &ProjectDelete{Config: cfg}, "Delete an existing project.")
+	r.Register("order/confirm", newOrderConfirm(cfg), "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
 
-	r.Register("project/show", &ProjectShow{Config: cfg}, "Get details on a single project.")
-
-	r.Register("project/update", &ProjectUpdate{Config: cfg}, "Update an existing project.")
-
-	actionProjectsList := &ProjectsList{Config: cfg}
-	if cfg.Page != nil {
-		actionProjectsList.Page = *cfg.Page
+	if cmd, err := newOrderCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("order/create", cmd, "Create a new order. Access token scope must include <code>orders.create</code>.")
 	}
-	if cfg.PerPage != nil {
-		actionProjectsList.PerPage = *cfg.PerPage
+
+	r.Register("order/delete", newOrderDelete(cfg), "Cancel an existing order. Must not yet be confirmed.")
+
+	r.Register("order/show", newOrderShow(cfg), "Get details on a single order.")
+
+	r.Register("orders/list", newOrdersList(cfg), "List all orders for the given project.")
+
+	if cmd, err := newProjectCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("project/create", cmd, "Create a new project.")
 	}
-	r.Register("projects/list", actionProjectsList, "List all projects the current user has access to.")
 
-	r.Register("show/user", &ShowUser{Config: cfg}, "Show details for current User.")
+	r.Register("project/delete", newProjectDelete(cfg), "Delete an existing project.")
 
-	actionStyleguideCreate := &StyleguideCreate{Config: cfg}
-	actionStyleguideCreate.ProjectID = cfg.ProjectID
-	r.Register("styleguide/create", actionStyleguideCreate, "Create a new style guide.")
+	r.Register("project/show", newProjectShow(cfg), "Get details on a single project.")
 
-	actionStyleguideDelete := &StyleguideDelete{Config: cfg}
-	actionStyleguideDelete.ProjectID = cfg.ProjectID
-	r.Register("styleguide/delete", actionStyleguideDelete, "Delete an existing style guide.")
-
-	actionStyleguideShow := &StyleguideShow{Config: cfg}
-	actionStyleguideShow.ProjectID = cfg.ProjectID
-	r.Register("styleguide/show", actionStyleguideShow, "Get details on a single style guide.")
-
-	actionStyleguideUpdate := &StyleguideUpdate{Config: cfg}
-	actionStyleguideUpdate.ProjectID = cfg.ProjectID
-	r.Register("styleguide/update", actionStyleguideUpdate, "Update an existing style guide.")
-
-	actionStyleguidesList := &StyleguidesList{Config: cfg}
-	actionStyleguidesList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionStyleguidesList.Page = *cfg.Page
+	if cmd, err := newProjectUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("project/update", cmd, "Update an existing project.")
 	}
-	if cfg.PerPage != nil {
-		actionStyleguidesList.PerPage = *cfg.PerPage
+
+	r.Register("projects/list", newProjectsList(cfg), "List all projects the current user has access to.")
+
+	r.Register("show/user", newShowUser(cfg), "Show details for current User.")
+
+	if cmd, err := newStyleguideCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("styleguide/create", cmd, "Create a new style guide.")
 	}
-	r.Register("styleguides/list", actionStyleguidesList, "List all styleguides for the given project.")
 
-	actionTagCreate := &TagCreate{Config: cfg}
-	actionTagCreate.ProjectID = cfg.ProjectID
-	r.Register("tag/create", actionTagCreate, "Create a new tag.")
+	r.Register("styleguide/delete", newStyleguideDelete(cfg), "Delete an existing style guide.")
 
-	actionTagDelete := &TagDelete{Config: cfg}
-	actionTagDelete.ProjectID = cfg.ProjectID
-	r.Register("tag/delete", actionTagDelete, "Delete an existing tag.")
+	r.Register("styleguide/show", newStyleguideShow(cfg), "Get details on a single style guide.")
 
-	actionTagShow := &TagShow{Config: cfg}
-	actionTagShow.ProjectID = cfg.ProjectID
-	r.Register("tag/show", actionTagShow, "Get details and progress information on a single tag for a given project.")
-
-	actionTagsList := &TagsList{Config: cfg}
-	actionTagsList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionTagsList.Page = *cfg.Page
+	if cmd, err := newStyleguideUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("styleguide/update", cmd, "Update an existing style guide.")
 	}
-	if cfg.PerPage != nil {
-		actionTagsList.PerPage = *cfg.PerPage
+
+	r.Register("styleguides/list", newStyleguidesList(cfg), "List all styleguides for the given project.")
+
+	if cmd, err := newTagCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("tag/create", cmd, "Create a new tag.")
 	}
-	r.Register("tags/list", actionTagsList, "List all tags for the given project.")
 
-	actionTranslationCreate := &TranslationCreate{Config: cfg}
-	actionTranslationCreate.ProjectID = cfg.ProjectID
-	r.Register("translation/create", actionTranslationCreate, "Create a translation.")
+	r.Register("tag/delete", newTagDelete(cfg), "Delete an existing tag.")
 
-	actionTranslationShow := &TranslationShow{Config: cfg}
-	actionTranslationShow.ProjectID = cfg.ProjectID
-	r.Register("translation/show", actionTranslationShow, "Get details on a single translation.")
+	r.Register("tag/show", newTagShow(cfg), "Get details and progress information on a single tag for a given project.")
 
-	actionTranslationUpdate := &TranslationUpdate{Config: cfg}
-	actionTranslationUpdate.ProjectID = cfg.ProjectID
-	r.Register("translation/update", actionTranslationUpdate, "Update an existing translation.")
+	r.Register("tags/list", newTagsList(cfg), "List all tags for the given project.")
 
-	actionTranslationsByKey := &TranslationsByKey{Config: cfg}
-	actionTranslationsByKey.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionTranslationsByKey.Page = *cfg.Page
+	if cmd, err := newTranslationCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/create", cmd, "Create a translation.")
 	}
-	if cfg.PerPage != nil {
-		actionTranslationsByKey.PerPage = *cfg.PerPage
+
+	r.Register("translation/show", newTranslationShow(cfg), "Get details on a single translation.")
+
+	if cmd, err := newTranslationUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/update", cmd, "Update an existing translation.")
 	}
-	r.Register("translations/by_key", actionTranslationsByKey, "List translations for a specific key.")
 
-	actionTranslationsByLocale := &TranslationsByLocale{Config: cfg}
-	actionTranslationsByLocale.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionTranslationsByLocale.Page = *cfg.Page
+	if cmd, err := newTranslationsByKey(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/by_key", cmd, "List translations for a specific key.")
 	}
-	if cfg.PerPage != nil {
-		actionTranslationsByLocale.PerPage = *cfg.PerPage
+
+	if cmd, err := newTranslationsByLocale(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/by_locale", cmd, "List translations for a specific locale. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 	}
-	r.Register("translations/by_locale", actionTranslationsByLocale, "List translations for a specific locale. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
-	actionTranslationsExclude := &TranslationsExclude{Config: cfg}
-	actionTranslationsExclude.ProjectID = cfg.ProjectID
-	r.Register("translations/exclude", actionTranslationsExclude, "Exclude translations matching query from locale export.")
-
-	actionTranslationsInclude := &TranslationsInclude{Config: cfg}
-	actionTranslationsInclude.ProjectID = cfg.ProjectID
-	r.Register("translations/include", actionTranslationsInclude, "Include translations matching query in locale export.")
-
-	actionTranslationsList := &TranslationsList{Config: cfg}
-	actionTranslationsList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionTranslationsList.Page = *cfg.Page
+	if cmd, err := newTranslationsExclude(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/exclude", cmd, "Exclude translations matching query from locale export.")
 	}
-	if cfg.PerPage != nil {
-		actionTranslationsList.PerPage = *cfg.PerPage
+
+	if cmd, err := newTranslationsInclude(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/include", cmd, "Include translations matching query in locale export.")
 	}
-	r.Register("translations/list", actionTranslationsList, "List translations for the given project. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
-	actionTranslationsSearch := &TranslationsSearch{Config: cfg}
-	actionTranslationsSearch.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionTranslationsSearch.Page = *cfg.Page
+	if cmd, err := newTranslationsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/list", cmd, "List translations for the given project. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 	}
-	if cfg.PerPage != nil {
-		actionTranslationsSearch.PerPage = *cfg.PerPage
+
+	if cmd, err := newTranslationsSearch(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/search", cmd, "List translations for the given project if you exceed GET request limitations on translations list. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 	}
-	r.Register("translations/search", actionTranslationsSearch, "List translations for the given project if you exceed GET request limitations on translations list. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 
-	actionTranslationsUnverify := &TranslationsUnverify{Config: cfg}
-	actionTranslationsUnverify.ProjectID = cfg.ProjectID
-	r.Register("translations/unverify", actionTranslationsUnverify, "Mark translations matching query as unverified.")
-
-	actionTranslationsVerify := &TranslationsVerify{Config: cfg}
-	actionTranslationsVerify.ProjectID = cfg.ProjectID
-	r.Register("translations/verify", actionTranslationsVerify, "Verify translations matching query.")
-
-	actionUploadCreate := &UploadCreate{Config: cfg}
-	actionUploadCreate.ProjectID = cfg.ProjectID
-	r.Register("upload/create", actionUploadCreate, "Upload a new language file. Creates necessary resources in your project.")
-
-	actionUploadShow := &UploadShow{Config: cfg}
-	actionUploadShow.ProjectID = cfg.ProjectID
-	r.Register("upload/show", actionUploadShow, "View details and summary for a single upload.")
-
-	actionUploadsList := &UploadsList{Config: cfg}
-	actionUploadsList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionUploadsList.Page = *cfg.Page
+	if cmd, err := newTranslationsUnverify(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/unverify", cmd, "Mark translations matching query as unverified.")
 	}
-	if cfg.PerPage != nil {
-		actionUploadsList.PerPage = *cfg.PerPage
+
+	if cmd, err := newTranslationsVerify(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/verify", cmd, "Verify translations matching query.")
 	}
-	r.Register("uploads/list", actionUploadsList, "List all uploads for the given project.")
 
-	actionVersionShow := &VersionShow{Config: cfg}
-	actionVersionShow.ProjectID = cfg.ProjectID
-	r.Register("version/show", actionVersionShow, "Get details on a single version.")
-
-	actionVersionsList := &VersionsList{Config: cfg}
-	actionVersionsList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionVersionsList.Page = *cfg.Page
+	if cmd, err := newUploadCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("upload/create", cmd, "Upload a new language file. Creates necessary resources in your project.")
 	}
-	if cfg.PerPage != nil {
-		actionVersionsList.PerPage = *cfg.PerPage
+
+	r.Register("upload/show", newUploadShow(cfg), "View details and summary for a single upload.")
+
+	r.Register("uploads/list", newUploadsList(cfg), "List all uploads for the given project.")
+
+	r.Register("version/show", newVersionShow(cfg), "Get details on a single version.")
+
+	r.Register("versions/list", newVersionsList(cfg), "List all versions for the given translation.")
+
+	if cmd, err := newWebhookCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("webhook/create", cmd, "Create a new webhook.")
 	}
-	r.Register("versions/list", actionVersionsList, "List all versions for the given translation.")
 
-	actionWebhookCreate := &WebhookCreate{Config: cfg}
-	actionWebhookCreate.ProjectID = cfg.ProjectID
-	r.Register("webhook/create", actionWebhookCreate, "Create a new webhook.")
+	r.Register("webhook/delete", newWebhookDelete(cfg), "Delete an existing webhook.")
 
-	actionWebhookDelete := &WebhookDelete{Config: cfg}
-	actionWebhookDelete.ProjectID = cfg.ProjectID
-	r.Register("webhook/delete", actionWebhookDelete, "Delete an existing webhook.")
+	r.Register("webhook/show", newWebhookShow(cfg), "Get details on a single webhook.")
 
-	actionWebhookShow := &WebhookShow{Config: cfg}
-	actionWebhookShow.ProjectID = cfg.ProjectID
-	r.Register("webhook/show", actionWebhookShow, "Get details on a single webhook.")
+	r.Register("webhook/test", newWebhookTest(cfg), "Perform a test request for a webhook.")
 
-	actionWebhookTest := &WebhookTest{Config: cfg}
-	actionWebhookTest.ProjectID = cfg.ProjectID
-	r.Register("webhook/test", actionWebhookTest, "Perform a test request for a webhook.")
-
-	actionWebhookUpdate := &WebhookUpdate{Config: cfg}
-	actionWebhookUpdate.ProjectID = cfg.ProjectID
-	r.Register("webhook/update", actionWebhookUpdate, "Update an existing webhook.")
-
-	actionWebhooksList := &WebhooksList{Config: cfg}
-	actionWebhooksList.ProjectID = cfg.ProjectID
-	if cfg.Page != nil {
-		actionWebhooksList.Page = *cfg.Page
+	if cmd, err := newWebhookUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("webhook/update", cmd, "Update an existing webhook.")
 	}
-	if cfg.PerPage != nil {
-		actionWebhooksList.PerPage = *cfg.PerPage
-	}
-	r.Register("webhooks/list", actionWebhooksList, "List all webhooks for the given project.")
+
+	r.Register("webhooks/list", newWebhooksList(cfg), "List all webhooks for the given project.")
 
 	r.Register("pull", &PullCommand{Config: cfg}, "Download locales from your PhraseApp project.\n  You can provide parameters supported by the locales#download endpoint http://docs.phraseapp.com/api/v2/locales/#download\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
 
@@ -414,48 +314,39 @@ func router(cfg *phraseapp.Config) *cli.Router {
 
 	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
 
-	return r
+	return r, nil
 }
 
 func infoCommand() error {
-	fmt.Printf("Built at 2016-02-11 12:36:07.715436034 +0100 CET\n")
-	fmt.Println("PhraseApp Client version:", "1.1.11")
-	fmt.Println("PhraseApp API Client revision:", "2c32a624c8c112945c5a8f001add441945fbb6e0")
-	fmt.Println("PhraseApp Client revision:", "cd43fdb3d97b8658de259f4f6f97b11571a390aa")
-	fmt.Println("PhraseApp Docs revision:", "5f9b1b39e1d74820264284d6290a5fd6f850113e")
+	fmt.Printf("Built at 2016-02-22 13:25:55.310903356 +0100 CET\n")
+	fmt.Println("PhraseApp Client version:", "test")
+	fmt.Println("PhraseApp API Client revision:", "941614ee7f6ea17c521fc1812af7eda33e574161")
+	fmt.Println("PhraseApp Client revision:", "a8c26f7a6ade22691b504059ece4580f2ec0350f")
+	fmt.Println("PhraseApp Docs revision:", "68cf161097b6ddfb9b03010e5f1d1e43da05a1d0")
 	return nil
 }
 
 type AuthorizationCreate struct {
 	*phraseapp.Config
 
-	ExpiresAt **time.Time `cli:"opt --expires-at"`
-	Note      *string     `cli:"opt --note"`
-	Scopes    []string    `cli:"opt --scopes"`
+	phraseapp.AuthorizationParams
+}
+
+func newAuthorizationCreate(cfg *phraseapp.Config) (*AuthorizationCreate, error) {
+
+	actionAuthorizationCreate := &AuthorizationCreate{Config: cfg}
+
+	val, defaultsPresent := actionAuthorizationCreate.Config.Defaults["authorization/create"]
+	if defaultsPresent {
+		if err := actionAuthorizationCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionAuthorizationCreate, nil
 }
 
 func (cmd *AuthorizationCreate) Run() error {
-
-	params := new(phraseapp.AuthorizationParams)
-
-	val, defaultsPresent := cmd.Config.Defaults["authorization/create"]
-	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
-		}
-	}
-
-	if cmd.ExpiresAt != nil {
-		params.ExpiresAt = cmd.ExpiresAt
-	}
-
-	if cmd.Note != nil {
-		params.Note = cmd.Note
-	}
-
-	if cmd.Scopes != nil {
-		params.Scopes = cmd.Scopes
-	}
+	params := &cmd.AuthorizationParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -475,6 +366,13 @@ type AuthorizationDelete struct {
 	*phraseapp.Config
 
 	ID string `cli:"arg required"`
+}
+
+func newAuthorizationDelete(cfg *phraseapp.Config) *AuthorizationDelete {
+
+	actionAuthorizationDelete := &AuthorizationDelete{Config: cfg}
+
+	return actionAuthorizationDelete
 }
 
 func (cmd *AuthorizationDelete) Run() error {
@@ -499,6 +397,13 @@ type AuthorizationShow struct {
 	ID string `cli:"arg required"`
 }
 
+func newAuthorizationShow(cfg *phraseapp.Config) *AuthorizationShow {
+
+	actionAuthorizationShow := &AuthorizationShow{Config: cfg}
+
+	return actionAuthorizationShow
+}
+
 func (cmd *AuthorizationShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -518,35 +423,26 @@ func (cmd *AuthorizationShow) Run() error {
 type AuthorizationUpdate struct {
 	*phraseapp.Config
 
-	ExpiresAt **time.Time `cli:"opt --expires-at"`
-	Note      *string     `cli:"opt --note"`
-	Scopes    []string    `cli:"opt --scopes"`
+	phraseapp.AuthorizationParams
 
 	ID string `cli:"arg required"`
 }
 
-func (cmd *AuthorizationUpdate) Run() error {
+func newAuthorizationUpdate(cfg *phraseapp.Config) (*AuthorizationUpdate, error) {
 
-	params := new(phraseapp.AuthorizationParams)
+	actionAuthorizationUpdate := &AuthorizationUpdate{Config: cfg}
 
-	val, defaultsPresent := cmd.Config.Defaults["authorization/update"]
+	val, defaultsPresent := actionAuthorizationUpdate.Config.Defaults["authorization/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionAuthorizationUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionAuthorizationUpdate, nil
+}
 
-	if cmd.ExpiresAt != nil {
-		params.ExpiresAt = cmd.ExpiresAt
-	}
-
-	if cmd.Note != nil {
-		params.Note = cmd.Note
-	}
-
-	if cmd.Scopes != nil {
-		params.Scopes = cmd.Scopes
-	}
+func (cmd *AuthorizationUpdate) Run() error {
+	params := &cmd.AuthorizationParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -569,6 +465,19 @@ type AuthorizationsList struct {
 	PerPage int `cli:"opt --per-page default=25"`
 }
 
+func newAuthorizationsList(cfg *phraseapp.Config) *AuthorizationsList {
+
+	actionAuthorizationsList := &AuthorizationsList{Config: cfg}
+	if cfg.Page != nil {
+		actionAuthorizationsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionAuthorizationsList.PerPage = *cfg.PerPage
+	}
+
+	return actionAuthorizationsList
+}
+
 func (cmd *AuthorizationsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -588,25 +497,27 @@ func (cmd *AuthorizationsList) Run() error {
 type BlacklistedKeyCreate struct {
 	*phraseapp.Config
 
-	Name *string `cli:"opt --name"`
+	phraseapp.BlacklistedKeyParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *BlacklistedKeyCreate) Run() error {
+func newBlacklistedKeyCreate(cfg *phraseapp.Config) (*BlacklistedKeyCreate, error) {
 
-	params := new(phraseapp.BlacklistedKeyParams)
+	actionBlacklistedKeyCreate := &BlacklistedKeyCreate{Config: cfg}
+	actionBlacklistedKeyCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["blacklisted_key/create"]
+	val, defaultsPresent := actionBlacklistedKeyCreate.Config.Defaults["blacklisted_key/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionBlacklistedKeyCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionBlacklistedKeyCreate, nil
+}
 
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
+func (cmd *BlacklistedKeyCreate) Run() error {
+	params := &cmd.BlacklistedKeyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -627,6 +538,14 @@ type BlacklistedKeyDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newBlacklistedKeyDelete(cfg *phraseapp.Config) *BlacklistedKeyDelete {
+
+	actionBlacklistedKeyDelete := &BlacklistedKeyDelete{Config: cfg}
+	actionBlacklistedKeyDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionBlacklistedKeyDelete
 }
 
 func (cmd *BlacklistedKeyDelete) Run() error {
@@ -652,6 +571,14 @@ type BlacklistedKeyShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newBlacklistedKeyShow(cfg *phraseapp.Config) *BlacklistedKeyShow {
+
+	actionBlacklistedKeyShow := &BlacklistedKeyShow{Config: cfg}
+	actionBlacklistedKeyShow.ProjectID = cfg.DefaultProjectID
+
+	return actionBlacklistedKeyShow
+}
+
 func (cmd *BlacklistedKeyShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -671,26 +598,28 @@ func (cmd *BlacklistedKeyShow) Run() error {
 type BlacklistedKeyUpdate struct {
 	*phraseapp.Config
 
-	Name *string `cli:"opt --name"`
+	phraseapp.BlacklistedKeyParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *BlacklistedKeyUpdate) Run() error {
+func newBlacklistedKeyUpdate(cfg *phraseapp.Config) (*BlacklistedKeyUpdate, error) {
 
-	params := new(phraseapp.BlacklistedKeyParams)
+	actionBlacklistedKeyUpdate := &BlacklistedKeyUpdate{Config: cfg}
+	actionBlacklistedKeyUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["blacklisted_key/update"]
+	val, defaultsPresent := actionBlacklistedKeyUpdate.Config.Defaults["blacklisted_key/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionBlacklistedKeyUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionBlacklistedKeyUpdate, nil
+}
 
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
+func (cmd *BlacklistedKeyUpdate) Run() error {
+	params := &cmd.BlacklistedKeyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -715,6 +644,20 @@ type BlacklistedKeysList struct {
 	ProjectID string `cli:"arg required"`
 }
 
+func newBlacklistedKeysList(cfg *phraseapp.Config) *BlacklistedKeysList {
+
+	actionBlacklistedKeysList := &BlacklistedKeysList{Config: cfg}
+	actionBlacklistedKeysList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionBlacklistedKeysList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionBlacklistedKeysList.PerPage = *cfg.PerPage
+	}
+
+	return actionBlacklistedKeysList
+}
+
 func (cmd *BlacklistedKeysList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -734,26 +677,28 @@ func (cmd *BlacklistedKeysList) Run() error {
 type CommentCreate struct {
 	*phraseapp.Config
 
-	Message *string `cli:"opt --message"`
+	phraseapp.CommentParams
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 }
 
-func (cmd *CommentCreate) Run() error {
+func newCommentCreate(cfg *phraseapp.Config) (*CommentCreate, error) {
 
-	params := new(phraseapp.CommentParams)
+	actionCommentCreate := &CommentCreate{Config: cfg}
+	actionCommentCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["comment/create"]
+	val, defaultsPresent := actionCommentCreate.Config.Defaults["comment/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionCommentCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionCommentCreate, nil
+}
 
-	if cmd.Message != nil {
-		params.Message = cmd.Message
-	}
+func (cmd *CommentCreate) Run() error {
+	params := &cmd.CommentParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -775,6 +720,14 @@ type CommentDelete struct {
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newCommentDelete(cfg *phraseapp.Config) *CommentDelete {
+
+	actionCommentDelete := &CommentDelete{Config: cfg}
+	actionCommentDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionCommentDelete
 }
 
 func (cmd *CommentDelete) Run() error {
@@ -801,6 +754,14 @@ type CommentMarkCheck struct {
 	ID        string `cli:"arg required"`
 }
 
+func newCommentMarkCheck(cfg *phraseapp.Config) *CommentMarkCheck {
+
+	actionCommentMarkCheck := &CommentMarkCheck{Config: cfg}
+	actionCommentMarkCheck.ProjectID = cfg.DefaultProjectID
+
+	return actionCommentMarkCheck
+}
+
 func (cmd *CommentMarkCheck) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -823,6 +784,14 @@ type CommentMarkRead struct {
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newCommentMarkRead(cfg *phraseapp.Config) *CommentMarkRead {
+
+	actionCommentMarkRead := &CommentMarkRead{Config: cfg}
+	actionCommentMarkRead.ProjectID = cfg.DefaultProjectID
+
+	return actionCommentMarkRead
 }
 
 func (cmd *CommentMarkRead) Run() error {
@@ -849,6 +818,14 @@ type CommentMarkUnread struct {
 	ID        string `cli:"arg required"`
 }
 
+func newCommentMarkUnread(cfg *phraseapp.Config) *CommentMarkUnread {
+
+	actionCommentMarkUnread := &CommentMarkUnread{Config: cfg}
+	actionCommentMarkUnread.ProjectID = cfg.DefaultProjectID
+
+	return actionCommentMarkUnread
+}
+
 func (cmd *CommentMarkUnread) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -873,6 +850,14 @@ type CommentShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newCommentShow(cfg *phraseapp.Config) *CommentShow {
+
+	actionCommentShow := &CommentShow{Config: cfg}
+	actionCommentShow.ProjectID = cfg.DefaultProjectID
+
+	return actionCommentShow
+}
+
 func (cmd *CommentShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -892,27 +877,29 @@ func (cmd *CommentShow) Run() error {
 type CommentUpdate struct {
 	*phraseapp.Config
 
-	Message *string `cli:"opt --message"`
+	phraseapp.CommentParams
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *CommentUpdate) Run() error {
+func newCommentUpdate(cfg *phraseapp.Config) (*CommentUpdate, error) {
 
-	params := new(phraseapp.CommentParams)
+	actionCommentUpdate := &CommentUpdate{Config: cfg}
+	actionCommentUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["comment/update"]
+	val, defaultsPresent := actionCommentUpdate.Config.Defaults["comment/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionCommentUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionCommentUpdate, nil
+}
 
-	if cmd.Message != nil {
-		params.Message = cmd.Message
-	}
+func (cmd *CommentUpdate) Run() error {
+	params := &cmd.CommentParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -938,6 +925,20 @@ type CommentsList struct {
 	KeyID     string `cli:"arg required"`
 }
 
+func newCommentsList(cfg *phraseapp.Config) *CommentsList {
+
+	actionCommentsList := &CommentsList{Config: cfg}
+	actionCommentsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionCommentsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionCommentsList.PerPage = *cfg.PerPage
+	}
+
+	return actionCommentsList
+}
+
 func (cmd *CommentsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -961,6 +962,19 @@ type FormatsList struct {
 	PerPage int `cli:"opt --per-page default=25"`
 }
 
+func newFormatsList(cfg *phraseapp.Config) *FormatsList {
+
+	actionFormatsList := &FormatsList{Config: cfg}
+	if cfg.Page != nil {
+		actionFormatsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionFormatsList.PerPage = *cfg.PerPage
+	}
+
+	return actionFormatsList
+}
+
 func (cmd *FormatsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -980,90 +994,27 @@ func (cmd *FormatsList) Run() error {
 type KeyCreate struct {
 	*phraseapp.Config
 
-	DataType              *string `cli:"opt --data-type"`
-	Description           *string `cli:"opt --description"`
-	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
-	LocalizedFormatString *string `cli:"opt --localized-format-string"`
-	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
-	Name                  *string `cli:"opt --name"`
-	NamePlural            *string `cli:"opt --name-plural"`
-	OriginalFile          *string `cli:"opt --original-file"`
-	Plural                *bool   `cli:"opt --plural"`
-	RemoveScreenshot      *bool   `cli:"opt --remove-screenshot"`
-	Screenshot            *string `cli:"opt --screenshot"`
-	Tags                  *string `cli:"opt --tags"`
-	Unformatted           *bool   `cli:"opt --unformatted"`
-	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
+	phraseapp.TranslationKeyParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeyCreate) Run() error {
+func newKeyCreate(cfg *phraseapp.Config) (*KeyCreate, error) {
 
-	params := new(phraseapp.TranslationKeyParams)
+	actionKeyCreate := &KeyCreate{Config: cfg}
+	actionKeyCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["key/create"]
+	val, defaultsPresent := actionKeyCreate.Config.Defaults["key/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeyCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeyCreate, nil
+}
 
-	if cmd.DataType != nil {
-		params.DataType = cmd.DataType
-	}
-
-	if cmd.Description != nil {
-		params.Description = cmd.Description
-	}
-
-	if cmd.LocalizedFormatKey != nil {
-		params.LocalizedFormatKey = cmd.LocalizedFormatKey
-	}
-
-	if cmd.LocalizedFormatString != nil {
-		params.LocalizedFormatString = cmd.LocalizedFormatString
-	}
-
-	if cmd.MaxCharactersAllowed != nil {
-		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.NamePlural != nil {
-		params.NamePlural = cmd.NamePlural
-	}
-
-	if cmd.OriginalFile != nil {
-		params.OriginalFile = cmd.OriginalFile
-	}
-
-	if cmd.Plural != nil {
-		params.Plural = cmd.Plural
-	}
-
-	if cmd.RemoveScreenshot != nil {
-		params.RemoveScreenshot = cmd.RemoveScreenshot
-	}
-
-	if cmd.Screenshot != nil {
-		params.Screenshot = cmd.Screenshot
-	}
-
-	if cmd.Tags != nil {
-		params.Tags = cmd.Tags
-	}
-
-	if cmd.Unformatted != nil {
-		params.Unformatted = cmd.Unformatted
-	}
-
-	if cmd.XmlSpacePreserve != nil {
-		params.XmlSpacePreserve = cmd.XmlSpacePreserve
-	}
+func (cmd *KeyCreate) Run() error {
+	params := &cmd.TranslationKeyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1084,6 +1035,14 @@ type KeyDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newKeyDelete(cfg *phraseapp.Config) *KeyDelete {
+
+	actionKeyDelete := &KeyDelete{Config: cfg}
+	actionKeyDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionKeyDelete
 }
 
 func (cmd *KeyDelete) Run() error {
@@ -1109,6 +1068,14 @@ type KeyShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newKeyShow(cfg *phraseapp.Config) *KeyShow {
+
+	actionKeyShow := &KeyShow{Config: cfg}
+	actionKeyShow.ProjectID = cfg.DefaultProjectID
+
+	return actionKeyShow
+}
+
 func (cmd *KeyShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -1128,91 +1095,28 @@ func (cmd *KeyShow) Run() error {
 type KeyUpdate struct {
 	*phraseapp.Config
 
-	DataType              *string `cli:"opt --data-type"`
-	Description           *string `cli:"opt --description"`
-	LocalizedFormatKey    *string `cli:"opt --localized-format-key"`
-	LocalizedFormatString *string `cli:"opt --localized-format-string"`
-	MaxCharactersAllowed  *int64  `cli:"opt --max-characters-allowed"`
-	Name                  *string `cli:"opt --name"`
-	NamePlural            *string `cli:"opt --name-plural"`
-	OriginalFile          *string `cli:"opt --original-file"`
-	Plural                *bool   `cli:"opt --plural"`
-	RemoveScreenshot      *bool   `cli:"opt --remove-screenshot"`
-	Screenshot            *string `cli:"opt --screenshot"`
-	Tags                  *string `cli:"opt --tags"`
-	Unformatted           *bool   `cli:"opt --unformatted"`
-	XmlSpacePreserve      *bool   `cli:"opt --xml-space-preserve"`
+	phraseapp.TranslationKeyParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *KeyUpdate) Run() error {
+func newKeyUpdate(cfg *phraseapp.Config) (*KeyUpdate, error) {
 
-	params := new(phraseapp.TranslationKeyParams)
+	actionKeyUpdate := &KeyUpdate{Config: cfg}
+	actionKeyUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["key/update"]
+	val, defaultsPresent := actionKeyUpdate.Config.Defaults["key/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeyUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeyUpdate, nil
+}
 
-	if cmd.DataType != nil {
-		params.DataType = cmd.DataType
-	}
-
-	if cmd.Description != nil {
-		params.Description = cmd.Description
-	}
-
-	if cmd.LocalizedFormatKey != nil {
-		params.LocalizedFormatKey = cmd.LocalizedFormatKey
-	}
-
-	if cmd.LocalizedFormatString != nil {
-		params.LocalizedFormatString = cmd.LocalizedFormatString
-	}
-
-	if cmd.MaxCharactersAllowed != nil {
-		params.MaxCharactersAllowed = cmd.MaxCharactersAllowed
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.NamePlural != nil {
-		params.NamePlural = cmd.NamePlural
-	}
-
-	if cmd.OriginalFile != nil {
-		params.OriginalFile = cmd.OriginalFile
-	}
-
-	if cmd.Plural != nil {
-		params.Plural = cmd.Plural
-	}
-
-	if cmd.RemoveScreenshot != nil {
-		params.RemoveScreenshot = cmd.RemoveScreenshot
-	}
-
-	if cmd.Screenshot != nil {
-		params.Screenshot = cmd.Screenshot
-	}
-
-	if cmd.Tags != nil {
-		params.Tags = cmd.Tags
-	}
-
-	if cmd.Unformatted != nil {
-		params.Unformatted = cmd.Unformatted
-	}
-
-	if cmd.XmlSpacePreserve != nil {
-		params.XmlSpacePreserve = cmd.XmlSpacePreserve
-	}
+func (cmd *KeyUpdate) Run() error {
+	params := &cmd.TranslationKeyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1231,30 +1135,27 @@ func (cmd *KeyUpdate) Run() error {
 type KeysDelete struct {
 	*phraseapp.Config
 
-	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query -q"`
+	phraseapp.KeysDeleteParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeysDelete) Run() error {
+func newKeysDelete(cfg *phraseapp.Config) (*KeysDelete, error) {
 
-	params := new(phraseapp.KeysDeleteParams)
+	actionKeysDelete := &KeysDelete{Config: cfg}
+	actionKeysDelete.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["keys/delete"]
+	val, defaultsPresent := actionKeysDelete.Config.Defaults["keys/delete"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeysDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeysDelete, nil
+}
 
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
+func (cmd *KeysDelete) Run() error {
+	params := &cmd.KeysDeleteParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1273,10 +1174,7 @@ func (cmd *KeysDelete) Run() error {
 type KeysList struct {
 	*phraseapp.Config
 
-	LocaleID *string `cli:"opt --locale-id"`
-	Order    *string `cli:"opt --order"`
-	Q        *string `cli:"opt --query -q"`
-	Sort     *string `cli:"opt --sort"`
+	phraseapp.KeysListParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1284,32 +1182,28 @@ type KeysList struct {
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeysList) Run() error {
+func newKeysList(cfg *phraseapp.Config) (*KeysList, error) {
 
-	params := new(phraseapp.KeysListParams)
+	actionKeysList := &KeysList{Config: cfg}
+	actionKeysList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionKeysList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionKeysList.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["keys/list"]
+	val, defaultsPresent := actionKeysList.Config.Defaults["keys/list"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeysList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeysList, nil
+}
 
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *KeysList) Run() error {
+	params := &cmd.KeysListParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1328,10 +1222,7 @@ func (cmd *KeysList) Run() error {
 type KeysSearch struct {
 	*phraseapp.Config
 
-	LocaleID *string `cli:"opt --locale-id"`
-	Order    *string `cli:"opt --order"`
-	Q        *string `cli:"opt --query -q"`
-	Sort     *string `cli:"opt --sort"`
+	phraseapp.KeysSearchParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1339,32 +1230,28 @@ type KeysSearch struct {
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeysSearch) Run() error {
+func newKeysSearch(cfg *phraseapp.Config) (*KeysSearch, error) {
 
-	params := new(phraseapp.KeysSearchParams)
+	actionKeysSearch := &KeysSearch{Config: cfg}
+	actionKeysSearch.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionKeysSearch.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionKeysSearch.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["keys/search"]
+	val, defaultsPresent := actionKeysSearch.Config.Defaults["keys/search"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeysSearch.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeysSearch, nil
+}
 
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *KeysSearch) Run() error {
+	params := &cmd.KeysSearchParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1383,35 +1270,27 @@ func (cmd *KeysSearch) Run() error {
 type KeysTag struct {
 	*phraseapp.Config
 
-	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query -q"`
-	Tags     *string `cli:"opt --tags"`
+	phraseapp.KeysTagParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeysTag) Run() error {
+func newKeysTag(cfg *phraseapp.Config) (*KeysTag, error) {
 
-	params := new(phraseapp.KeysTagParams)
+	actionKeysTag := &KeysTag{Config: cfg}
+	actionKeysTag.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["keys/tag"]
+	val, defaultsPresent := actionKeysTag.Config.Defaults["keys/tag"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeysTag.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeysTag, nil
+}
 
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Tags != nil {
-		params.Tags = cmd.Tags
-	}
+func (cmd *KeysTag) Run() error {
+	params := &cmd.KeysTagParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1430,35 +1309,27 @@ func (cmd *KeysTag) Run() error {
 type KeysUntag struct {
 	*phraseapp.Config
 
-	LocaleID *string `cli:"opt --locale-id"`
-	Q        *string `cli:"opt --query -q"`
-	Tags     *string `cli:"opt --tags"`
+	phraseapp.KeysUntagParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *KeysUntag) Run() error {
+func newKeysUntag(cfg *phraseapp.Config) (*KeysUntag, error) {
 
-	params := new(phraseapp.KeysUntagParams)
+	actionKeysUntag := &KeysUntag{Config: cfg}
+	actionKeysUntag.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["keys/untag"]
+	val, defaultsPresent := actionKeysUntag.Config.Defaults["keys/untag"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionKeysUntag.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionKeysUntag, nil
+}
 
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Tags != nil {
-		params.Tags = cmd.Tags
-	}
+func (cmd *KeysUntag) Run() error {
+	params := &cmd.KeysUntagParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1477,50 +1348,27 @@ func (cmd *KeysUntag) Run() error {
 type LocaleCreate struct {
 	*phraseapp.Config
 
-	Code           *string `cli:"opt --code"`
-	Default        *bool   `cli:"opt --default"`
-	Main           *bool   `cli:"opt --main"`
-	Name           *string `cli:"opt --name"`
-	Rtl            *bool   `cli:"opt --rtl"`
-	SourceLocaleID *string `cli:"opt --source-locale-id"`
+	phraseapp.LocaleParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *LocaleCreate) Run() error {
+func newLocaleCreate(cfg *phraseapp.Config) (*LocaleCreate, error) {
 
-	params := new(phraseapp.LocaleParams)
+	actionLocaleCreate := &LocaleCreate{Config: cfg}
+	actionLocaleCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["locale/create"]
+	val, defaultsPresent := actionLocaleCreate.Config.Defaults["locale/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionLocaleCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionLocaleCreate, nil
+}
 
-	if cmd.Code != nil {
-		params.Code = cmd.Code
-	}
-
-	if cmd.Default != nil {
-		params.Default = cmd.Default
-	}
-
-	if cmd.Main != nil {
-		params.Main = cmd.Main
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.Rtl != nil {
-		params.Rtl = cmd.Rtl
-	}
-
-	if cmd.SourceLocaleID != nil {
-		params.SourceLocaleID = cmd.SourceLocaleID
-	}
+func (cmd *LocaleCreate) Run() error {
+	params := &cmd.LocaleParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1543,6 +1391,14 @@ type LocaleDelete struct {
 	ID        string `cli:"arg required"`
 }
 
+func newLocaleDelete(cfg *phraseapp.Config) *LocaleDelete {
+
+	actionLocaleDelete := &LocaleDelete{Config: cfg}
+	actionLocaleDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionLocaleDelete
+}
+
 func (cmd *LocaleDelete) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -1562,58 +1418,31 @@ func (cmd *LocaleDelete) Run() error {
 type LocaleDownload struct {
 	*phraseapp.Config
 
-	ConvertEmoji               bool              `cli:"opt --convert-emoji"`
-	Encoding                   *string           `cli:"opt --encoding"`
-	FallbackLocaleID           *string           `cli:"opt --fallback-locale-id"`
-	FileFormat                 *string           `cli:"opt --file-format"`
-	FormatOptions              map[string]string `cli:"opt --format-options"`
-	IncludeEmptyTranslations   bool              `cli:"opt --include-empty-translations"`
-	KeepNotranslateTags        bool              `cli:"opt --keep-notranslate-tags"`
-	SkipUnverifiedTranslations bool              `cli:"opt --skip-unverified-translations"`
-	Tag                        *string           `cli:"opt --tag"`
+	phraseapp.LocaleDownloadParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *LocaleDownload) Run() error {
+func newLocaleDownload(cfg *phraseapp.Config) (*LocaleDownload, error) {
 
-	params := new(phraseapp.LocaleDownloadParams)
+	actionLocaleDownload := &LocaleDownload{Config: cfg}
+	actionLocaleDownload.ProjectID = cfg.DefaultProjectID
+	if cfg.DefaultFileFormat != "" {
+		actionLocaleDownload.FileFormat = &cfg.DefaultFileFormat
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["locale/download"]
+	val, defaultsPresent := actionLocaleDownload.Config.Defaults["locale/download"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionLocaleDownload.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionLocaleDownload, nil
+}
 
-	params.ConvertEmoji = cmd.ConvertEmoji
-
-	if cmd.Encoding != nil {
-		params.Encoding = cmd.Encoding
-	}
-
-	if cmd.FallbackLocaleID != nil {
-		params.FallbackLocaleID = cmd.FallbackLocaleID
-	}
-
-	if cmd.FileFormat != nil {
-		params.FileFormat = cmd.FileFormat
-	}
-
-	if cmd.FormatOptions != nil {
-		params.FormatOptions = cmd.FormatOptions
-	}
-
-	params.IncludeEmptyTranslations = cmd.IncludeEmptyTranslations
-
-	params.KeepNotranslateTags = cmd.KeepNotranslateTags
-
-	params.SkipUnverifiedTranslations = cmd.SkipUnverifiedTranslations
-
-	if cmd.Tag != nil {
-		params.Tag = cmd.Tag
-	}
+func (cmd *LocaleDownload) Run() error {
+	params := &cmd.LocaleDownloadParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1637,6 +1466,14 @@ type LocaleShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
+
+	actionLocaleShow := &LocaleShow{Config: cfg}
+	actionLocaleShow.ProjectID = cfg.DefaultProjectID
+
+	return actionLocaleShow
+}
+
 func (cmd *LocaleShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -1656,51 +1493,28 @@ func (cmd *LocaleShow) Run() error {
 type LocaleUpdate struct {
 	*phraseapp.Config
 
-	Code           *string `cli:"opt --code"`
-	Default        *bool   `cli:"opt --default"`
-	Main           *bool   `cli:"opt --main"`
-	Name           *string `cli:"opt --name"`
-	Rtl            *bool   `cli:"opt --rtl"`
-	SourceLocaleID *string `cli:"opt --source-locale-id"`
+	phraseapp.LocaleParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *LocaleUpdate) Run() error {
+func newLocaleUpdate(cfg *phraseapp.Config) (*LocaleUpdate, error) {
 
-	params := new(phraseapp.LocaleParams)
+	actionLocaleUpdate := &LocaleUpdate{Config: cfg}
+	actionLocaleUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["locale/update"]
+	val, defaultsPresent := actionLocaleUpdate.Config.Defaults["locale/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionLocaleUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionLocaleUpdate, nil
+}
 
-	if cmd.Code != nil {
-		params.Code = cmd.Code
-	}
-
-	if cmd.Default != nil {
-		params.Default = cmd.Default
-	}
-
-	if cmd.Main != nil {
-		params.Main = cmd.Main
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.Rtl != nil {
-		params.Rtl = cmd.Rtl
-	}
-
-	if cmd.SourceLocaleID != nil {
-		params.SourceLocaleID = cmd.SourceLocaleID
-	}
+func (cmd *LocaleUpdate) Run() error {
+	params := &cmd.LocaleParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1723,6 +1537,20 @@ type LocalesList struct {
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
+}
+
+func newLocalesList(cfg *phraseapp.Config) *LocalesList {
+
+	actionLocalesList := &LocalesList{Config: cfg}
+	actionLocalesList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionLocalesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionLocalesList.PerPage = *cfg.PerPage
+	}
+
+	return actionLocalesList
 }
 
 func (cmd *LocalesList) Run() error {
@@ -1748,6 +1576,14 @@ type OrderConfirm struct {
 	ID        string `cli:"arg required"`
 }
 
+func newOrderConfirm(cfg *phraseapp.Config) *OrderConfirm {
+
+	actionOrderConfirm := &OrderConfirm{Config: cfg}
+	actionOrderConfirm.ProjectID = cfg.DefaultProjectID
+
+	return actionOrderConfirm
+}
+
 func (cmd *OrderConfirm) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -1767,85 +1603,27 @@ func (cmd *OrderConfirm) Run() error {
 type OrderCreate struct {
 	*phraseapp.Config
 
-	Category                         *string  `cli:"opt --category"`
-	IncludeUntranslatedKeys          *bool    `cli:"opt --include-untranslated-keys"`
-	IncludeUnverifiedTranslations    *bool    `cli:"opt --include-unverified-translations"`
-	Lsp                              *string  `cli:"opt --lsp"`
-	Message                          *string  `cli:"opt --message"`
-	Priority                         *bool    `cli:"opt --priority"`
-	Quality                          *bool    `cli:"opt --quality"`
-	SourceLocaleID                   *string  `cli:"opt --source-locale-id"`
-	StyleguideID                     *string  `cli:"opt --styleguide-id"`
-	Tag                              *string  `cli:"opt --tag"`
-	TargetLocaleIDs                  []string `cli:"opt --target-locale-ids"`
-	TranslationType                  *string  `cli:"opt --translation-type"`
-	UnverifyTranslationsUponDelivery *bool    `cli:"opt --unverify-translations-upon-delivery"`
+	phraseapp.TranslationOrderParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *OrderCreate) Run() error {
+func newOrderCreate(cfg *phraseapp.Config) (*OrderCreate, error) {
 
-	params := new(phraseapp.TranslationOrderParams)
+	actionOrderCreate := &OrderCreate{Config: cfg}
+	actionOrderCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["order/create"]
+	val, defaultsPresent := actionOrderCreate.Config.Defaults["order/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionOrderCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionOrderCreate, nil
+}
 
-	if cmd.Category != nil {
-		params.Category = cmd.Category
-	}
-
-	if cmd.IncludeUntranslatedKeys != nil {
-		params.IncludeUntranslatedKeys = cmd.IncludeUntranslatedKeys
-	}
-
-	if cmd.IncludeUnverifiedTranslations != nil {
-		params.IncludeUnverifiedTranslations = cmd.IncludeUnverifiedTranslations
-	}
-
-	if cmd.Lsp != nil {
-		params.Lsp = cmd.Lsp
-	}
-
-	if cmd.Message != nil {
-		params.Message = cmd.Message
-	}
-
-	if cmd.Priority != nil {
-		params.Priority = cmd.Priority
-	}
-
-	if cmd.Quality != nil {
-		params.Quality = cmd.Quality
-	}
-
-	if cmd.SourceLocaleID != nil {
-		params.SourceLocaleID = cmd.SourceLocaleID
-	}
-
-	if cmd.StyleguideID != nil {
-		params.StyleguideID = cmd.StyleguideID
-	}
-
-	if cmd.Tag != nil {
-		params.Tag = cmd.Tag
-	}
-
-	if cmd.TargetLocaleIDs != nil {
-		params.TargetLocaleIDs = cmd.TargetLocaleIDs
-	}
-
-	if cmd.TranslationType != nil {
-		params.TranslationType = cmd.TranslationType
-	}
-
-	if cmd.UnverifyTranslationsUponDelivery != nil {
-		params.UnverifyTranslationsUponDelivery = cmd.UnverifyTranslationsUponDelivery
-	}
+func (cmd *OrderCreate) Run() error {
+	params := &cmd.TranslationOrderParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1866,6 +1644,14 @@ type OrderDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newOrderDelete(cfg *phraseapp.Config) *OrderDelete {
+
+	actionOrderDelete := &OrderDelete{Config: cfg}
+	actionOrderDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionOrderDelete
 }
 
 func (cmd *OrderDelete) Run() error {
@@ -1889,6 +1675,14 @@ type OrderShow struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newOrderShow(cfg *phraseapp.Config) *OrderShow {
+
+	actionOrderShow := &OrderShow{Config: cfg}
+	actionOrderShow.ProjectID = cfg.DefaultProjectID
+
+	return actionOrderShow
 }
 
 func (cmd *OrderShow) Run() error {
@@ -1916,6 +1710,20 @@ type OrdersList struct {
 	ProjectID string `cli:"arg required"`
 }
 
+func newOrdersList(cfg *phraseapp.Config) *OrdersList {
+
+	actionOrdersList := &OrdersList{Config: cfg}
+	actionOrdersList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionOrdersList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionOrdersList.PerPage = *cfg.PerPage
+	}
+
+	return actionOrdersList
+}
+
 func (cmd *OrdersList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -1935,33 +1743,24 @@ func (cmd *OrdersList) Run() error {
 type ProjectCreate struct {
 	*phraseapp.Config
 
-	MainFormat              *string `cli:"opt --main-format"`
-	Name                    *string `cli:"opt --name"`
-	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
+	phraseapp.ProjectParams
+}
+
+func newProjectCreate(cfg *phraseapp.Config) (*ProjectCreate, error) {
+
+	actionProjectCreate := &ProjectCreate{Config: cfg}
+
+	val, defaultsPresent := actionProjectCreate.Config.Defaults["project/create"]
+	if defaultsPresent {
+		if err := actionProjectCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionProjectCreate, nil
 }
 
 func (cmd *ProjectCreate) Run() error {
-
-	params := new(phraseapp.ProjectParams)
-
-	val, defaultsPresent := cmd.Config.Defaults["project/create"]
-	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
-		}
-	}
-
-	if cmd.MainFormat != nil {
-		params.MainFormat = cmd.MainFormat
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.SharesTranslationMemory != nil {
-		params.SharesTranslationMemory = cmd.SharesTranslationMemory
-	}
+	params := &cmd.ProjectParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -1981,6 +1780,13 @@ type ProjectDelete struct {
 	*phraseapp.Config
 
 	ID string `cli:"arg required"`
+}
+
+func newProjectDelete(cfg *phraseapp.Config) *ProjectDelete {
+
+	actionProjectDelete := &ProjectDelete{Config: cfg}
+
+	return actionProjectDelete
 }
 
 func (cmd *ProjectDelete) Run() error {
@@ -2005,6 +1811,13 @@ type ProjectShow struct {
 	ID string `cli:"arg required"`
 }
 
+func newProjectShow(cfg *phraseapp.Config) *ProjectShow {
+
+	actionProjectShow := &ProjectShow{Config: cfg}
+
+	return actionProjectShow
+}
+
 func (cmd *ProjectShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2024,35 +1837,26 @@ func (cmd *ProjectShow) Run() error {
 type ProjectUpdate struct {
 	*phraseapp.Config
 
-	MainFormat              *string `cli:"opt --main-format"`
-	Name                    *string `cli:"opt --name"`
-	SharesTranslationMemory *bool   `cli:"opt --shares-translation-memory"`
+	phraseapp.ProjectParams
 
 	ID string `cli:"arg required"`
 }
 
-func (cmd *ProjectUpdate) Run() error {
+func newProjectUpdate(cfg *phraseapp.Config) (*ProjectUpdate, error) {
 
-	params := new(phraseapp.ProjectParams)
+	actionProjectUpdate := &ProjectUpdate{Config: cfg}
 
-	val, defaultsPresent := cmd.Config.Defaults["project/update"]
+	val, defaultsPresent := actionProjectUpdate.Config.Defaults["project/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionProjectUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionProjectUpdate, nil
+}
 
-	if cmd.MainFormat != nil {
-		params.MainFormat = cmd.MainFormat
-	}
-
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
-
-	if cmd.SharesTranslationMemory != nil {
-		params.SharesTranslationMemory = cmd.SharesTranslationMemory
-	}
+func (cmd *ProjectUpdate) Run() error {
+	params := &cmd.ProjectParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2075,6 +1879,19 @@ type ProjectsList struct {
 	PerPage int `cli:"opt --per-page default=25"`
 }
 
+func newProjectsList(cfg *phraseapp.Config) *ProjectsList {
+
+	actionProjectsList := &ProjectsList{Config: cfg}
+	if cfg.Page != nil {
+		actionProjectsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionProjectsList.PerPage = *cfg.PerPage
+	}
+
+	return actionProjectsList
+}
+
 func (cmd *ProjectsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2093,6 +1910,13 @@ func (cmd *ProjectsList) Run() error {
 
 type ShowUser struct {
 	*phraseapp.Config
+}
+
+func newShowUser(cfg *phraseapp.Config) *ShowUser {
+
+	actionShowUser := &ShowUser{Config: cfg}
+
+	return actionShowUser
 }
 
 func (cmd *ShowUser) Run() error {
@@ -2114,85 +1938,27 @@ func (cmd *ShowUser) Run() error {
 type StyleguideCreate struct {
 	*phraseapp.Config
 
-	Audience           *string `cli:"opt --audience"`
-	Business           *string `cli:"opt --business"`
-	CompanyBranding    *string `cli:"opt --company-branding"`
-	Formatting         *string `cli:"opt --formatting"`
-	GlossaryTerms      *string `cli:"opt --glossary-terms"`
-	GrammarConsistency *string `cli:"opt --grammar-consistency"`
-	GrammaticalPerson  *string `cli:"opt --grammatical-person"`
-	LiteralTranslation *string `cli:"opt --literal-translation"`
-	OverallTone        *string `cli:"opt --overall-tone"`
-	Samples            *string `cli:"opt --samples"`
-	TargetAudience     *string `cli:"opt --target-audience"`
-	Title              *string `cli:"opt --title"`
-	VocabularyType     *string `cli:"opt --vocabulary-type"`
+	phraseapp.StyleguideParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *StyleguideCreate) Run() error {
+func newStyleguideCreate(cfg *phraseapp.Config) (*StyleguideCreate, error) {
 
-	params := new(phraseapp.StyleguideParams)
+	actionStyleguideCreate := &StyleguideCreate{Config: cfg}
+	actionStyleguideCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["styleguide/create"]
+	val, defaultsPresent := actionStyleguideCreate.Config.Defaults["styleguide/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionStyleguideCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionStyleguideCreate, nil
+}
 
-	if cmd.Audience != nil {
-		params.Audience = cmd.Audience
-	}
-
-	if cmd.Business != nil {
-		params.Business = cmd.Business
-	}
-
-	if cmd.CompanyBranding != nil {
-		params.CompanyBranding = cmd.CompanyBranding
-	}
-
-	if cmd.Formatting != nil {
-		params.Formatting = cmd.Formatting
-	}
-
-	if cmd.GlossaryTerms != nil {
-		params.GlossaryTerms = cmd.GlossaryTerms
-	}
-
-	if cmd.GrammarConsistency != nil {
-		params.GrammarConsistency = cmd.GrammarConsistency
-	}
-
-	if cmd.GrammaticalPerson != nil {
-		params.GrammaticalPerson = cmd.GrammaticalPerson
-	}
-
-	if cmd.LiteralTranslation != nil {
-		params.LiteralTranslation = cmd.LiteralTranslation
-	}
-
-	if cmd.OverallTone != nil {
-		params.OverallTone = cmd.OverallTone
-	}
-
-	if cmd.Samples != nil {
-		params.Samples = cmd.Samples
-	}
-
-	if cmd.TargetAudience != nil {
-		params.TargetAudience = cmd.TargetAudience
-	}
-
-	if cmd.Title != nil {
-		params.Title = cmd.Title
-	}
-
-	if cmd.VocabularyType != nil {
-		params.VocabularyType = cmd.VocabularyType
-	}
+func (cmd *StyleguideCreate) Run() error {
+	params := &cmd.StyleguideParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2213,6 +1979,14 @@ type StyleguideDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newStyleguideDelete(cfg *phraseapp.Config) *StyleguideDelete {
+
+	actionStyleguideDelete := &StyleguideDelete{Config: cfg}
+	actionStyleguideDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionStyleguideDelete
 }
 
 func (cmd *StyleguideDelete) Run() error {
@@ -2238,6 +2012,14 @@ type StyleguideShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newStyleguideShow(cfg *phraseapp.Config) *StyleguideShow {
+
+	actionStyleguideShow := &StyleguideShow{Config: cfg}
+	actionStyleguideShow.ProjectID = cfg.DefaultProjectID
+
+	return actionStyleguideShow
+}
+
 func (cmd *StyleguideShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2257,86 +2039,28 @@ func (cmd *StyleguideShow) Run() error {
 type StyleguideUpdate struct {
 	*phraseapp.Config
 
-	Audience           *string `cli:"opt --audience"`
-	Business           *string `cli:"opt --business"`
-	CompanyBranding    *string `cli:"opt --company-branding"`
-	Formatting         *string `cli:"opt --formatting"`
-	GlossaryTerms      *string `cli:"opt --glossary-terms"`
-	GrammarConsistency *string `cli:"opt --grammar-consistency"`
-	GrammaticalPerson  *string `cli:"opt --grammatical-person"`
-	LiteralTranslation *string `cli:"opt --literal-translation"`
-	OverallTone        *string `cli:"opt --overall-tone"`
-	Samples            *string `cli:"opt --samples"`
-	TargetAudience     *string `cli:"opt --target-audience"`
-	Title              *string `cli:"opt --title"`
-	VocabularyType     *string `cli:"opt --vocabulary-type"`
+	phraseapp.StyleguideParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *StyleguideUpdate) Run() error {
+func newStyleguideUpdate(cfg *phraseapp.Config) (*StyleguideUpdate, error) {
 
-	params := new(phraseapp.StyleguideParams)
+	actionStyleguideUpdate := &StyleguideUpdate{Config: cfg}
+	actionStyleguideUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["styleguide/update"]
+	val, defaultsPresent := actionStyleguideUpdate.Config.Defaults["styleguide/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionStyleguideUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionStyleguideUpdate, nil
+}
 
-	if cmd.Audience != nil {
-		params.Audience = cmd.Audience
-	}
-
-	if cmd.Business != nil {
-		params.Business = cmd.Business
-	}
-
-	if cmd.CompanyBranding != nil {
-		params.CompanyBranding = cmd.CompanyBranding
-	}
-
-	if cmd.Formatting != nil {
-		params.Formatting = cmd.Formatting
-	}
-
-	if cmd.GlossaryTerms != nil {
-		params.GlossaryTerms = cmd.GlossaryTerms
-	}
-
-	if cmd.GrammarConsistency != nil {
-		params.GrammarConsistency = cmd.GrammarConsistency
-	}
-
-	if cmd.GrammaticalPerson != nil {
-		params.GrammaticalPerson = cmd.GrammaticalPerson
-	}
-
-	if cmd.LiteralTranslation != nil {
-		params.LiteralTranslation = cmd.LiteralTranslation
-	}
-
-	if cmd.OverallTone != nil {
-		params.OverallTone = cmd.OverallTone
-	}
-
-	if cmd.Samples != nil {
-		params.Samples = cmd.Samples
-	}
-
-	if cmd.TargetAudience != nil {
-		params.TargetAudience = cmd.TargetAudience
-	}
-
-	if cmd.Title != nil {
-		params.Title = cmd.Title
-	}
-
-	if cmd.VocabularyType != nil {
-		params.VocabularyType = cmd.VocabularyType
-	}
+func (cmd *StyleguideUpdate) Run() error {
+	params := &cmd.StyleguideParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2361,6 +2085,20 @@ type StyleguidesList struct {
 	ProjectID string `cli:"arg required"`
 }
 
+func newStyleguidesList(cfg *phraseapp.Config) *StyleguidesList {
+
+	actionStyleguidesList := &StyleguidesList{Config: cfg}
+	actionStyleguidesList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionStyleguidesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionStyleguidesList.PerPage = *cfg.PerPage
+	}
+
+	return actionStyleguidesList
+}
+
 func (cmd *StyleguidesList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2380,25 +2118,27 @@ func (cmd *StyleguidesList) Run() error {
 type TagCreate struct {
 	*phraseapp.Config
 
-	Name *string `cli:"opt --name"`
+	phraseapp.TagParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TagCreate) Run() error {
+func newTagCreate(cfg *phraseapp.Config) (*TagCreate, error) {
 
-	params := new(phraseapp.TagParams)
+	actionTagCreate := &TagCreate{Config: cfg}
+	actionTagCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["tag/create"]
+	val, defaultsPresent := actionTagCreate.Config.Defaults["tag/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTagCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTagCreate, nil
+}
 
-	if cmd.Name != nil {
-		params.Name = cmd.Name
-	}
+func (cmd *TagCreate) Run() error {
+	params := &cmd.TagParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2419,6 +2159,14 @@ type TagDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
+}
+
+func newTagDelete(cfg *phraseapp.Config) *TagDelete {
+
+	actionTagDelete := &TagDelete{Config: cfg}
+	actionTagDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionTagDelete
 }
 
 func (cmd *TagDelete) Run() error {
@@ -2442,6 +2190,14 @@ type TagShow struct {
 
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
+}
+
+func newTagShow(cfg *phraseapp.Config) *TagShow {
+
+	actionTagShow := &TagShow{Config: cfg}
+	actionTagShow.ProjectID = cfg.DefaultProjectID
+
+	return actionTagShow
 }
 
 func (cmd *TagShow) Run() error {
@@ -2469,6 +2225,20 @@ type TagsList struct {
 	ProjectID string `cli:"arg required"`
 }
 
+func newTagsList(cfg *phraseapp.Config) *TagsList {
+
+	actionTagsList := &TagsList{Config: cfg}
+	actionTagsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionTagsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionTagsList.PerPage = *cfg.PerPage
+	}
+
+	return actionTagsList
+}
+
 func (cmd *TagsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2488,50 +2258,27 @@ func (cmd *TagsList) Run() error {
 type TranslationCreate struct {
 	*phraseapp.Config
 
-	Content      *string `cli:"opt --content"`
-	Excluded     *bool   `cli:"opt --excluded"`
-	KeyID        *string `cli:"opt --key-id"`
-	LocaleID     *string `cli:"opt --locale-id"`
-	PluralSuffix *string `cli:"opt --plural-suffix"`
-	Unverified   *bool   `cli:"opt --unverified"`
+	phraseapp.TranslationParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationCreate) Run() error {
+func newTranslationCreate(cfg *phraseapp.Config) (*TranslationCreate, error) {
 
-	params := new(phraseapp.TranslationParams)
+	actionTranslationCreate := &TranslationCreate{Config: cfg}
+	actionTranslationCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translation/create"]
+	val, defaultsPresent := actionTranslationCreate.Config.Defaults["translation/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationCreate, nil
+}
 
-	if cmd.Content != nil {
-		params.Content = cmd.Content
-	}
-
-	if cmd.Excluded != nil {
-		params.Excluded = cmd.Excluded
-	}
-
-	if cmd.KeyID != nil {
-		params.KeyID = cmd.KeyID
-	}
-
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.PluralSuffix != nil {
-		params.PluralSuffix = cmd.PluralSuffix
-	}
-
-	if cmd.Unverified != nil {
-		params.Unverified = cmd.Unverified
-	}
+func (cmd *TranslationCreate) Run() error {
+	params := &cmd.TranslationParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2554,6 +2301,14 @@ type TranslationShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newTranslationShow(cfg *phraseapp.Config) *TranslationShow {
+
+	actionTranslationShow := &TranslationShow{Config: cfg}
+	actionTranslationShow.ProjectID = cfg.DefaultProjectID
+
+	return actionTranslationShow
+}
+
 func (cmd *TranslationShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -2573,41 +2328,28 @@ func (cmd *TranslationShow) Run() error {
 type TranslationUpdate struct {
 	*phraseapp.Config
 
-	Content      *string `cli:"opt --content"`
-	Excluded     *bool   `cli:"opt --excluded"`
-	PluralSuffix *string `cli:"opt --plural-suffix"`
-	Unverified   *bool   `cli:"opt --unverified"`
+	phraseapp.TranslationUpdateParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *TranslationUpdate) Run() error {
+func newTranslationUpdate(cfg *phraseapp.Config) (*TranslationUpdate, error) {
 
-	params := new(phraseapp.TranslationUpdateParams)
+	actionTranslationUpdate := &TranslationUpdate{Config: cfg}
+	actionTranslationUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translation/update"]
+	val, defaultsPresent := actionTranslationUpdate.Config.Defaults["translation/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationUpdate, nil
+}
 
-	if cmd.Content != nil {
-		params.Content = cmd.Content
-	}
-
-	if cmd.Excluded != nil {
-		params.Excluded = cmd.Excluded
-	}
-
-	if cmd.PluralSuffix != nil {
-		params.PluralSuffix = cmd.PluralSuffix
-	}
-
-	if cmd.Unverified != nil {
-		params.Unverified = cmd.Unverified
-	}
+func (cmd *TranslationUpdate) Run() error {
+	params := &cmd.TranslationUpdateParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2626,9 +2368,7 @@ func (cmd *TranslationUpdate) Run() error {
 type TranslationsByKey struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsByKeyParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2637,28 +2377,28 @@ type TranslationsByKey struct {
 	KeyID     string `cli:"arg required"`
 }
 
-func (cmd *TranslationsByKey) Run() error {
+func newTranslationsByKey(cfg *phraseapp.Config) (*TranslationsByKey, error) {
 
-	params := new(phraseapp.TranslationsByKeyParams)
+	actionTranslationsByKey := &TranslationsByKey{Config: cfg}
+	actionTranslationsByKey.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionTranslationsByKey.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionTranslationsByKey.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/by_key"]
+	val, defaultsPresent := actionTranslationsByKey.Config.Defaults["translations/by_key"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsByKey.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsByKey, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsByKey) Run() error {
+	params := &cmd.TranslationsByKeyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2677,9 +2417,7 @@ func (cmd *TranslationsByKey) Run() error {
 type TranslationsByLocale struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsByLocaleParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2688,28 +2426,28 @@ type TranslationsByLocale struct {
 	LocaleID  string `cli:"arg required"`
 }
 
-func (cmd *TranslationsByLocale) Run() error {
+func newTranslationsByLocale(cfg *phraseapp.Config) (*TranslationsByLocale, error) {
 
-	params := new(phraseapp.TranslationsByLocaleParams)
+	actionTranslationsByLocale := &TranslationsByLocale{Config: cfg}
+	actionTranslationsByLocale.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionTranslationsByLocale.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionTranslationsByLocale.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/by_locale"]
+	val, defaultsPresent := actionTranslationsByLocale.Config.Defaults["translations/by_locale"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsByLocale.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsByLocale, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsByLocale) Run() error {
+	params := &cmd.TranslationsByLocaleParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2728,35 +2466,27 @@ func (cmd *TranslationsByLocale) Run() error {
 type TranslationsExclude struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsExcludeParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsExclude) Run() error {
+func newTranslationsExclude(cfg *phraseapp.Config) (*TranslationsExclude, error) {
 
-	params := new(phraseapp.TranslationsExcludeParams)
+	actionTranslationsExclude := &TranslationsExclude{Config: cfg}
+	actionTranslationsExclude.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/exclude"]
+	val, defaultsPresent := actionTranslationsExclude.Config.Defaults["translations/exclude"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsExclude.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsExclude, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsExclude) Run() error {
+	params := &cmd.TranslationsExcludeParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2775,35 +2505,27 @@ func (cmd *TranslationsExclude) Run() error {
 type TranslationsInclude struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsIncludeParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsInclude) Run() error {
+func newTranslationsInclude(cfg *phraseapp.Config) (*TranslationsInclude, error) {
 
-	params := new(phraseapp.TranslationsIncludeParams)
+	actionTranslationsInclude := &TranslationsInclude{Config: cfg}
+	actionTranslationsInclude.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/include"]
+	val, defaultsPresent := actionTranslationsInclude.Config.Defaults["translations/include"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsInclude.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsInclude, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsInclude) Run() error {
+	params := &cmd.TranslationsIncludeParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2822,9 +2544,7 @@ func (cmd *TranslationsInclude) Run() error {
 type TranslationsList struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsListParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2832,28 +2552,28 @@ type TranslationsList struct {
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsList) Run() error {
+func newTranslationsList(cfg *phraseapp.Config) (*TranslationsList, error) {
 
-	params := new(phraseapp.TranslationsListParams)
+	actionTranslationsList := &TranslationsList{Config: cfg}
+	actionTranslationsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionTranslationsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionTranslationsList.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/list"]
+	val, defaultsPresent := actionTranslationsList.Config.Defaults["translations/list"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsList, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsList) Run() error {
+	params := &cmd.TranslationsListParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2872,9 +2592,7 @@ func (cmd *TranslationsList) Run() error {
 type TranslationsSearch struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsSearchParams
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2882,28 +2600,28 @@ type TranslationsSearch struct {
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsSearch) Run() error {
+func newTranslationsSearch(cfg *phraseapp.Config) (*TranslationsSearch, error) {
 
-	params := new(phraseapp.TranslationsSearchParams)
+	actionTranslationsSearch := &TranslationsSearch{Config: cfg}
+	actionTranslationsSearch.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionTranslationsSearch.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionTranslationsSearch.PerPage = *cfg.PerPage
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/search"]
+	val, defaultsPresent := actionTranslationsSearch.Config.Defaults["translations/search"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsSearch.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsSearch, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsSearch) Run() error {
+	params := &cmd.TranslationsSearchParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2922,35 +2640,27 @@ func (cmd *TranslationsSearch) Run() error {
 type TranslationsUnverify struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsUnverifyParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsUnverify) Run() error {
+func newTranslationsUnverify(cfg *phraseapp.Config) (*TranslationsUnverify, error) {
 
-	params := new(phraseapp.TranslationsUnverifyParams)
+	actionTranslationsUnverify := &TranslationsUnverify{Config: cfg}
+	actionTranslationsUnverify.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/unverify"]
+	val, defaultsPresent := actionTranslationsUnverify.Config.Defaults["translations/unverify"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsUnverify.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsUnverify, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsUnverify) Run() error {
+	params := &cmd.TranslationsUnverifyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -2969,35 +2679,27 @@ func (cmd *TranslationsUnverify) Run() error {
 type TranslationsVerify struct {
 	*phraseapp.Config
 
-	Order *string `cli:"opt --order"`
-	Q     *string `cli:"opt --query -q"`
-	Sort  *string `cli:"opt --sort"`
+	phraseapp.TranslationsVerifyParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *TranslationsVerify) Run() error {
+func newTranslationsVerify(cfg *phraseapp.Config) (*TranslationsVerify, error) {
 
-	params := new(phraseapp.TranslationsVerifyParams)
+	actionTranslationsVerify := &TranslationsVerify{Config: cfg}
+	actionTranslationsVerify.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["translations/verify"]
+	val, defaultsPresent := actionTranslationsVerify.Config.Defaults["translations/verify"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionTranslationsVerify.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionTranslationsVerify, nil
+}
 
-	if cmd.Order != nil {
-		params.Order = cmd.Order
-	}
-
-	if cmd.Q != nil {
-		params.Q = cmd.Q
-	}
-
-	if cmd.Sort != nil {
-		params.Sort = cmd.Sort
-	}
+func (cmd *TranslationsVerify) Run() error {
+	params := &cmd.TranslationsVerifyParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -3016,70 +2718,30 @@ func (cmd *TranslationsVerify) Run() error {
 type UploadCreate struct {
 	*phraseapp.Config
 
-	ConvertEmoji       *bool             `cli:"opt --convert-emoji"`
-	File               *string           `cli:"opt --file"`
-	FileEncoding       *string           `cli:"opt --file-encoding"`
-	FileFormat         *string           `cli:"opt --file-format"`
-	FormatOptions      map[string]string `cli:"opt --format-options"`
-	LocaleID           *string           `cli:"opt --locale-id"`
-	SkipUnverification *bool             `cli:"opt --skip-unverification"`
-	SkipUploadTags     *bool             `cli:"opt --skip-upload-tags"`
-	Tags               *string           `cli:"opt --tags"`
-	UpdateTranslations *bool             `cli:"opt --update-translations"`
+	phraseapp.UploadParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *UploadCreate) Run() error {
+func newUploadCreate(cfg *phraseapp.Config) (*UploadCreate, error) {
 
-	params := new(phraseapp.UploadParams)
+	actionUploadCreate := &UploadCreate{Config: cfg}
+	actionUploadCreate.ProjectID = cfg.DefaultProjectID
+	if cfg.DefaultFileFormat != "" {
+		actionUploadCreate.FileFormat = &cfg.DefaultFileFormat
+	}
 
-	val, defaultsPresent := cmd.Config.Defaults["upload/create"]
+	val, defaultsPresent := actionUploadCreate.Config.Defaults["upload/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionUploadCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionUploadCreate, nil
+}
 
-	if cmd.ConvertEmoji != nil {
-		params.ConvertEmoji = cmd.ConvertEmoji
-	}
-
-	if cmd.File != nil {
-		params.File = cmd.File
-	}
-
-	if cmd.FileEncoding != nil {
-		params.FileEncoding = cmd.FileEncoding
-	}
-
-	if cmd.FileFormat != nil {
-		params.FileFormat = cmd.FileFormat
-	}
-
-	if cmd.FormatOptions != nil {
-		params.FormatOptions = cmd.FormatOptions
-	}
-
-	if cmd.LocaleID != nil {
-		params.LocaleID = cmd.LocaleID
-	}
-
-	if cmd.SkipUnverification != nil {
-		params.SkipUnverification = cmd.SkipUnverification
-	}
-
-	if cmd.SkipUploadTags != nil {
-		params.SkipUploadTags = cmd.SkipUploadTags
-	}
-
-	if cmd.Tags != nil {
-		params.Tags = cmd.Tags
-	}
-
-	if cmd.UpdateTranslations != nil {
-		params.UpdateTranslations = cmd.UpdateTranslations
-	}
+func (cmd *UploadCreate) Run() error {
+	params := &cmd.UploadParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -3100,6 +2762,14 @@ type UploadShow struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newUploadShow(cfg *phraseapp.Config) *UploadShow {
+
+	actionUploadShow := &UploadShow{Config: cfg}
+	actionUploadShow.ProjectID = cfg.DefaultProjectID
+
+	return actionUploadShow
 }
 
 func (cmd *UploadShow) Run() error {
@@ -3127,6 +2797,20 @@ type UploadsList struct {
 	ProjectID string `cli:"arg required"`
 }
 
+func newUploadsList(cfg *phraseapp.Config) *UploadsList {
+
+	actionUploadsList := &UploadsList{Config: cfg}
+	actionUploadsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionUploadsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionUploadsList.PerPage = *cfg.PerPage
+	}
+
+	return actionUploadsList
+}
+
 func (cmd *UploadsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -3149,6 +2833,14 @@ type VersionShow struct {
 	ProjectID     string `cli:"arg required"`
 	TranslationID string `cli:"arg required"`
 	ID            string `cli:"arg required"`
+}
+
+func newVersionShow(cfg *phraseapp.Config) *VersionShow {
+
+	actionVersionShow := &VersionShow{Config: cfg}
+	actionVersionShow.ProjectID = cfg.DefaultProjectID
+
+	return actionVersionShow
 }
 
 func (cmd *VersionShow) Run() error {
@@ -3177,6 +2869,20 @@ type VersionsList struct {
 	TranslationID string `cli:"arg required"`
 }
 
+func newVersionsList(cfg *phraseapp.Config) *VersionsList {
+
+	actionVersionsList := &VersionsList{Config: cfg}
+	actionVersionsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionVersionsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionVersionsList.PerPage = *cfg.PerPage
+	}
+
+	return actionVersionsList
+}
+
 func (cmd *VersionsList) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -3196,40 +2902,27 @@ func (cmd *VersionsList) Run() error {
 type WebhookCreate struct {
 	*phraseapp.Config
 
-	Active      *bool   `cli:"opt --active"`
-	CallbackUrl *string `cli:"opt --callback-url"`
-	Description *string `cli:"opt --description"`
-	Events      *string `cli:"opt --events"`
+	phraseapp.WebhookParams
 
 	ProjectID string `cli:"arg required"`
 }
 
-func (cmd *WebhookCreate) Run() error {
+func newWebhookCreate(cfg *phraseapp.Config) (*WebhookCreate, error) {
 
-	params := new(phraseapp.WebhookParams)
+	actionWebhookCreate := &WebhookCreate{Config: cfg}
+	actionWebhookCreate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["webhook/create"]
+	val, defaultsPresent := actionWebhookCreate.Config.Defaults["webhook/create"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionWebhookCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionWebhookCreate, nil
+}
 
-	if cmd.Active != nil {
-		params.Active = cmd.Active
-	}
-
-	if cmd.CallbackUrl != nil {
-		params.CallbackUrl = cmd.CallbackUrl
-	}
-
-	if cmd.Description != nil {
-		params.Description = cmd.Description
-	}
-
-	if cmd.Events != nil {
-		params.Events = cmd.Events
-	}
+func (cmd *WebhookCreate) Run() error {
+	params := &cmd.WebhookParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -3250,6 +2943,14 @@ type WebhookDelete struct {
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
+}
+
+func newWebhookDelete(cfg *phraseapp.Config) *WebhookDelete {
+
+	actionWebhookDelete := &WebhookDelete{Config: cfg}
+	actionWebhookDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionWebhookDelete
 }
 
 func (cmd *WebhookDelete) Run() error {
@@ -3275,6 +2976,14 @@ type WebhookShow struct {
 	ID        string `cli:"arg required"`
 }
 
+func newWebhookShow(cfg *phraseapp.Config) *WebhookShow {
+
+	actionWebhookShow := &WebhookShow{Config: cfg}
+	actionWebhookShow.ProjectID = cfg.DefaultProjectID
+
+	return actionWebhookShow
+}
+
 func (cmd *WebhookShow) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -3298,6 +3007,14 @@ type WebhookTest struct {
 	ID        string `cli:"arg required"`
 }
 
+func newWebhookTest(cfg *phraseapp.Config) *WebhookTest {
+
+	actionWebhookTest := &WebhookTest{Config: cfg}
+	actionWebhookTest.ProjectID = cfg.DefaultProjectID
+
+	return actionWebhookTest
+}
+
 func (cmd *WebhookTest) Run() error {
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
@@ -3317,41 +3034,28 @@ func (cmd *WebhookTest) Run() error {
 type WebhookUpdate struct {
 	*phraseapp.Config
 
-	Active      *bool   `cli:"opt --active"`
-	CallbackUrl *string `cli:"opt --callback-url"`
-	Description *string `cli:"opt --description"`
-	Events      *string `cli:"opt --events"`
+	phraseapp.WebhookParams
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func (cmd *WebhookUpdate) Run() error {
+func newWebhookUpdate(cfg *phraseapp.Config) (*WebhookUpdate, error) {
 
-	params := new(phraseapp.WebhookParams)
+	actionWebhookUpdate := &WebhookUpdate{Config: cfg}
+	actionWebhookUpdate.ProjectID = cfg.DefaultProjectID
 
-	val, defaultsPresent := cmd.Config.Defaults["webhook/update"]
+	val, defaultsPresent := actionWebhookUpdate.Config.Defaults["webhook/update"]
 	if defaultsPresent {
-		if err := params.ApplyValuesFromMap(val); err != nil {
-			return err
+		if err := actionWebhookUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
 		}
 	}
+	return actionWebhookUpdate, nil
+}
 
-	if cmd.Active != nil {
-		params.Active = cmd.Active
-	}
-
-	if cmd.CallbackUrl != nil {
-		params.CallbackUrl = cmd.CallbackUrl
-	}
-
-	if cmd.Description != nil {
-		params.Description = cmd.Description
-	}
-
-	if cmd.Events != nil {
-		params.Events = cmd.Events
-	}
+func (cmd *WebhookUpdate) Run() error {
+	params := &cmd.WebhookParams
 
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
@@ -3374,6 +3078,20 @@ type WebhooksList struct {
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
+}
+
+func newWebhooksList(cfg *phraseapp.Config) *WebhooksList {
+
+	actionWebhooksList := &WebhooksList{Config: cfg}
+	actionWebhooksList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionWebhooksList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionWebhooksList.PerPage = *cfg.PerPage
+	}
+
+	return actionWebhooksList
 }
 
 func (cmd *WebhooksList) Run() error {
