@@ -407,7 +407,12 @@ func writeConfig(data *WizardData, filename string) error {
 }
 
 func firstPush() error {
-	cmd := &PushCommand{}
+	cfg, err := phraseapp.ReadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		os.Exit(2)
+	}
+	cmd := &PushCommand{Config: cfg}
 	return cmd.Run()
 }
 

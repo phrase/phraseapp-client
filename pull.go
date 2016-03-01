@@ -296,8 +296,8 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	tgts := tmp.Targets
 
 	token := cmd.Credentials.Token
-	projectId := cmd.Config.ProjectID
-	fileFormat := cmd.Config.FileFormat
+	projectId := cmd.Config.DefaultProjectID
+	fileFormat := cmd.Config.DefaultFileFormat
 
 	validTargets := []*Target{}
 	for _, target := range tgts {

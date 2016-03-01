@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -9,18 +8,17 @@ import (
 
 func getBaseTarget() *Target {
 	target := &Target{
-		File:        "./tests/<locale_code>.yml",
-		ProjectID:   "project-id",
-		AccessToken: "access-token",
-		FileFormat:  "yml",
-		Params: new(PullParams),
+		File:          "./tests/<locale_code>.yml",
+		ProjectID:     "project-id",
+		AccessToken:   "access-token",
+		FileFormat:    "yml",
+		Params:        new(PullParams),
 		RemoteLocales: getBaseLocales(),
 	}
 	return target
 }
 
 func TestPullPreconditions(t *testing.T) {
-	fmt.Println("Pull#Target#CheckPreconditions")
 	target := getBaseTarget()
 	for _, file := range []string{
 		"",
@@ -50,7 +48,6 @@ func TestPullPreconditions(t *testing.T) {
 }
 
 func TestTargetFields(t *testing.T) {
-	fmt.Println("Pull#Target#Fields")
 	target := getBaseTarget()
 
 	if target.File != "./tests/<locale_code>.yml" {
@@ -72,7 +69,6 @@ func TestTargetFields(t *testing.T) {
 }
 
 func TestTargetLocaleFiles(t *testing.T) {
-	fmt.Println("Pull#Target#LocaleFiles")
 	target := getBaseTarget()
 	localeFiles, err := target.LocaleFiles()
 
@@ -107,7 +103,6 @@ func TestTargetLocaleFiles(t *testing.T) {
 }
 
 func TestReplacePlaceholders(t *testing.T) {
-	fmt.Println("Pull#Target#ReplacePlaceholders")
 	target := getBaseTarget()
 	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
 	localeFile := &LocaleFile{

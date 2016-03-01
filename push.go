@@ -99,7 +99,8 @@ func (source *Source) CheckPreconditions() error {
 	starCount := strings.Count(source.File, "*")
 	recCount := strings.Count(source.File, "**")
 
-	if recCount == 0 && starCount > 1 || starCount-(recCount*2) > 1 {
+	// starCount contains the `**` so that must be taken into account.
+	if starCount-(recCount*2) > 1 {
 		duplicatedPlaceholders = append(duplicatedPlaceholders, "*")
 	}
 
@@ -220,59 +221,131 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		}
 	}
 
+	if localeFile.Tag != "" {
+		var v string
+		if params.Tags != nil {
+			v = *params.Tags + ","
+		}
+		v += localeFile.Tag
+		params.Tags = &v
+	}
+
 	_, err := client.UploadCreate(source.ProjectID, params)
 	return err
 }
 
 func (source *Source) SystemFiles() ([]string, error) {
-	if strings.Contains(source.File, "**") {
-		return source.recurse()
+	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
+	parts := strings.SplitN(pattern, "**", 2)
+	var pre, post string
+
+	pre = parts[0]
+	// strip trailing path separators
+	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre)-1]) {
+		pre = pre[0 : len(pre)-1]
 	}
 
-	return source.glob()
-}
+	if len(parts) == 2 {
+		post = parts[1]
+		for len(post) > 0 && os.IsPathSeparator(post[0]) {
+			post = post[1:]
+		}
+	}
 
-func (source *Source) glob() ([]string, error) {
-	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
-	files, err := filepath.Glob(pattern)
+	candidates, err := filepath.Glob(pre)
 	if err != nil {
 		return nil, err
 	}
 
-	if Debug {
-		fmt.Fprintln(os.Stderr, "Found", len(files), "files matching the source pattern", pattern)
+	var matches []string
+	if post != "" {
+		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1))
+		tokenCountPre := len(splitPathIntoSegments(pre))
+
+		for _, cand := range candidates {
+			if !isDir(cand) {
+				continue
+			}
+
+			cands, err := findFilesInPath(cand)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, c := range cands {
+				if validateFileCandidate(tokens, tokenCountPre, c) {
+					matches = append(matches, c)
+				}
+			}
+		}
+	} else {
+		matches = candidates
 	}
 
-	return files, nil
+	return matches, nil
 }
 
-func (source *Source) recurse() ([]string, error) {
-	files := []string{}
-	err := filepath.Walk(source.root(), func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			errmsg := fmt.Sprintf("%s for pattern: %s", err, source.File)
-			ReportError("Push Error", errmsg)
-			return fmt.Errorf(errmsg)
+func isDir(path string) bool {
+	stat, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return stat.IsDir()
+}
+
+func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) bool {
+	candTokens := splitPathIntoSegments(cand)
+	candTokenCnt := len(candTokens)
+
+	if candTokenCnt < (len(tokens) + ignoreTokenCnt) {
+		return false
+	}
+	candTokens = candTokens[ignoreTokenCnt:]
+
+	for i := 1; i <= len(tokens); i++ {
+		expT, gotT := tokens[len(tokens)-i], candTokens[len(candTokens)-i]
+		switch {
+		case strings.Contains(expT, "*"):
+			matched, err := regexp.MatchString(expT, gotT)
+			if err != nil {
+				panic(err)
+			}
+			if !matched {
+				return false
+			}
+		case expT != gotT:
+			return false
 		}
-		if !f.Mode().IsDir() && strings.HasSuffix(f.Name(), source.Extension) {
+	}
+
+	return true
+}
+
+func splitPathIntoSegments(path string) []string {
+	segments := []string{}
+	start := 0
+	for i := range path {
+		if os.IsPathSeparator(path[i]) {
+			segments = append(segments, path[start:i])
+			start = i + 1
+		}
+	}
+	return append(segments, path[start:])
+}
+
+func findFilesInPath(root string) ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !f.Mode().IsDir() {
 			files = append(files, path)
 		}
 		return nil
 	})
 
 	return files, err
-}
-
-func (source *Source) root() string {
-	parts := splitPathToTokens(source.File)
-	rootParts := TakeWhile(parts, func(x string) bool {
-		return x != "**"
-	})
-	root := strings.Join(rootParts, separator)
-	if root == "" {
-		root = "."
-	}
-	return root
 }
 
 // Return all locale files from disk that match the source pattern.
@@ -286,11 +359,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-
 		pathTokens := splitPathToTokens(path)
-		if len(pathTokens) < len(tokens) {
-			continue
-		}
 		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
@@ -328,25 +397,62 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 }
 
 func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phraseapp.Locale {
-	for _, remote := range source.RemoteLocales {
-		if remote.Name == source.GetLocaleID() || remote.ID == source.GetLocaleID() {
-			return remote
-		}
+	candidates := source.RemoteLocales
 
-		localeName := source.replacePlaceholderInParams(localeFile)
-		if localeName != "" && strings.Contains(remote.Name, localeName) {
-			return remote
-		}
+	filterApplied := false
 
-		if remote.Name == localeFile.Name {
-			return remote
+	filter := func(cands []*phraseapp.Locale, preCond string, pred func(cand *phraseapp.Locale) bool) []*phraseapp.Locale {
+		if preCond == "" {
+			return cands
 		}
-
-		if remote.Name == localeFile.RFC {
-			return remote
+		filterApplied = true
+		tmpCands := []*phraseapp.Locale{}
+		for _, cand := range cands {
+			if pred(cand) {
+				tmpCands = append(tmpCands, cand)
+			}
 		}
+		return tmpCands
 	}
-	return nil
+
+	localeName := source.replacePlaceholderInParams(localeFile)
+	if localeName != "" {
+		// This means the name can contain the value specified in LocaleID, with
+		// `<locale_code>` being substituted by the value of the currently handled
+		// localeFile (like push only locales with name `en-US`).
+		candidates = filter(candidates, localeName, func(cand *phraseapp.Locale) bool {
+			return strings.Contains(cand.Name, localeName)
+		})
+	} else {
+		localeID := source.GetLocaleID()
+		candidates = filter(candidates, localeID, func(cand *phraseapp.Locale) bool {
+			return cand.Name == localeID || cand.ID == localeID
+		})
+	}
+
+	candidates = filter(candidates, localeFile.Name, func(cand *phraseapp.Locale) bool {
+		return cand.Name == localeFile.Name
+	})
+
+	candidates = filter(candidates, localeFile.RFC, func(cand *phraseapp.Locale) bool {
+		return cand.Code == localeFile.RFC
+	})
+
+	// If no filter was applied the candidates list still contains all remote
+	// locales, while actually nothing matches.
+	if !filterApplied {
+		return nil
+	}
+
+	switch len(candidates) {
+	case 0:
+		return nil
+	case 1:
+		return candidates[0]
+	default:
+		// TODO I guess this should return an error, as this is a problem.
+		return candidates[0]
+	}
 }
 
 func splitString(s string, set string) []string {
@@ -484,8 +590,8 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	srcs := tmp.Sources
 
 	token := cmd.Credentials.Token
-	projectId := cmd.Config.ProjectID
-	fileFormat := cmd.Config.FileFormat
+	projectId := cmd.Config.DefaultProjectID
+	fileFormat := cmd.Config.DefaultFileFormat
 
 	validSources := []*Source{}
 	for _, source := range srcs {
