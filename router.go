@@ -9,7 +9,10 @@ import (
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const PHRASEAPP_CLIENT_VERSION = "test"
+const (
+	RevisionDocs      = "3d576454cb1d04bb0938d3545c7fd2747e05c654"
+	RevisionGenerator = "2ddb71c1e7d67168c843b85febc7a1529470833a"
+)
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r := cli.NewRouter()
@@ -315,15 +318,6 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
 
 	return r, nil
-}
-
-func infoCommand() error {
-	fmt.Printf("Built at 2016-02-22 13:31:11.422812507 +0100 CET\n")
-	fmt.Println("PhraseApp Client version:", "test")
-	fmt.Println("PhraseApp API Client revision:", "941614ee7f6ea17c521fc1812af7eda33e574161")
-	fmt.Println("PhraseApp Client revision:", "d2e39a7f5828faad15bbe0a46cf30bd415386b7f")
-	fmt.Println("PhraseApp Docs revision:", "68cf161097b6ddfb9b03010e5f1d1e43da05a1d0")
-	return nil
 }
 
 type AuthorizationCreate struct {
