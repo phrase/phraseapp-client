@@ -13,6 +13,11 @@ import (
 	"time"
 )
 
+const (
+	RevisionDocs      = "3d576454cb1d04bb0938d3545c7fd2747e05c654"
+	RevisionGenerator = "2ddb71c1e7d67168c843b85febc7a1529470833a"
+)
+
 type Account struct {
 	CreatedAt *time.Time `json:"created_at"`
 	ID        string     `json:"id"`
@@ -4031,8 +4036,9 @@ func (client *Client) WebhooksList(project_id string, page, perPage int) ([]*Web
 }
 
 func GetUserAgent() string {
+	agent := "PhraseApp go (" + ClientVersion + ")"
 	if ua := os.Getenv("PHRASEAPP_USER_AGENT"); ua != "" {
-		return ua + "; PhraseApp go (test)"
+		agent = ua + "; " + agent
 	}
-	return "PhraseApp go (test)"
+	return agent
 }
