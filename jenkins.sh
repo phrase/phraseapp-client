@@ -28,6 +28,8 @@ if [[ -z $VERSION ]]; then
   VERSION=$(git log --pretty=format:'%s' | ruby -e 'puts STDIN.select { |l| !l.strip[/^(\d+)\.(\d+)\.(\d+)$/].nil? }.map(&:strip).first')-dev
 fi
 
+echo "building version=${VERSION} revision=${REVISION} library_revision=${LIBRARY_REVISION}"
+
 CURRENT_DATE=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 
 DIR=$(mktemp -d /tmp/phraseap-client-XXXX)
