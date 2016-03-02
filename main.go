@@ -18,6 +18,7 @@ func main() {
 }
 
 func Run() {
+	phraseapp.ClientVersion = PHRASEAPP_CLIENT_VERSION
 	validateVersion()
 
 	cfg, err := phraseapp.ReadConfig()
