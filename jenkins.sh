@@ -3,6 +3,7 @@ set -e
 
 export GOROOT=${GOROOT:-/usr/local/go1.6}
 export PATH=$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+export GOPATH=$WORKSPACE
 
 echo "running go test"
 go test ./...
