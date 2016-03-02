@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-export GOROOT=${GOROOT:-/usr/local/go-1.6}
+export GOROOT=${GOROOT:-/usr/local/go1.6}
 export PATH=$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 
 echo "running go test"
