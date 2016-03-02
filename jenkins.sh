@@ -21,6 +21,8 @@ if [[ -z $LIBRARY_REVISION ]]; then
   exit 1
 fi
 
+ORIGINAL_VERSION=$VERSION
+
 if [[ -z $VERSION ]]; then
   # try to fetch the most recent version and use <version>-dev
   VERSION=$(git log --pretty=format:'%s' | ruby -e 'puts STDIN.select { |l| !l.strip[/^(\d+)\.(\d+)\.(\d+)$/].nil? }.map(&:strip).first')-dev
@@ -30,7 +32,6 @@ CURRENT_DATE=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 
 DIR=$(mktemp -d /tmp/phraseap-client-XXXX)
 trap "rm -Rf $DIR" EXIT
-
 
 BUILD_SEP="="
 if $(go version | grep "go1.4"); then
@@ -63,5 +64,6 @@ popd
 
 if [[ -n $WORKSPACE ]]; then
   # probably running inside jenkins
-  aws s3 sync --delete --acl=public-read $DIR s3://phraseapp-client-releases/${REVISION}/
+  dst=s3://phraseapp-client-releases/${ORIGINAL_VERSION:-$REVISION}/
+  aws s3 sync --delete --acl=public-read $DIR $dst
 fi
