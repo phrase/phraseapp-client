@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/daviddengcn/go-colortext"
-	"github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -192,4 +192,3 @@ func ReportError(name string, message string) {
 	resp.Body.Close()
 
 }
-

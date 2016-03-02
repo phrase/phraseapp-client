@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 
-	"github.com/daviddengcn/go-colortext"
-	"github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const docsURL = "http://docs.phraseapp.com/developers/cli/configuration"

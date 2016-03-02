@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 
 	"unicode/utf8"
 
-	"github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
 type PushCommand struct {

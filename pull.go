@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v2"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 
 	"strings"
 
-	"github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
 type PullCommand struct {
@@ -62,11 +62,11 @@ type PullParams struct {
 func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	m := map[string]interface{}{}
 	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
-		"file": &tgt.File,
-		"project_id": &tgt.ProjectID,
+		"file":         &tgt.File,
+		"project_id":   &tgt.ProjectID,
 		"access_token": &tgt.AccessToken,
-		"file_format": &tgt.FileFormat,
-		"params": &m,
+		"file_format":  &tgt.FileFormat,
+		"params":       &m,
 	})
 	if err != nil {
 		return err
@@ -92,8 +92,8 @@ func (target *Target) CheckPreconditions() error {
 
 	if strings.Count(target.File, "*") > 0 {
 		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n"+
-			"http://docs.phraseapp.com/developers/cli/configuration/#targets",
+			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n" +
+				"http://docs.phraseapp.com/developers/cli/configuration/#targets",
 		)
 	}
 

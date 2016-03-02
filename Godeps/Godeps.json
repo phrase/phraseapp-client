@@ -1,0 +1,33 @@
+{
+	"ImportPath": "github.com/phrase/phraseapp-client",
+	"GoVersion": "go1.4.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/bgentry/speakeasy",
+			"Rev": "36e9cfdd690967f4f690c6edcc9ffacd006014a0"
+		},
+		{
+			"ImportPath": "github.com/daviddengcn/go-colortext",
+			"Rev": "3b18c8575a432453d41fdafb340099fff5bba2f7"
+		},
+		{
+			"ImportPath": "github.com/dynport/dgtk/cli",
+			"Rev": "33337b621c8cf0d1dbb87cc76c00b341e716ef95"
+		},
+		{
+			"ImportPath": "github.com/dynport/dgtk/tagparse",
+			"Rev": "33337b621c8cf0d1dbb87cc76c00b341e716ef95"
+		},
+		{
+			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",
+			"Rev": "60ccf967cfa866d35aa91500c2148035fe4d3682"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "53feefa2559fb8dfa8d81baad31be332c97d6c77"
+		}
+	]
+}

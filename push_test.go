@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func getBaseSource() *Source {
