@@ -1,15 +1,17 @@
 #!/bin/bash
 set -e
-
 export GOROOT=${GOROOT:-/usr/local/go1.6}
 export PATH=$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 export GOPATH=$WORKSPACE
+
+pushd $GOPATH/src/github.com/phrase/phraseapp-client > /dev/null
 
 echo "running go test"
 go test ./...
 
 echo "running go vet"
 go vet ./...
+
 
 REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
 LIBRARY_REVISION=$(cat Godeps/Godeps.json | jq '.Deps[] | select(.ImportPath == "github.com/phrase/phraseapp-go/phraseapp").Rev' -c -r)
