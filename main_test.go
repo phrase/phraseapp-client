@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -59,27 +58,14 @@ func compareLocaleFiles(actualFiles LocaleFiles, expectedFiles LocaleFiles) erro
 }
 
 func captureStderr(f func() error) (string, error) {
-	old := os.Stderr // keep backup of the real stdout
-	r, w, _ := os.Pipe()
-	os.Stderr = w
-
-	outC := make(chan string)
-	// copy the output in a separate goroutine so printing can't block indefinitely
-	go func(outC chan<- string) {
-		defer close(outC)
-
-		buf := bytes.NewBuffer(nil)
-		_, _ = io.Copy(buf, r)
-		outC <- buf.String()
-	}(outC)
-
+	old := cli.DefaultWriter
+	defer func() {
+		cli.DefaultWriter = old
+	}()
+	buf := &bytes.Buffer{}
+	cli.DefaultWriter = buf
 	err := f()
-
-	// back to normal state
-	w.Close()
-	os.Stderr = old // restoring the real stdout
-
-	return <-outC, err
+	return buf.String(), err
 }
 
 func runWithCfg(cfg *phraseapp.Config, cmd string, additionalOpts ...string) (string, error) {

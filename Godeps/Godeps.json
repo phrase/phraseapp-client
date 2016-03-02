@@ -15,11 +15,11 @@
 		},
 		{
 			"ImportPath": "github.com/dynport/dgtk/cli",
-			"Rev": "33337b621c8cf0d1dbb87cc76c00b341e716ef95"
+			"Rev": "ccbeff1889bc4d75a011dfe8e671b4e0ce32ae8e"
 		},
 		{
 			"ImportPath": "github.com/dynport/dgtk/tagparse",
-			"Rev": "33337b621c8cf0d1dbb87cc76c00b341e716ef95"
+			"Rev": "ccbeff1889bc4d75a011dfe8e671b4e0ce32ae8e"
 		},
 		{
 			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",

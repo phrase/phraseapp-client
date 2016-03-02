@@ -275,27 +275,27 @@ func (a *action) reflectArguments() (e error) {
 func (a *action) showHelp() {
 	a.showShortHelp()
 	if a.description != "" {
-		fmt.Fprintln(Stderr, "  ", a.description)
+		fmt.Fprintln(DefaultWriter, "  ", a.description)
 	}
 
 	optsAvailable := false
 	if len(a.opts) > 0 {
 		optsAvailable = true
-		fmt.Fprintln(Stderr, "  OPTIONS")
+		fmt.Fprintln(DefaultWriter, "  OPTIONS")
 		for _, opt := range a.opts {
-			fmt.Fprintln(Stderr, opt.description())
+			fmt.Fprintln(DefaultWriter, opt.description())
 		}
 	}
 	if len(a.args) > 0 {
 		if optsAvailable {
-			fmt.Fprintln(Stderr)
+			fmt.Fprintln(DefaultWriter)
 		}
-		fmt.Fprintln(Stderr, "  ARGUMENTS")
+		fmt.Fprintln(DefaultWriter, "  ARGUMENTS")
 		for _, arg := range a.args {
-			fmt.Fprintln(Stderr, arg.description())
+			fmt.Fprintln(DefaultWriter, arg.description())
 		}
 	}
-	fmt.Fprintln(Stderr)
+	fmt.Fprintln(DefaultWriter)
 }
 
 func (a *action) showShortHelp() {
@@ -307,7 +307,7 @@ func (a *action) showShortHelp() {
 		line += arg.shortDescription()
 		line += " "
 	}
-	fmt.Fprintln(Stderr, line)
+	fmt.Fprintln(DefaultWriter, line)
 }
 
 func (a *action) showTabularHelp(t *table) {
