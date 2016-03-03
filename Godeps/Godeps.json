@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/phrase/phraseapp-client",
-	"GoVersion": "go1.4.3",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
@@ -15,11 +15,15 @@
 		},
 		{
 			"ImportPath": "github.com/dynport/dgtk/cli",
-			"Rev": "ccbeff1889bc4d75a011dfe8e671b4e0ce32ae8e"
+			"Rev": "f4b491e1a64e2a74742c636223d8ed58552a5d6b"
 		},
 		{
 			"ImportPath": "github.com/dynport/dgtk/tagparse",
-			"Rev": "ccbeff1889bc4d75a011dfe8e671b4e0ce32ae8e"
+			"Rev": "f4b491e1a64e2a74742c636223d8ed58552a5d6b"
+		},
+		{
+			"ImportPath": "github.com/dynport/dgtk/version",
+			"Rev": "f4b491e1a64e2a74742c636223d8ed58552a5d6b"
 		},
 		{
 			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",
