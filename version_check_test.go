@@ -19,16 +19,17 @@ func TestVersionCheck(t *testing.T) {
 }
 
 func TestValidateVersionWithErr(t *testing.T) {
-	baseVersion := "1.1.11"
+	oldVersion := PHRASEAPP_CLIENT_VERSION
+	currentVersion := "1.1.11"
+
+	defer expectReleaseVersion(currentVersion, 302)()
+
 	errorCases := []string{"1.0.0", "1.1.10", "1.0.11", "1.1.10-dev"}
-
-	defer expectReleaseVersion(baseVersion, 302)()
-
 	for _, version := range errorCases {
 		PHRASEAPP_CLIENT_VERSION = version
 		err := validateVersionWithErr()
 		if err == nil {
-			t.Errorf("expected an error but got %s >= %s", version, baseVersion)
+			t.Errorf("expected an error but got none for %s >= %s", version, currentVersion)
 		}
 	}
 
@@ -37,9 +38,11 @@ func TestValidateVersionWithErr(t *testing.T) {
 		PHRASEAPP_CLIENT_VERSION = version
 		err := validateVersionWithErr()
 		if err != nil {
-			t.Errorf("expected no error but got %s, for %s < %s", err, PHRASEAPP_CLIENT_VERSION, baseVersion)
+			t.Errorf("expected no error but got %s", err)
 		}
 	}
+
+	PHRASEAPP_CLIENT_VERSION = oldVersion
 }
 
 func expectReleaseVersion(version string, statusCode int) func() {
