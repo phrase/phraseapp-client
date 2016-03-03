@@ -2,67 +2,46 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dynport/dgtk/version"
 )
 
 const PHRASEAPP_VERSION_TMP_FILE = "/tmp/.phraseapp.version"
 
 func ValidateVersion() {
-	var version string
-	stat, err := os.Stat(PHRASEAPP_VERSION_TMP_FILE)
-	if os.IsNotExist(err) || time.Since(stat.ModTime()) > time.Hour {
-		// fetch new version, if not done so or over an hour ago
-		version, err = getLatestReleaseVersion()
-
-		if err == nil { // persist the version for the next hour
-			err = ioutil.WriteFile(PHRASEAPP_VERSION_TMP_FILE, []byte(version), 0600)
-		}
-	} else if err == nil {
-		// otherwise load the version (fetched less than an hour ago) from the temp file
-		var buf []byte
-		buf, err = ioutil.ReadFile(PHRASEAPP_VERSION_TMP_FILE)
-		if err == nil {
-			version = string(buf)
-		}
-	}
-
-	tmpVersion := strings.ToLower(phraseapp.ClientVersion)
-	if strings.Contains(tmpVersion, "test") || strings.Contains(tmpVersion, "dev") {
-		fmt.Fprintf(os.Stderr, "You're running a development version (%s) of the PhraseApp client! Latest version is %s\n\n", phraseapp.ClientVersion, version)
-		return
-	}
-	if err == nil && isClientVersionOutdated(version) {
-		fmt.Fprintf(os.Stderr, "Please consider updating the PhraseApp CLI client (%s < %s)\nSee https://phraseapp.com/en/cli\n\n", phraseapp.ClientVersion, version)
+	if err := validateVersionWithErr(); err != nil {
+		fmt.Fprintf(os.Stderr, err.Error()+"\n\n")
 	}
 }
 
-func isClientVersionOutdated(version string) bool {
-	if version == phraseapp.ClientVersion {
-		return false
-	}
-
-	versionParts := strings.Split(version, ".")[:3]
-	clientVersionParts := strings.Split(phraseapp.ClientVersion, ".")[:3]
-
-	versionNum, err := strconv.Atoi(strings.Join(versionParts, ""))
+func validateVersionWithErr() error {
+	currentVersion, err := readCurrentVersion()
 	if err != nil {
-		return false
+		return err
 	}
-	clientVersionNum, err := strconv.Atoi(strings.Join(clientVersionParts, ""))
+	lowerVersion := strings.ToLower(PHRASEAPP_CLIENT_VERSION)
+	if strings.Contains(lowerVersion, "test") || strings.Contains(lowerVersion, "dev") {
+		return fmt.Errorf("You're running a development version (%s) of the PhraseApp client! Latest version is %s", PHRASEAPP_CLIENT_VERSION, currentVersion)
+	}
+	clientVersion, err := version.NewFromString(PHRASEAPP_CLIENT_VERSION)
 	if err != nil {
-		return false
+		return err
 	}
-	return versionNum > clientVersionNum
+	if clientVersion.Less(currentVersion) {
+		return fmt.Errorf("Please consider updating the PhraseApp CLI client (%s < %s)\nSee https://phraseapp.com/en/cli", PHRASEAPP_CLIENT_VERSION, currentVersion)
+	}
+	return nil
 }
+
+var releaseURL = "https://github.com/phrase/phraseapp-client/releases/latest"
 
 func getLatestReleaseVersion() (string, error) {
-	req, err := http.NewRequest("HEAD", "https://github.com/phrase/phraseapp-client/releases/latest", nil)
+	req, err := http.NewRequest("HEAD", releaseURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +54,7 @@ func getLatestReleaseVersion() (string, error) {
 	defer resp.Body.Close() // body is empty as it is only a HEAD request
 
 	if resp.StatusCode != 302 {
-		return "", fmt.Errorf("failed to request the file")
+		return "", fmt.Errorf("error requesting %s, expected status %d was %d", releaseURL, 302, resp.StatusCode)
 	}
 
 	url, err := resp.Location()
@@ -90,4 +69,49 @@ func getLatestReleaseVersion() (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no valid version segment found")
+}
+
+func readCurrentVersion() (*version.Version, error) {
+	v, err := readCurrentVersionString()
+	if err != nil {
+		return nil, err
+	}
+	return version.NewFromString(v)
+}
+
+func readCurrentVersionString() (string, error) {
+	cached, modTime, err := readCachedVersionString()
+	if err != nil || time.Since(*modTime) > time.Hour {
+		return updateCachedVersion()
+	}
+	return cached, nil
+}
+
+func updateCachedVersion() (string, error) {
+	currentVersion, err := getLatestReleaseVersion()
+	if err != nil {
+		return "", err
+	}
+	if err == nil { // persist the version for the next hour
+		_ = ioutil.WriteFile(PHRASEAPP_VERSION_TMP_FILE, []byte(currentVersion), 0600)
+	}
+	return currentVersion, nil
+}
+
+func readCachedVersionString() (string, *time.Time, error) {
+	f, err := os.Open(PHRASEAPP_VERSION_TMP_FILE)
+	if err != nil {
+		return "", nil, err
+	}
+	defer f.Close()
+	stat, err := f.Stat()
+	if err != nil {
+		return "", nil, err
+	}
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", nil, err
+	}
+	mt := stat.ModTime()
+	return string(b), &mt, nil
 }
