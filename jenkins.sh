@@ -58,9 +58,16 @@ build darwin  amd64   phraseapp_macosx_amd64
 build windows amd64   phraseapp_windows_amd64.exe
 
 pushd $DIR > /dev/null
-for name in phraseapp_macosx_amd64 phraseapp_linux_386 phraseapp_linux_amd64; do
+
+# Homebrew - binary must be called phraseapp, because the binary name inside
+# the tar will be made available system wide
+mv phraseapp_macosx_amd64 phraseapp
+tar cfz phraseapp_macosx_amd64.tar.gz phraseapp 
+
+for name in phraseapp_linux_386 phraseapp_linux_amd64; do
   tar cfz ${name}.tar.gz $name
 done
+
 zip phraseapp_windows_amd64.exe.zip phraseapp_windows_amd64.exe &> /dev/null
 popd
 
