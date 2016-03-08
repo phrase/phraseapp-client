@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dynport/dgtk/version"
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/version"
 )
 
 var PHRASEAPP_VERSION_TMP_FILE = "/tmp/.phraseapp.version"
