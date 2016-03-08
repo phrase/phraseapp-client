@@ -11,7 +11,7 @@ import (
 	"github.com/dynport/dgtk/version"
 )
 
-const PHRASEAPP_VERSION_TMP_FILE = "/tmp/.phraseapp.version"
+var PHRASEAPP_VERSION_TMP_FILE = "/tmp/.phraseapp.version"
 
 func ValidateVersion() {
 	if err := validateVersionWithErr(); err != nil {

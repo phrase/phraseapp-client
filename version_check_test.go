@@ -19,6 +19,9 @@ func TestVersionCheck(t *testing.T) {
 }
 
 func TestValidateVersionWithErr(t *testing.T) {
+	oldTmpDir := PHRASEAPP_VERSION_TMP_FILE
+	PHRASEAPP_VERSION_TMP_FILE = "./tmp/version-check-test.version"
+
 	oldVersion := PHRASEAPP_CLIENT_VERSION
 	currentVersion := "1.1.11"
 
@@ -43,6 +46,7 @@ func TestValidateVersionWithErr(t *testing.T) {
 	}
 
 	PHRASEAPP_CLIENT_VERSION = oldVersion
+	PHRASEAPP_VERSION_TMP_FILE = oldTmpDir
 }
 
 func expectReleaseVersion(version string, statusCode int) func() {
