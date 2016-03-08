@@ -36,7 +36,12 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 
+		if err := sources.setFormats(client); err != nil {
+			return err
+		}
+
 		for _, source := range sources {
+
 			err := source.Push(client)
 			if err != nil {
 				return err
@@ -59,6 +64,7 @@ type Source struct {
 
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
+	Format        *phraseapp.Format
 }
 
 func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -133,7 +139,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
 
-		if !localeFile.ExistsRemote {
+		if !localeFile.ExistsRemote && !source.IncludesLocaleInformation() {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
 				localeFile.ID = localeDetails.ID
@@ -625,4 +631,43 @@ func (source *Source) GetLocaleID() string {
 		return *source.Params.LocaleID
 	}
 	return ""
+}
+
+func (source *Source) GetFileFormat() string {
+	if source.Params != nil && source.Params.FileFormat != nil {
+		return *source.Params.FileFormat
+	}
+	if source.FileFormat != "" {
+		return source.FileFormat
+	}
+	return ""
+}
+
+func (source *Source) IncludesLocaleInformation() bool {
+	if source.Format != nil {
+		return source.Format.IncludesLocaleInformation
+	}
+
+	return false
+}
+
+func (sources Sources) setFormats(client *phraseapp.Client) error {
+	formats, err := client.FormatsList(1, 50)
+	if err != nil {
+		return err
+	}
+
+	formatMap := map[string]*phraseapp.Format{}
+	for _, format := range formats {
+		formatMap[format.ApiName] = format
+	}
+
+	for _, source := range sources {
+		formatName := source.GetFileFormat()
+		if val, ok := formatMap[formatName]; ok {
+			source.Format = val
+		}
+	}
+
+	return nil
 }
