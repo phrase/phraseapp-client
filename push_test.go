@@ -778,3 +778,50 @@ func TestRemoteLocaleForLocaleFile(t *testing.T) {
 		}
 	}
 }
+
+func TestSetFormats(t *testing.T) {
+	sources := Sources{
+		{
+			FileFormat: "yml",
+		},
+		{
+			FileFormat: "json",
+		},
+		{
+			FileFormat: "magic",
+		},
+		{
+			FileFormat: "",
+		},
+	}
+
+	for _, source := range sources {
+		if source.Format != nil {
+			t.Errorf("expected format to be nil, but was: %s", source.Format)
+		}
+	}
+
+	formats := []*phraseapp.Format{
+		{
+			ApiName:                   "yml",
+			IncludesLocaleInformation: true,
+		},
+		{
+			ApiName:                   "json",
+			IncludesLocaleInformation: false,
+		},
+	}
+	sources.setFormats(formats)
+
+	ymlSource := sources[0]
+	if !ymlSource.IncludesLocaleInformation() {
+		t.Errorf("expected format %s to include locale information, but was: %t", ymlSource.Format.ApiName, ymlSource.IncludesLocaleInformation())
+	}
+
+	for _, source := range sources[1:] {
+		if source.IncludesLocaleInformation() {
+			t.Errorf("expected format %s to not include locale information, but was: %t", source.Format.ApiName, source.IncludesLocaleInformation())
+		}
+	}
+
+}

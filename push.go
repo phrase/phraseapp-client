@@ -36,7 +36,12 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 
-		if err := sources.setFormats(client); err != nil {
+		formats, err := client.FormatsList(1, 50)
+		if err != nil {
+			return err
+		}
+
+		if err := sources.setFormats(formats); err != nil {
 			return err
 		}
 
@@ -651,12 +656,7 @@ func (source *Source) IncludesLocaleInformation() bool {
 	return false
 }
 
-func (sources Sources) setFormats(client *phraseapp.Client) error {
-	formats, err := client.FormatsList(1, 50)
-	if err != nil {
-		return err
-	}
-
+func (sources Sources) setFormats(formats []*phraseapp.Format) error {
 	formatMap := map[string]*phraseapp.Format{}
 	for _, format := range formats {
 		formatMap[format.ApiName] = format
