@@ -112,6 +112,9 @@ func readCachedVersionString() (string, *time.Time, error) {
 	if err != nil {
 		return "", nil, err
 	}
+	if len(b) == 0 {
+		return "", nil, fmt.Errorf("file %s was empty", PHRASEAPP_VERSION_TMP_FILE)
+	}
 	mt := stat.ModTime()
 	return string(b), &mt, nil
 }

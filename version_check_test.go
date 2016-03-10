@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -19,10 +21,21 @@ func TestVersionCheck(t *testing.T) {
 }
 
 func TestValidateVersionWithErr(t *testing.T) {
-	oldTmpDir := PHRASEAPP_VERSION_TMP_FILE
-	PHRASEAPP_VERSION_TMP_FILE = "./tmp/version-check-test.version"
-
 	oldVersion := PHRASEAPP_CLIENT_VERSION
+	defer func() {
+		PHRASEAPP_CLIENT_VERSION = oldVersion
+	}()
+	old := PHRASEAPP_VERSION_TMP_FILE
+	defer func() {
+		PHRASEAPP_VERSION_TMP_FILE = old
+	}()
+	var err error
+	f, err := ioutil.TempFile("/tmp", "temp-verion-file-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(f.Name())
+	PHRASEAPP_VERSION_TMP_FILE = f.Name()
 	currentVersion := "1.1.11"
 
 	defer expectReleaseVersion(currentVersion, 302)()
@@ -46,7 +59,6 @@ func TestValidateVersionWithErr(t *testing.T) {
 	}
 
 	PHRASEAPP_CLIENT_VERSION = oldVersion
-	PHRASEAPP_VERSION_TMP_FILE = oldTmpDir
 }
 
 func expectReleaseVersion(version string, statusCode int) func() {
