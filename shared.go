@@ -18,8 +18,8 @@ var Debug bool
 
 type LocaleFiles []*LocaleFile
 type LocaleFile struct {
-	Path, Name, ID, RFC, Tag, FileFormat string
-	ExistsRemote                         bool
+	Path, Name, ID, Code, Tag, FileFormat string
+	ExistsRemote                          bool
 }
 
 type BugsnagError struct {
@@ -76,8 +76,8 @@ func (localeFile *LocaleFile) Message() string {
 		if localeFile.ID != "" {
 			str = fmt.Sprintf("%s Id: %s", str, localeFile.ID)
 		}
-		if localeFile.RFC != "" {
-			str = fmt.Sprintf("%s RFC5646: %s", str, localeFile.RFC)
+		if localeFile.Code != "" {
+			str = fmt.Sprintf("%s Code: %s", str, localeFile.Code)
 		}
 		if localeFile.Tag != "" {
 			str = fmt.Sprintf("%s Tag: %s", str, localeFile.Tag)
@@ -190,5 +190,20 @@ func ReportError(name string, message string) {
 		return
 	}
 	resp.Body.Close()
+}
 
+func PaginatedFormats(client *phraseapp.Client) ([]*phraseapp.Format, error) {
+	return fetchAllFormats(client, 1, 50, []*phraseapp.Format{})
+}
+
+func fetchAllFormats(client *phraseapp.Client, page, perPage int, formats []*phraseapp.Format) ([]*phraseapp.Format, error) {
+	nextFormats, err := client.FormatsList(page, perPage)
+	if err != nil {
+		return nil, err
+	}
+	formats = append(formats, nextFormats...)
+	if len(nextFormats) < perPage {
+		return formats, nil
+	}
+	return fetchAllFormats(client, page+1, perPage, formats)
 }

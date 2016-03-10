@@ -47,8 +47,8 @@ func compareLocaleFiles(actualFiles LocaleFiles, expectedFiles LocaleFiles) erro
 		if expected.Name != actual.Name {
 			return fmt.Errorf("Expected Name %s should eql %s", expected.Name, actual.Name)
 		}
-		if expected.RFC != actual.RFC {
-			return fmt.Errorf("Expected RFC %s should eql %s", expected.RFC, actual.RFC)
+		if expected.Code != actual.Code {
+			return fmt.Errorf("Expected Code %s should eql %s", expected.Code, actual.Code)
 		}
 		if expected.ID != actual.ID {
 			return fmt.Errorf("Expected ID %s should eql %s", expected.ID, actual.ID)
