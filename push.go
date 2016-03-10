@@ -45,10 +45,6 @@ func (cmd *PushCommand) Run() error {
 		return nil
 	}()
 
-	if err != nil {
-		ReportError("Push Error", err.Error())
-	}
-
 	return err
 }
 
@@ -575,9 +571,7 @@ func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken strin
 
 func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 	if cmd.Config.Sources == nil || len(cmd.Config.Sources) == 0 {
-		errmsg := "no sources for upload specified"
-		ReportError("Push Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
 	tmp := struct {

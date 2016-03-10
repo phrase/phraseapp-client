@@ -145,9 +145,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 
 		err = target.DownloadAndWriteToFile(client, localeFile)
 		if err != nil {
-			errmsg := fmt.Sprintf("%s for %s", err, localeFile.Path)
-			ReportError("Pull Error", errmsg)
-			return fmt.Errorf(errmsg)
+			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
 			sharedMessage("pull", localeFile)
 		}
@@ -229,15 +227,11 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 
 func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
 	if locale == nil {
-		errmsg := "Remote locale could not be downloaded correctly!"
-		ReportError("Pull Error", errmsg)
-		return fmt.Errorf(errmsg)
+		return fmt.Errorf("Remote locale could not be downloaded correctly!")
 	}
 
 	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {
-		errmsg := fmt.Sprintf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
-		ReportError("Pull Error", errmsg)
-		return fmt.Errorf(errmsg)
+		return fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
 	}
 	return nil
 }
@@ -281,9 +275,7 @@ func (t *Target) GetTag() string {
 
 func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
-		errmsg := "no targets for download specified"
-		ReportError("Pull Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no targets for download specified")
 	}
 
 	tmp := struct {
@@ -317,9 +309,7 @@ func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
 	}
 
 	if len(validTargets) <= 0 {
-		errmsg := "no targets could be identified! Refine the targets list in your config"
-		ReportError("Pull Error", errmsg)
-		return nil, fmt.Errorf(errmsg)
+		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
 	}
 
 	return validTargets, nil
