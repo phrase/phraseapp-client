@@ -18,7 +18,7 @@ func TestVendoring(t *testing.T) {
 	}
 	with := []string{}
 	for _, f := range strings.Fields(string(b)) {
-		if strings.Contains(f, ".") && !strings.HasPrefix(f, root) {
+		if strings.Contains(f, ".") && !strings.HasPrefix(f, root) && !strings.HasPrefix(f, "internal/") {
 			with = append(with, "  - "+f)
 		}
 	}
