@@ -36,12 +36,12 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 
-		// formats, err := PaginatedFormats(client)
-		// if err == nil {
-		//	err = sources.setFormats(formats)
-		//	if err != nil {
-		//	}
-		// }
+		formats, err := PaginatedFormats(client)
+		if err == nil {
+			err = sources.setFormats(formats)
+			if err != nil {
+			}
+		}
 
 		for _, source := range sources {
 
@@ -142,7 +142,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
 
-		if localeFile.shouldCreateLocale() {
+		if localeFile.shouldCreateLocale(source) {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
 				localeFile.ID = localeDetails.ID
@@ -662,8 +662,12 @@ func (sources Sources) setFormats(formats []*phraseapp.Format) error {
 	return nil
 }
 
-func (localeFile *LocaleFile) shouldCreateLocale() bool {
+func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
 	if localeFile.ExistsRemote {
+		return false
+	}
+
+	if source.Format.IncludesLocaleInformation {
 		return false
 	}
 

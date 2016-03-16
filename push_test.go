@@ -817,15 +817,22 @@ type patternShouldCreateLocale struct {
 	Code         string
 	ExistsRemote bool
 	Expected     bool
+	Source       *Source
 }
 
 func TestShouldCreateLocale(t *testing.T) {
+	source := &Source{
+		Format: &phraseapp.Format{
+			IncludesLocaleInformation: false,
+		},
+	}
 	testPatterns := []*patternShouldCreateLocale{
 		{
 			Name:         "",
 			Code:         "",
 			ExistsRemote: false,
 			Expected:     false,
+			Source:       source,
 		},
 		{
 
@@ -833,6 +840,7 @@ func TestShouldCreateLocale(t *testing.T) {
 			Code:         "",
 			ExistsRemote: true,
 			Expected:     false,
+			Source:       source,
 		},
 		{
 
@@ -840,6 +848,7 @@ func TestShouldCreateLocale(t *testing.T) {
 			Code:         "",
 			ExistsRemote: false,
 			Expected:     true,
+			Source:       source,
 		},
 		{
 
@@ -847,12 +856,25 @@ func TestShouldCreateLocale(t *testing.T) {
 			Code:         "en",
 			ExistsRemote: false,
 			Expected:     true,
+			Source:       source,
 		},
 		{
 			Name:         "English",
 			Code:         "en",
 			ExistsRemote: false,
 			Expected:     true,
+			Source:       source,
+		},
+		{
+			Name:         "English",
+			Code:         "en",
+			ExistsRemote: false,
+			Expected:     false,
+			Source: &Source{
+				Format: &phraseapp.Format{
+					IncludesLocaleInformation: true,
+				},
+			},
 		},
 	}
 
@@ -862,10 +884,9 @@ func TestShouldCreateLocale(t *testing.T) {
 			Code:         pattern.Code,
 			ExistsRemote: pattern.ExistsRemote,
 		}
-		was := localeFile.shouldCreateLocale()
+		was := localeFile.shouldCreateLocale(pattern.Source)
 		if was != pattern.Expected {
 			t.Errorf("expected the locale should be created to be: %t, but was %t", pattern.Expected, was)
 		}
 	}
-
 }
