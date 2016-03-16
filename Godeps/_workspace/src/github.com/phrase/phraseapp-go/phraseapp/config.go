@@ -69,7 +69,7 @@ func configPath() (string, error) {
 
 	callerPath, err := os.Getwd()
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	possiblePath := path.Join(callerPath, configName)
