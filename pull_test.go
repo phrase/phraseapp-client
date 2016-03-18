@@ -81,13 +81,13 @@ func TestTargetLocaleFiles(t *testing.T) {
 	expectedFiles := []*LocaleFile{
 		&LocaleFile{
 			Name: "english",
-			RFC:  "en",
+			Code:  "en",
 			ID:   "en-locale-id",
 			Path: enPath,
 		},
 		&LocaleFile{
 			Name: "german",
-			RFC:  "de",
+			Code:  "de",
 			ID:   "de-locale-id",
 			Path: dePath,
 		},
@@ -107,7 +107,7 @@ func TestReplacePlaceholders(t *testing.T) {
 	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
 	localeFile := &LocaleFile{
 		Name: "english",
-		RFC:  "en",
+		Code:  "en",
 		ID:   "en-locale-id",
 		Tag:  "abc",
 		Path: "",

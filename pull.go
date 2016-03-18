@@ -207,7 +207,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		localeFile := &LocaleFile{
 			Name:       remoteLocale.Name,
 			ID:         remoteLocale.ID,
-			RFC:        remoteLocale.Code,
+			Code:        remoteLocale.Code,
 			Tag:        target.GetTag(),
 			FileFormat: target.GetFormat(),
 			Path:       target.File,
@@ -243,7 +243,7 @@ func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error
 	}
 
 	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
-	path = strings.Replace(path, "<locale_code>", localeFile.RFC, -1)
+	path = strings.Replace(path, "<locale_code>", localeFile.Code, -1)
 	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
 
 	return path, nil

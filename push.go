@@ -36,7 +36,15 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 
+		formats, err := PaginatedFormats(client)
+		if err == nil {
+			err = sources.setFormats(formats)
+			if err != nil {
+			}
+		}
+
 		for _, source := range sources {
+
 			err := source.Push(client)
 			if err != nil {
 				return err
@@ -59,6 +67,7 @@ type Source struct {
 
 	RemoteLocales []*phraseapp.Locale
 	Extension     string
+	Format        *phraseapp.Format
 }
 
 func (src *Source) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -133,11 +142,11 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
 
-		if !localeFile.ExistsRemote {
+		if localeFile.shouldCreateLocale(source) {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
 				localeFile.ID = localeDetails.ID
-				localeFile.RFC = localeDetails.Code
+				localeFile.Code = localeDetails.Code
 				localeFile.Name = localeDetails.Name
 			} else {
 				fmt.Printf("failed to create locale: %s\n", err)
@@ -162,25 +171,25 @@ func (source *Source) Push(client *phraseapp.Client) error {
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
-	if localeFile.RFC == "" {
-		return nil, fmt.Errorf("no locale code specified")
-	}
-
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
 		localeParams.Name = &localeFile.Name
-	} else if localeFile.RFC != "" {
-		localeParams.Name = &localeFile.RFC
+	} else if localeFile.Code != "" {
+		localeParams.Name = &localeFile.Code
+	}
+
+	if localeFile.Code == "" {
+		localeFile.Code = localeFile.Name
 	}
 
 	localeName := source.replacePlaceholderInParams(localeFile)
-	if localeName != "" && localeName != localeFile.RFC {
+	if localeName != "" && localeName != localeFile.Code {
 		localeParams.Name = &localeName
 	}
 
-	if localeFile.RFC != "" {
-		localeParams.Code = &localeFile.RFC
+	if localeFile.Code != "" {
+		localeParams.Code = &localeFile.Code
 	}
 
 	localeDetails, err := client.LocaleCreate(source.ProjectID, localeParams)
@@ -191,8 +200,8 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 }
 
 func (source *Source) replacePlaceholderInParams(localeFile *LocaleFile) string {
-	if localeFile.RFC != "" && strings.Contains(source.GetLocaleID(), "<locale_code>") {
-		return strings.Replace(source.GetLocaleID(), "<locale_code>", localeFile.RFC, 1)
+	if localeFile.Code != "" && strings.Contains(source.GetLocaleID(), "<locale_code>") {
+		return strings.Replace(source.GetLocaleID(), "<locale_code>", localeFile.Code, 1)
 	}
 	return ""
 }
@@ -212,8 +221,8 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		switch {
 		case localeFile.ID != "":
 			params.LocaleID = &localeFile.ID
-		case localeFile.RFC != "":
-			params.LocaleID = &localeFile.RFC
+		case localeFile.Code != "":
+			params.LocaleID = &localeFile.Code
 		}
 	}
 
@@ -367,15 +376,15 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		locale := source.getRemoteLocaleForLocaleFile(localeFile)
 		if locale != nil {
 			localeFile.ExistsRemote = true
-			localeFile.RFC = locale.Code
+			localeFile.Code = locale.Code
 			localeFile.Name = locale.Name
 			localeFile.ID = locale.ID
 		}
 
 		if Debug {
 			fmt.Printf(
-				"RFC:%q, Name:%q, ID:%q, Tag:%q\n",
-				localeFile.RFC, localeFile.Name, localeFile.ID, localeFile.Tag,
+				"Code:%q, Name:%q, ID:%q, Tag:%q\n",
+				localeFile.Code, localeFile.Name, localeFile.ID, localeFile.Tag,
 			)
 		}
 
@@ -430,8 +439,8 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 		return cand.Name == localeFile.Name
 	})
 
-	candidates = filter(candidates, localeFile.RFC, func(cand *phraseapp.Locale) bool {
-		return cand.Code == localeFile.RFC
+	candidates = filter(candidates, localeFile.Code, func(cand *phraseapp.Locale) bool {
+		return cand.Code == localeFile.Code
 	})
 
 	// If no filter was applied the candidates list still contains all remote
@@ -558,7 +567,7 @@ func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken strin
 		value := strings.Trim(subMatch, separator)
 		switch namedMatches[i] {
 		case "locale_code":
-			localeFile.RFC = value
+			localeFile.Code = value
 		case "locale_name":
 			localeFile.Name = value
 		case "tag":
@@ -625,4 +634,46 @@ func (source *Source) GetLocaleID() string {
 		return *source.Params.LocaleID
 	}
 	return ""
+}
+
+func (source *Source) GetFileFormat() string {
+	if source.Params != nil && source.Params.FileFormat != nil {
+		return *source.Params.FileFormat
+	}
+	if source.FileFormat != "" {
+		return source.FileFormat
+	}
+	return ""
+}
+
+func (sources Sources) setFormats(formats []*phraseapp.Format) error {
+	formatMap := map[string]*phraseapp.Format{}
+	for _, format := range formats {
+		formatMap[format.ApiName] = format
+	}
+
+	for _, source := range sources {
+		formatName := source.GetFileFormat()
+		if val, ok := formatMap[formatName]; ok {
+			source.Format = val
+		}
+	}
+
+	return nil
+}
+
+func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
+	if localeFile.ExistsRemote {
+		return false
+	}
+
+	if source.Format.IncludesLocaleInformation {
+		return false
+	}
+
+	// we could not find an existing locale in PhraseApp
+	// if a locale_name or locale_code was provided by the placeholder logic
+	// we assume that it should be created
+	// every other source should be uploaded and validated in uploads#create
+	return (localeFile.Name != "" || localeFile.Code != "")
 }
