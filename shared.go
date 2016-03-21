@@ -37,23 +37,27 @@ type ErrorData struct {
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
-func ValidPath(file, format, fileExtension string) error {
+func ValidPath(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
 		return fmt.Errorf(
 			"File patterns may not be empty!\nFor more information see http://docs.phraseapp.com/developers/cli/configuration/",
 		)
 	}
 
-	extension := strings.Trim(strings.TrimSpace(filepath.Ext(file)), ".")
-	if extension == "" || (fileExtension != "" && extension != fileExtension) {
-		extensionInfo := ""
-		if fileExtension != "" {
-			extensionInfo = fmt.Sprintf(" %q", fileExtension)
-		}
+	fileExtension := strings.Trim(filepath.Ext(file), ".")
 
+	if fileExtension == "<locale_code>" {
+		return nil
+	}
+
+	if fileExtension == "" {
+		return fmt.Errorf("%q has no file extension", file)
+	}
+
+	if formatExtension != "" && formatExtension != fileExtension {
 		return fmt.Errorf(
-			"'%s' does not have the required extension%s.\nFor more information see http://docs.phraseapp.com/guides/formats/%s",
-			file, extensionInfo, format,
+			"File extension %q does not equal %q (format: %q) for file %q.\nFor more information see http://docs.phraseapp.com/guides/formats/%s",
+			fileExtension, formatExtension, formatName, file, formatName,
 		)
 	}
 
@@ -146,17 +150,6 @@ func Contains(seq []string, str string) bool {
 	return false
 }
 
-func TakeWhile(seq []string, predicate func(string) bool) []string {
-	take := []string{}
-	for _, elem := range seq {
-		if !predicate(elem) {
-			break
-		}
-		take = append(take, elem)
-	}
-	return take
-}
-
 func Exists(absPath string) error {
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
 		return fmt.Errorf("no such file or directory: %s", absPath)
@@ -190,20 +183,4 @@ func ReportError(name string, message string) {
 		return
 	}
 	resp.Body.Close()
-}
-
-func PaginatedFormats(client *phraseapp.Client) ([]*phraseapp.Format, error) {
-	return fetchAllFormats(client, 1, 50, []*phraseapp.Format{})
-}
-
-func fetchAllFormats(client *phraseapp.Client, page, perPage int, formats []*phraseapp.Format) ([]*phraseapp.Format, error) {
-	nextFormats, err := client.FormatsList(page, perPage)
-	if err != nil {
-		return nil, err
-	}
-	formats = append(formats, nextFormats...)
-	if len(nextFormats) < perPage {
-		return formats, nil
-	}
-	return fetchAllFormats(client, page+1, perPage, formats)
 }

@@ -36,7 +36,7 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 
-		formats, err := PaginatedFormats(client)
+		formats, err := client.FormatsList(1, 25)
 		if err == nil {
 			err = sources.setFormats(formats)
 			if err != nil {
@@ -66,7 +66,6 @@ type Source struct {
 	Params      *phraseapp.UploadParams
 
 	RemoteLocales []*phraseapp.Locale
-	Extension     string
 	Format        *phraseapp.Format
 }
 
@@ -126,8 +125,6 @@ func (source *Source) Push(client *phraseapp.Client) error {
 		return err
 	}
 
-	source.Extension = filepath.Ext(source.File)
-
 	remoteLocales, err := RemoteLocales(client, source.ProjectID)
 	if err != nil {
 		return err
@@ -142,6 +139,7 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
 
+		fmt.Println(localeFile, source.Format)
 		if localeFile.shouldCreateLocale(source) {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
