@@ -20,11 +20,9 @@ func getBaseSource() *Source {
 		ProjectID:     "project-id",
 		AccessToken:   "access-token",
 		FileFormat:    "yml",
-		Extension:     "",
 		Params:        new(phraseapp.UploadParams),
 		RemoteLocales: getBaseLocales(),
 	}
-	source.Extension = filepath.Ext(source.File)
 	return source
 }
 
@@ -463,7 +461,7 @@ func TestCheckPreconditions(t *testing.T) {
 		expError   string
 	}{
 		{"", "", "File patterns may not be empty!"},
-		{"a/b/c", ".foo", "'a/b/c' does not have the required extension."},
+		{"a/b/c", ".foo", "\"a/b/c\" has no file extension"},
 		{"<locale_name>/<locale_name>.foo", ".foo", "<locale_name> can only occur once in a file pattern!"},
 		{"<locale_code>/<locale_code>.foo", ".foo", "<locale_code> can only occur once in a file pattern!"},
 		{"<tag>/<tag>.foo", ".foo", "<tag> can only occur once in a file pattern!"},
@@ -513,7 +511,6 @@ func TestSystemFiles(t *testing.T) {
 	for _, tti := range tt {
 		src := new(Source)
 		src.File = filepath.Join(d, tti.pattern)
-		src.Extension = filepath.Ext(tti.pattern)
 
 		matches, err := src.SystemFiles()
 		if err != nil {
@@ -609,7 +606,6 @@ func TestLocaleFiles(t *testing.T) {
 	for _, tti := range tt {
 		src := new(Source)
 		src.File = filepath.Join(d, tti.pattern)
-		src.Extension = filepath.Ext(tti.pattern)
 
 		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY"})
 		files, err := src.LocaleFiles()
