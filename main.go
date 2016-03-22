@@ -14,6 +14,15 @@ func main() {
 }
 
 func Run() {
+	var cfg *phraseapp.Config
+	defer func() {
+		if recovery := recover(); recovery != nil {
+			ReportError("PhraseApp Client Error", recovery, cfg)
+			printErr(fmt.Errorf("This should not have happened: %s - Contact support: support@phraseapp.com", recovery))
+			os.Exit(1)
+		}
+	}()
+
 	phraseapp.ClientVersion = PHRASEAPP_CLIENT_VERSION
 	ValidateVersion()
 

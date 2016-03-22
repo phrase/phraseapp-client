@@ -24,23 +24,28 @@ func (cmd *PullCommand) Run() error {
 		Debug = true
 	}
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
-	if err != nil {
-		return err
-	}
-
-	targets, err := TargetsFromConfig(cmd)
-	if err != nil {
-		return err
-	}
-
-	for _, target := range targets {
-		err := target.Pull(client)
+	err := func() error {
+		client, err := phraseapp.NewClient(cmd.Config.Credentials)
 		if err != nil {
 			return err
 		}
-	}
-	return nil
+
+		targets, err := TargetsFromConfig(cmd)
+		if err != nil {
+			return err
+		}
+
+		for _, target := range targets {
+			err := target.Pull(client)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}()
+
+	return err
 }
 
 type Targets []*Target
@@ -207,7 +212,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		localeFile := &LocaleFile{
 			Name:       remoteLocale.Name,
 			ID:         remoteLocale.ID,
-			Code:        remoteLocale.Code,
+			Code:       remoteLocale.Code,
 			Tag:        target.GetTag(),
 			FileFormat: target.GetFormat(),
 			Path:       target.File,

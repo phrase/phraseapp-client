@@ -1,16 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -20,19 +16,6 @@ type LocaleFiles []*LocaleFile
 type LocaleFile struct {
 	Path, Name, ID, Code, Tag, FileFormat string
 	ExistsRemote                          bool
-}
-
-type BugsnagError struct {
-	App        string `json:"app"`
-	AppVersion string `json:"app_version"`
-	ErrorData  `json:"data"`
-	Message    string `json:"message"`
-	Name       string `json:"name"`
-}
-
-type ErrorData struct {
-	Arch string `json:"arch"`
-	Os   string `json:"os"`
 }
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
@@ -95,12 +78,6 @@ func (localeFile *LocaleFile) Message() string {
 	return strings.TrimSpace(str)
 }
 
-func printErr(err error) {
-	ct.Foreground(ct.Red, true)
-	fmt.Fprintf(os.Stderr, "\nERROR: %s\n", err)
-	ct.ResetColor()
-}
-
 func sharedMessage(method string, localeFile *LocaleFile) {
 	local := localeFile.RelPath()
 
@@ -155,32 +132,4 @@ func Exists(absPath string) error {
 		return fmt.Errorf("no such file or directory: %s", absPath)
 	}
 	return nil
-}
-
-func ReportError(name string, message string) {
-	bs := &BugsnagError{
-		App:        "phraseapp-client",
-		AppVersion: PHRASEAPP_CLIENT_VERSION,
-		ErrorData: ErrorData{
-			Arch: runtime.GOARCH,
-			Os:   runtime.GOOS,
-		},
-		Name:    name,
-		Message: message,
-	}
-
-	body, err := json.Marshal(bs)
-	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequest("POST", "https://phraseapp.com/errors", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
-	resp.Body.Close()
 }
