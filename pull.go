@@ -23,29 +23,24 @@ func (cmd *PullCommand) Run() error {
 		cmd.Debug = false
 		Debug = true
 	}
+	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
 
-	err := func() error {
-		client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	targets, err := TargetsFromConfig(cmd)
+	if err != nil {
+		return err
+	}
+
+	for _, target := range targets {
+		err := target.Pull(client)
 		if err != nil {
 			return err
 		}
+	}
 
-		targets, err := TargetsFromConfig(cmd)
-		if err != nil {
-			return err
-		}
-
-		for _, target := range targets {
-			err := target.Pull(client)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}()
-
-	return err
+	return nil
 }
 
 type Targets []*Target
