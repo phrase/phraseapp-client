@@ -2,19 +2,26 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"strings"
 )
 
+func GetInfo() string {
+	info := []string{
+		fmt.Sprintf("Built at:                            %s", BUILT_AT),
+		fmt.Sprintf("PhraseApp Client version:            %s", PHRASEAPP_CLIENT_VERSION),
+		fmt.Sprintf("PhraseApp Client revision:           %s", REVISION),
+		fmt.Sprintf("PhraseApp Library revision:          %s", LIBRARY_REVISION),
+		fmt.Sprintf("PhraseApp Docs revision client:      %s", RevisionDocs),
+		fmt.Sprintf("PhraseApp Docs revision lib:         %s", phraseapp.RevisionDocs),
+		fmt.Sprintf("PhraseApp Generator revision client: %s", RevisionGenerator),
+		fmt.Sprintf("PhraseApp Generator revision lib:    %s", phraseapp.RevisionGenerator),
+	}
+	return fmt.Sprintf("%s\n", strings.Join(info, "\n"))
+}
+
 func infoCommand() error {
-	fmt.Printf("Built at:                            %s\n", BUILT_AT)
-	fmt.Printf("PhraseApp Client version:            %s\n", PHRASEAPP_CLIENT_VERSION)
-	fmt.Printf("PhraseApp Client revision:           %s\n", REVISION)
-	fmt.Printf("PhraseApp Library revision:          %s\n", LIBRARY_REVISION)
-	fmt.Printf("PhraseApp Docs revision client:      %s\n", RevisionDocs)
-	fmt.Printf("PhraseApp Docs revision lib:         %s\n", phraseapp.RevisionDocs)
-	fmt.Printf("PhraseApp Generator revision client: %s\n", RevisionGenerator)
-	fmt.Printf("PhraseApp Generator revision lib:    %s\n", phraseapp.RevisionGenerator)
+	fmt.Print(GetInfo())
 	return nil
 }
 

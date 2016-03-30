@@ -25,35 +25,31 @@ func (cmd *PushCommand) Run() error {
 		Debug = true
 	}
 
-	err := func() error {
-		client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	sources, err := SourcesFromConfig(cmd)
+	if err != nil {
+		return err
+	}
+
+	formats, err := client.FormatsList(1, 25)
+	if err == nil {
+		err = sources.setFormats(formats)
+		if err != nil {
+		}
+	}
+
+	for _, source := range sources {
+
+		err := source.Push(client)
 		if err != nil {
 			return err
 		}
-
-		sources, err := SourcesFromConfig(cmd)
-		if err != nil {
-			return err
-		}
-
-		formats, err := client.FormatsList(1, 25)
-		if err == nil {
-			err = sources.setFormats(formats)
-			if err != nil {
-			}
-		}
-
-		for _, source := range sources {
-
-			err := source.Push(client)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}()
-
-	return err
+	}
+	return nil
 }
 
 type Sources []*Source

@@ -23,7 +23,6 @@ func (cmd *PullCommand) Run() error {
 		cmd.Debug = false
 		Debug = true
 	}
-
 	client, err := phraseapp.NewClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
@@ -40,6 +39,7 @@ func (cmd *PullCommand) Run() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -207,7 +207,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		localeFile := &LocaleFile{
 			Name:       remoteLocale.Name,
 			ID:         remoteLocale.ID,
-			Code:        remoteLocale.Code,
+			Code:       remoteLocale.Code,
 			Tag:        target.GetTag(),
 			FileFormat: target.GetFormat(),
 			Path:       target.File,
