@@ -61,9 +61,8 @@ pushd $DIR > /dev/null
 
 # Homebrew - binary must be called phraseapp, because the binary name inside
 # the tar will be made available system wide
-mv phraseapp_macosx_amd64 phraseapp && \
-tar cfz phraseapp_macosx_amd64.tar.gz phraseapp && \
-mv phraseapp phraseapp_macosx_amd64
+cp phraseapp_macosx_amd64 phraseapp
+tar cfz phraseapp_macosx_amd64.tar.gz phraseapp
 
 for name in phraseapp_linux_386 phraseapp_linux_amd64; do
   tar cfz ${name}.tar.gz $name
