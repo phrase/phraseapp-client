@@ -135,7 +135,6 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	for _, localeFile := range localeFiles {
 		fmt.Println("Uploading", localeFile.RelPath())
 
-		fmt.Println(localeFile, source.Format)
 		if localeFile.shouldCreateLocale(source) {
 			localeDetails, err := source.createLocale(client, localeFile)
 			if err == nil {
@@ -256,6 +255,11 @@ func (source *Source) SystemFiles() ([]string, error) {
 		return nil, err
 	}
 
+	prefix := "." + string(os.PathSeparator)
+	if strings.HasPrefix(pre, prefix) {
+		pre = strings.TrimLeft(pre, prefix)
+	}
+
 	var matches []string
 	if post != "" {
 		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1))
@@ -299,6 +303,7 @@ func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) boo
 	if candTokenCnt < (len(tokens) + ignoreTokenCnt) {
 		return false
 	}
+
 	candTokens = candTokens[ignoreTokenCnt:]
 
 	for i := 1; i <= len(tokens); i++ {
@@ -349,6 +354,7 @@ func findFilesInPath(root string) ([]string, error) {
 
 // Return all locale files from disk that match the source pattern.
 func (source *Source) LocaleFiles() (LocaleFiles, error) {
+
 	filePaths, err := source.SystemFiles()
 	if err != nil {
 		return nil, err
@@ -365,6 +371,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		localeFile.Path = absolutePath
 
 		locale := source.getRemoteLocaleForLocaleFile(localeFile)
