@@ -487,56 +487,6 @@ func TestCheckPreconditions(t *testing.T) {
 	}
 }
 
-func TestSystemFiles(t *testing.T) {
-	d := setupLocalesFiles(t)
-	defer os.RemoveAll(d)
-	tt := []struct {
-		pattern  string
-		expFiles []string
-	}{
-		{"a/b/c/d.txt", []string{"a/b/c/d.txt"}},
-		{"a/b/c/d.*", []string{"a/b/c/d.txt", "a/b/c/d.jpg"}},
-		{"a/b/*/d.txt", []string{"a/b/c/d.txt", "a/b/x/d.txt"}},
-		{"a/b/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt"}},
-		{"a/*/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
-		{"a/*/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
-
-		{"a/**/d.txt", []string{"a/d.txt", "a/b/d.txt", "a/b/c/d.txt", "a/y/c/d.txt", "a/b/x/d.txt"}},
-		{"a/**/*/d.txt", []string{"a/b/d.txt", "a/b/c/d.txt", "a/b/x/d.txt", "a/y/c/d.txt"}},
-		{"a/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
-		{"a/**/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
-		{"a/*/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
-	}
-
-	for _, tti := range tt {
-		src := new(Source)
-		src.File = filepath.Join(d, tti.pattern)
-
-		matches, err := src.SystemFiles()
-		if err != nil {
-			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
-			continue
-		}
-
-		exp := map[string]bool{}
-		for _, f := range tti.expFiles {
-			exp[filepath.Join(d, f)] = true
-		}
-
-		for _, got := range matches {
-			if _, found := exp[got]; !found {
-				t.Errorf("%s: got unexpected file %q", src.File, got)
-				continue
-			}
-			delete(exp, got)
-		}
-
-		for k, _ := range exp {
-			t.Errorf("%s: expected to get file %q, but it didn't appear", src.File, k)
-		}
-	}
-}
-
 type localeFile struct {
 	path         string
 	code         string
@@ -563,13 +513,107 @@ func setupFiles(t *testing.T, files ...string) (dir string) {
 	return d
 }
 
+func pushd(t *testing.T, dir string) func() {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = os.Chdir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return func() {
+		os.Chdir(wd)
+	}
+
+}
+
 func setupLocalesFiles(t *testing.T) (dir string) {
-	return setupFiles(t, "a/b/c/d.jpg", "a/b/c/d.txt", "a/b/c/e.txt", "a/b/d.txt", "a/b/x/d.txt", "a/d.txt", "a/y/c/d.txt", "b/YY/c/d.txt", "b/YY/foo.bar.json", "b/YY/foo.json")
+	files := []string{
+		"a/b/c/d.jpg",
+		"a/b/c/d.txt",
+		"a/b/c/e.txt",
+		"a/b/d.txt",
+		"a/b/x/d.txt",
+		"a/d.txt",
+		"a/y/c/d.txt",
+		"b/YY/c/d.txt",
+		"b/YY/foo.bar.json",
+		"b/YY/foo.json",
+	}
+	files = append(files, []string{
+		"config/locales/application.en.yml",
+		"config/locales/atrribtues/course.en.yml ",
+		"config/locales/devise.en.yml",
+		"config/locales/landing.en.yml",
+		"config/locales/layouts.en.yml",
+	}...)
+	return setupFiles(t, files...)
+}
+
+func TestSystemFiles(t *testing.T) {
+	d := setupLocalesFiles(t)
+	defer os.RemoveAll(d)
+	defer pushd(t, d)()
+
+	tt := []struct {
+		pattern  string
+		expFiles []string
+	}{
+		{"a/b/c/d.txt", []string{"a/b/c/d.txt"}},
+		{"a/b/c/d.*", []string{"a/b/c/d.txt", "a/b/c/d.jpg"}},
+		{"a/b/*/d.txt", []string{"a/b/c/d.txt", "a/b/x/d.txt"}},
+		{"a/b/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt"}},
+		{"a/*/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+		{"a/*/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
+
+		{"a/**/d.txt", []string{"a/d.txt", "a/b/d.txt", "a/b/c/d.txt", "a/y/c/d.txt", "a/b/x/d.txt"}},
+		{"a/**/*/d.txt", []string{"a/b/d.txt", "a/b/c/d.txt", "a/b/x/d.txt", "a/y/c/d.txt"}},
+		{"a/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+		{"a/**/c/*.txt", []string{"a/b/c/d.txt", "a/b/c/e.txt", "a/y/c/d.txt"}},
+		{"a/*/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
+		{"./config/locales/**/*.en.yml", []string{
+			"config/locales/application.en.yml",
+			"config/locales/atrribtues/course.en.yml ",
+			"config/locales/devise.en.yml",
+			"config/locales/landing.en.yml",
+			"config/locales/layouts.en.yml",
+		}},
+	}
+
+	for _, tti := range tt {
+		src := new(Source)
+		src.File = tti.pattern
+
+		matches, err := src.SystemFiles()
+		if err != nil {
+			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
+			continue
+		}
+
+		exp := map[string]bool{}
+		for _, f := range tti.expFiles {
+			exp[f] = true
+		}
+
+		for _, got := range matches {
+			if _, found := exp[got]; !found {
+				t.Errorf("%s: got unexpected file %q", src.File, got)
+				continue
+			}
+			delete(exp, got)
+		}
+
+		for k, _ := range exp {
+			t.Errorf("%s: expected to get file %q, but it didn't appear", src.File, k)
+		}
+	}
 }
 
 func TestLocaleFiles(t *testing.T) {
 	d := setupLocalesFiles(t)
 	defer os.RemoveAll(d)
+	defer pushd(t, d)()
 
 	tt := []struct {
 		pattern string
@@ -605,7 +649,7 @@ func TestLocaleFiles(t *testing.T) {
 
 	for _, tti := range tt {
 		src := new(Source)
-		src.File = filepath.Join(d, tti.pattern)
+		src.File = tti.pattern
 
 		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY"})
 		files, err := src.LocaleFiles()
@@ -620,7 +664,7 @@ func TestLocaleFiles(t *testing.T) {
 
 		pathFileMap := map[string]localeFile{}
 		for i := range tti.files {
-			abs, err := filepath.Abs(filepath.Join(d, tti.files[i].path))
+			abs, err := filepath.Abs(tti.files[i].path)
 			if err != nil {
 				t.Fatalf("didn't expect error, got: %s", err)
 			}
