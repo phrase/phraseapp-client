@@ -63,6 +63,7 @@ pushd $DIR > /dev/null
 # the tar will be made available system wide
 cp phraseapp_macosx_amd64 phraseapp
 tar cfz phraseapp_macosx_amd64.tar.gz phraseapp
+rm phraseapp
 
 for name in phraseapp_linux_386 phraseapp_linux_amd64; do
   tar cfz ${name}.tar.gz $name
