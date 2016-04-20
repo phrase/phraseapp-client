@@ -58,3 +58,16 @@ This tool and it's source code are auto-generated from templates that run agains
 
 ## Further reading
 * [PhraseApp Client Download Page](https://phraseapp.com/cli)
+
+## Licenses
+
+phraseapp-client is licensed under MIT license. (see [LICENSE](LICENSE))
+
+Parts of phraseapp-client use third party libraries which are vendored and licensed under different licenses:
+
+library | license
+---|---
+github.com/bgentry/speakeasy | MIT / Apache 2.0
+github.com/daviddengcn/go-colortext | MIT
+github.com/dynport/dgtk | Apache 2.0
+gopkg.in/yaml.v2 | LGPLv3
