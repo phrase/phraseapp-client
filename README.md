@@ -67,7 +67,7 @@ Parts of phraseapp-client use third party libraries which are vendored and licen
 
 library | license
 ---|---
-github.com/bgentry/speakeasy | MIT / Apache 2.0
-github.com/daviddengcn/go-colortext | MIT
-github.com/dynport/dgtk | Apache 2.0
-gopkg.in/yaml.v2 | LGPLv3
+github.com/bgentry/speakeasy | [MIT](https://opensource.org/licenses/mit-license.php) / [Apache 2.0](https://github.com/bgentry/speakeasy/blob/master/LICENSE_WINDOWS)
+github.com/daviddengcn/go-colortext | [BSD](https://github.com/daviddengcn/go-colortext/blob/master/LICENSE) / [MIT](https://github.com/daviddengcn/go-colortext/blob/master/LICENSE)
+github.com/dynport/dgtk | [Apache 2.0](https://github.com/dynport/dgtk/blob/master/LICENSE)
+gopkg.in/yaml.v2 | [LGPLv3](https://github.com/go-yaml/yaml/blob/v2/LICENSE)
