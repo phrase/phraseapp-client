@@ -23,7 +23,7 @@ func (cmd *PullCommand) Run() error {
 		cmd.Debug = false
 		Debug = true
 	}
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}

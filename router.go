@@ -11,7 +11,7 @@ import (
 
 const (
 	RevisionDocs      = "3d576454cb1d04bb0938d3545c7fd2747e05c654"
-	RevisionGenerator = "2ddb71c1e7d67168c843b85febc7a1529470833a"
+	RevisionGenerator = "94d1286639d8e406fe02da37474b644d622d5498"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -342,7 +342,7 @@ func newAuthorizationCreate(cfg *phraseapp.Config) (*AuthorizationCreate, error)
 func (cmd *AuthorizationCreate) Run() error {
 	params := &cmd.AuthorizationParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -371,7 +371,7 @@ func newAuthorizationDelete(cfg *phraseapp.Config) *AuthorizationDelete {
 
 func (cmd *AuthorizationDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -400,7 +400,7 @@ func newAuthorizationShow(cfg *phraseapp.Config) *AuthorizationShow {
 
 func (cmd *AuthorizationShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -438,7 +438,7 @@ func newAuthorizationUpdate(cfg *phraseapp.Config) (*AuthorizationUpdate, error)
 func (cmd *AuthorizationUpdate) Run() error {
 	params := &cmd.AuthorizationParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -474,7 +474,7 @@ func newAuthorizationsList(cfg *phraseapp.Config) *AuthorizationsList {
 
 func (cmd *AuthorizationsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -513,7 +513,7 @@ func newBlacklistedKeyCreate(cfg *phraseapp.Config) (*BlacklistedKeyCreate, erro
 func (cmd *BlacklistedKeyCreate) Run() error {
 	params := &cmd.BlacklistedKeyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -544,7 +544,7 @@ func newBlacklistedKeyDelete(cfg *phraseapp.Config) *BlacklistedKeyDelete {
 
 func (cmd *BlacklistedKeyDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -575,7 +575,7 @@ func newBlacklistedKeyShow(cfg *phraseapp.Config) *BlacklistedKeyShow {
 
 func (cmd *BlacklistedKeyShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -615,7 +615,7 @@ func newBlacklistedKeyUpdate(cfg *phraseapp.Config) (*BlacklistedKeyUpdate, erro
 func (cmd *BlacklistedKeyUpdate) Run() error {
 	params := &cmd.BlacklistedKeyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -654,7 +654,7 @@ func newBlacklistedKeysList(cfg *phraseapp.Config) *BlacklistedKeysList {
 
 func (cmd *BlacklistedKeysList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -694,7 +694,7 @@ func newCommentCreate(cfg *phraseapp.Config) (*CommentCreate, error) {
 func (cmd *CommentCreate) Run() error {
 	params := &cmd.CommentParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -726,7 +726,7 @@ func newCommentDelete(cfg *phraseapp.Config) *CommentDelete {
 
 func (cmd *CommentDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -758,7 +758,7 @@ func newCommentMarkCheck(cfg *phraseapp.Config) *CommentMarkCheck {
 
 func (cmd *CommentMarkCheck) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -790,7 +790,7 @@ func newCommentMarkRead(cfg *phraseapp.Config) *CommentMarkRead {
 
 func (cmd *CommentMarkRead) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -822,7 +822,7 @@ func newCommentMarkUnread(cfg *phraseapp.Config) *CommentMarkUnread {
 
 func (cmd *CommentMarkUnread) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -854,7 +854,7 @@ func newCommentShow(cfg *phraseapp.Config) *CommentShow {
 
 func (cmd *CommentShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -895,7 +895,7 @@ func newCommentUpdate(cfg *phraseapp.Config) (*CommentUpdate, error) {
 func (cmd *CommentUpdate) Run() error {
 	params := &cmd.CommentParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -935,7 +935,7 @@ func newCommentsList(cfg *phraseapp.Config) *CommentsList {
 
 func (cmd *CommentsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -971,7 +971,7 @@ func newFormatsList(cfg *phraseapp.Config) *FormatsList {
 
 func (cmd *FormatsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1010,7 +1010,7 @@ func newKeyCreate(cfg *phraseapp.Config) (*KeyCreate, error) {
 func (cmd *KeyCreate) Run() error {
 	params := &cmd.TranslationKeyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1041,7 +1041,7 @@ func newKeyDelete(cfg *phraseapp.Config) *KeyDelete {
 
 func (cmd *KeyDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1072,7 +1072,7 @@ func newKeyShow(cfg *phraseapp.Config) *KeyShow {
 
 func (cmd *KeyShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1112,7 +1112,7 @@ func newKeyUpdate(cfg *phraseapp.Config) (*KeyUpdate, error) {
 func (cmd *KeyUpdate) Run() error {
 	params := &cmd.TranslationKeyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1151,7 +1151,7 @@ func newKeysDelete(cfg *phraseapp.Config) (*KeysDelete, error) {
 func (cmd *KeysDelete) Run() error {
 	params := &cmd.KeysDeleteParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1199,7 +1199,7 @@ func newKeysList(cfg *phraseapp.Config) (*KeysList, error) {
 func (cmd *KeysList) Run() error {
 	params := &cmd.KeysListParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1247,7 +1247,7 @@ func newKeysSearch(cfg *phraseapp.Config) (*KeysSearch, error) {
 func (cmd *KeysSearch) Run() error {
 	params := &cmd.KeysSearchParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1286,7 +1286,7 @@ func newKeysTag(cfg *phraseapp.Config) (*KeysTag, error) {
 func (cmd *KeysTag) Run() error {
 	params := &cmd.KeysTagParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1325,7 +1325,7 @@ func newKeysUntag(cfg *phraseapp.Config) (*KeysUntag, error) {
 func (cmd *KeysUntag) Run() error {
 	params := &cmd.KeysUntagParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1364,7 +1364,7 @@ func newLocaleCreate(cfg *phraseapp.Config) (*LocaleCreate, error) {
 func (cmd *LocaleCreate) Run() error {
 	params := &cmd.LocaleParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1395,7 +1395,7 @@ func newLocaleDelete(cfg *phraseapp.Config) *LocaleDelete {
 
 func (cmd *LocaleDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1438,7 +1438,7 @@ func newLocaleDownload(cfg *phraseapp.Config) (*LocaleDownload, error) {
 func (cmd *LocaleDownload) Run() error {
 	params := &cmd.LocaleDownloadParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1470,7 +1470,7 @@ func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
 
 func (cmd *LocaleShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1510,7 +1510,7 @@ func newLocaleUpdate(cfg *phraseapp.Config) (*LocaleUpdate, error) {
 func (cmd *LocaleUpdate) Run() error {
 	params := &cmd.LocaleParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1549,7 +1549,7 @@ func newLocalesList(cfg *phraseapp.Config) *LocalesList {
 
 func (cmd *LocalesList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1580,7 +1580,7 @@ func newOrderConfirm(cfg *phraseapp.Config) *OrderConfirm {
 
 func (cmd *OrderConfirm) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1619,7 +1619,7 @@ func newOrderCreate(cfg *phraseapp.Config) (*OrderCreate, error) {
 func (cmd *OrderCreate) Run() error {
 	params := &cmd.TranslationOrderParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1650,7 +1650,7 @@ func newOrderDelete(cfg *phraseapp.Config) *OrderDelete {
 
 func (cmd *OrderDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1681,7 +1681,7 @@ func newOrderShow(cfg *phraseapp.Config) *OrderShow {
 
 func (cmd *OrderShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1720,7 +1720,7 @@ func newOrdersList(cfg *phraseapp.Config) *OrdersList {
 
 func (cmd *OrdersList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1756,7 +1756,7 @@ func newProjectCreate(cfg *phraseapp.Config) (*ProjectCreate, error) {
 func (cmd *ProjectCreate) Run() error {
 	params := &cmd.ProjectParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1785,7 +1785,7 @@ func newProjectDelete(cfg *phraseapp.Config) *ProjectDelete {
 
 func (cmd *ProjectDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1814,7 +1814,7 @@ func newProjectShow(cfg *phraseapp.Config) *ProjectShow {
 
 func (cmd *ProjectShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1852,7 +1852,7 @@ func newProjectUpdate(cfg *phraseapp.Config) (*ProjectUpdate, error) {
 func (cmd *ProjectUpdate) Run() error {
 	params := &cmd.ProjectParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1888,7 +1888,7 @@ func newProjectsList(cfg *phraseapp.Config) *ProjectsList {
 
 func (cmd *ProjectsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1915,7 +1915,7 @@ func newShowUser(cfg *phraseapp.Config) *ShowUser {
 
 func (cmd *ShowUser) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1954,7 +1954,7 @@ func newStyleguideCreate(cfg *phraseapp.Config) (*StyleguideCreate, error) {
 func (cmd *StyleguideCreate) Run() error {
 	params := &cmd.StyleguideParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -1985,7 +1985,7 @@ func newStyleguideDelete(cfg *phraseapp.Config) *StyleguideDelete {
 
 func (cmd *StyleguideDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2016,7 +2016,7 @@ func newStyleguideShow(cfg *phraseapp.Config) *StyleguideShow {
 
 func (cmd *StyleguideShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2056,7 +2056,7 @@ func newStyleguideUpdate(cfg *phraseapp.Config) (*StyleguideUpdate, error) {
 func (cmd *StyleguideUpdate) Run() error {
 	params := &cmd.StyleguideParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2095,7 +2095,7 @@ func newStyleguidesList(cfg *phraseapp.Config) *StyleguidesList {
 
 func (cmd *StyleguidesList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2134,7 +2134,7 @@ func newTagCreate(cfg *phraseapp.Config) (*TagCreate, error) {
 func (cmd *TagCreate) Run() error {
 	params := &cmd.TagParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2165,7 +2165,7 @@ func newTagDelete(cfg *phraseapp.Config) *TagDelete {
 
 func (cmd *TagDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2196,7 +2196,7 @@ func newTagShow(cfg *phraseapp.Config) *TagShow {
 
 func (cmd *TagShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2235,7 +2235,7 @@ func newTagsList(cfg *phraseapp.Config) *TagsList {
 
 func (cmd *TagsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2274,7 +2274,7 @@ func newTranslationCreate(cfg *phraseapp.Config) (*TranslationCreate, error) {
 func (cmd *TranslationCreate) Run() error {
 	params := &cmd.TranslationParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2305,7 +2305,7 @@ func newTranslationShow(cfg *phraseapp.Config) *TranslationShow {
 
 func (cmd *TranslationShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2345,7 +2345,7 @@ func newTranslationUpdate(cfg *phraseapp.Config) (*TranslationUpdate, error) {
 func (cmd *TranslationUpdate) Run() error {
 	params := &cmd.TranslationUpdateParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2394,7 +2394,7 @@ func newTranslationsByKey(cfg *phraseapp.Config) (*TranslationsByKey, error) {
 func (cmd *TranslationsByKey) Run() error {
 	params := &cmd.TranslationsByKeyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2443,7 +2443,7 @@ func newTranslationsByLocale(cfg *phraseapp.Config) (*TranslationsByLocale, erro
 func (cmd *TranslationsByLocale) Run() error {
 	params := &cmd.TranslationsByLocaleParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2482,7 +2482,7 @@ func newTranslationsExclude(cfg *phraseapp.Config) (*TranslationsExclude, error)
 func (cmd *TranslationsExclude) Run() error {
 	params := &cmd.TranslationsExcludeParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2521,7 +2521,7 @@ func newTranslationsInclude(cfg *phraseapp.Config) (*TranslationsInclude, error)
 func (cmd *TranslationsInclude) Run() error {
 	params := &cmd.TranslationsIncludeParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2569,7 +2569,7 @@ func newTranslationsList(cfg *phraseapp.Config) (*TranslationsList, error) {
 func (cmd *TranslationsList) Run() error {
 	params := &cmd.TranslationsListParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2617,7 +2617,7 @@ func newTranslationsSearch(cfg *phraseapp.Config) (*TranslationsSearch, error) {
 func (cmd *TranslationsSearch) Run() error {
 	params := &cmd.TranslationsSearchParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2656,7 +2656,7 @@ func newTranslationsUnverify(cfg *phraseapp.Config) (*TranslationsUnverify, erro
 func (cmd *TranslationsUnverify) Run() error {
 	params := &cmd.TranslationsUnverifyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2695,7 +2695,7 @@ func newTranslationsVerify(cfg *phraseapp.Config) (*TranslationsVerify, error) {
 func (cmd *TranslationsVerify) Run() error {
 	params := &cmd.TranslationsVerifyParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2737,7 +2737,7 @@ func newUploadCreate(cfg *phraseapp.Config) (*UploadCreate, error) {
 func (cmd *UploadCreate) Run() error {
 	params := &cmd.UploadParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2768,7 +2768,7 @@ func newUploadShow(cfg *phraseapp.Config) *UploadShow {
 
 func (cmd *UploadShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2807,7 +2807,7 @@ func newUploadsList(cfg *phraseapp.Config) *UploadsList {
 
 func (cmd *UploadsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2839,7 +2839,7 @@ func newVersionShow(cfg *phraseapp.Config) *VersionShow {
 
 func (cmd *VersionShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2879,7 +2879,7 @@ func newVersionsList(cfg *phraseapp.Config) *VersionsList {
 
 func (cmd *VersionsList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2918,7 +2918,7 @@ func newWebhookCreate(cfg *phraseapp.Config) (*WebhookCreate, error) {
 func (cmd *WebhookCreate) Run() error {
 	params := &cmd.WebhookParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2949,7 +2949,7 @@ func newWebhookDelete(cfg *phraseapp.Config) *WebhookDelete {
 
 func (cmd *WebhookDelete) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -2980,7 +2980,7 @@ func newWebhookShow(cfg *phraseapp.Config) *WebhookShow {
 
 func (cmd *WebhookShow) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -3011,7 +3011,7 @@ func newWebhookTest(cfg *phraseapp.Config) *WebhookTest {
 
 func (cmd *WebhookTest) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -3051,7 +3051,7 @@ func newWebhookUpdate(cfg *phraseapp.Config) (*WebhookUpdate, error) {
 func (cmd *WebhookUpdate) Run() error {
 	params := &cmd.WebhookParams
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
@@ -3090,7 +3090,7 @@ func newWebhooksList(cfg *phraseapp.Config) *WebhooksList {
 
 func (cmd *WebhooksList) Run() error {
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
