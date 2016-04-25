@@ -321,7 +321,7 @@ var client *phraseapp.Client
 
 func selectFormat(data *WizardData) error {
 	auth := &phraseapp.Credentials{Token: data.AccessToken}
-	client, err := phraseapp.NewClient(auth)
+	client, err := newClient(auth)
 	if err != nil {
 		return err
 	}
@@ -488,7 +488,7 @@ func selectProjectStep(data *WizardData) error {
 	auth := &phraseapp.Credentials{Token: data.AccessToken, Host: data.Host}
 	fmt.Println("Please select your project:")
 	var err error
-	client, err = phraseapp.NewClient(auth)
+	client, err = newClient(auth)
 
 	var wg sync.WaitGroup
 	out := make(chan []phraseapp.Project, 1)

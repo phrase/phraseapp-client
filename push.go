@@ -25,7 +25,7 @@ func (cmd *PushCommand) Run() error {
 		Debug = true
 	}
 
-	client, err := phraseapp.NewClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials)
 	if err != nil {
 		return err
 	}
