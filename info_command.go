@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"runtime"
 	"strings"
+
+	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func GetInfo() string {
@@ -16,6 +18,7 @@ func GetInfo() string {
 		fmt.Sprintf("PhraseApp Docs revision lib:         %s", phraseapp.RevisionDocs),
 		fmt.Sprintf("PhraseApp Generator revision client: %s", RevisionGenerator),
 		fmt.Sprintf("PhraseApp Generator revision lib:    %s", phraseapp.RevisionGenerator),
+		fmt.Sprintf("GoVersion:                           %s", runtime.Version()),
 	}
 	return fmt.Sprintf("%s\n", strings.Join(info, "\n"))
 }
