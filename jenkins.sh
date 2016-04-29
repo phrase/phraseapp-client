@@ -81,5 +81,5 @@ if [[ -n $WORKSPACE ]]; then
     echo "unable to get shasum of phraseapp_macosx_amd64"
     exit 1
   fi
-  aws s3 cp --acl=public-read --metadata SHA256=${shasum} $DIR/phraseapp_macosx_amd64  $dst/phraseapp_macosx_amd64
+  aws s3 cp --acl=public-read --metadata SHA256=${shasum} $DIR/phraseapp_macosx_amd64  ${dst}phraseapp_macosx_amd64
 fi
