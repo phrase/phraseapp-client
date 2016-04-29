@@ -77,12 +77,13 @@ popd > /dev/null
 
 if [[ -n $WORKSPACE ]]; then
   # probably running inside jenkins
-  dst=s3://phraseapp-client-releases/${ORIGINAL_VERSION:-$REVISION}/
-  aws s3 sync --delete --acl=public-read $DIR $dst
-  shasum=$(sha256sum $DIR/phraseapp_macosx_amd64 | awk '{ print $1 }')
-  if [[ -z $shasum ]]; then
-    echo "unable to get shasum of phraseapp_macosx_amd64"
-    exit 1
-  fi
-  aws s3 cp --acl=public-read --metadata SHA256=${shasum} $DIR/phraseapp_macosx_amd64  ${dst}phraseapp_macosx_amd64
+  dst=s3://phraseapp-client-releases/${ORIGINAL_VERSION:-$REVISION}
+  for p in $(find $DIR -type f); do
+    shasum=$(sha256sum $p | awk '{ print $1 }')
+    if [[ -z $shasum ]]; then
+      echo "unable to get shasum of $p"
+      exit 1
+    fi
+    aws s3 cp --acl=public-read --metadata SHA256=${shasum} $p  ${dst}/$(basename $p)
+  done
 fi
