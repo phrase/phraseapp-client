@@ -1,44 +1,43 @@
 #!/bin/bash
 set -e
-export GOROOT=${GOROOT:-/usr/local/go1.6}
-export PATH=$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
-export GOPATH=$WORKSPACE
 
-pushd $GOPATH/src/github.com/phrase/phraseapp-client > /dev/null
+export BUILD_DIR=$(dirname $0)
+pushd $BUILD_DIR > /dev/null
 
-echo "running go test"
-go test ./...
+export GOVERSION=${GOVERSION:-1.6.2}
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+export REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
+export LIBRARY_REVISION=$(cat Godeps/Godeps.json | grep github.com/phrase/phraseapp-go -A 1 | tail -n 1 | cut -d '"' -f 4)
+export PROJ_DIR=/go/src/github.com/phrase/phraseapp-client
+export ORIGINAL_VERSION=$VERSION
+export CURRENT_DATE=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 
-echo "running go vet"
-go vet ./...
-
-
-REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
-LIBRARY_REVISION=$(cat Godeps/Godeps.json | jq '.Deps[] | select(.ImportPath == "github.com/phrase/phraseapp-go/phraseapp").Rev' -c -r)
+mkdir -p tmp
+export DIR=$(mktemp -d ${PWD}/tmp/phraseap-client-XXXX)
+if [[ "$KEEP_RELEASE" != "true" ]]; then
+  trap "rm -Rf $DIR" EXIT
+else
+  echo "keeping release in $DIR"
+fi
 
 if [[ -z $LIBRARY_REVISION ]]; then
   echo "unable to get library revision"
   exit 1
 fi
 
-ORIGINAL_VERSION=$VERSION
-
 if [[ -z $VERSION ]]; then
   # try to fetch the most recent version and use <version>-dev
   VERSION=$(git log --pretty=format:'%d' | ruby -e 'puts STDIN.readlines.map { |l| l[/tag: ([\d\.]+)/, 1] }.compact.first')-dev
 fi
 
+# test and vet
+docker run --rm -i -v "$PWD":$PROJ_DIR -w $PROJ_DIR golang:$GOVERSION bash <<EOF
+set -xe
+go test ./...
+go vet ./...
+EOF
+
 echo "building version=${VERSION} revision=${REVISION} library_revision=${LIBRARY_REVISION}"
-
-CURRENT_DATE=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
-
-DIR=$(mktemp -d /tmp/phraseap-client-XXXX)
-trap "rm -Rf $DIR" EXIT
-
-BUILD_SEP="="
-if $(go version | grep "go1.4"); then
-  BUILD_SEP=" "
-fi
 
 function build {
   goos=$1
@@ -49,7 +48,11 @@ function build {
     exit 1
   fi
   echo "build os=${goos} arch=${goarch} name=$name"
-  GOOS=$goos GOARCH=$goarch go build -o $DIR/$name -ldflags "-X main.BUILT_AT${BUILD_SEP}$CURRENT_DATE -X main.REVISION${BUILD_SEP}$REVISION -X main.PHRASEAPP_CLIENT_VERSION${BUILD_SEP}$VERSION -X main.LIBRARY_REVISION${BUILD_SEP}$LIBRARY_REVISION" .
+  proj_dir=/go/src/github.com/phrase/phraseapp-client
+  docker run --rm -i -e GOOS=$goos -e GOARCH=$goarch -v $DIR:/go/bin -v "$PWD":$proj_dir -w $proj_dir golang:$GOVERSION bash <<EOF
+  set -e
+  go build -o /go/bin/$name -ldflags "-X main.BUILT_AT=$CURRENT_DATE -X=main.REVISION=$REVISION -X=main.PHRASEAPP_CLIENT_VERSION=$VERSION -X=main.LIBRARY_REVISION=$LIBRARY_REVISION" .
+EOF
 }
 
 build linux   amd64   phraseapp_linux_amd64
@@ -70,7 +73,7 @@ for name in phraseapp_linux_386 phraseapp_linux_amd64; do
 done
 
 zip phraseapp_windows_amd64.exe.zip phraseapp_windows_amd64.exe &> /dev/null
-popd
+popd > /dev/null
 
 if [[ -n $WORKSPACE ]]; then
   # probably running inside jenkins
