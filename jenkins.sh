@@ -25,7 +25,7 @@ ORIGINAL_VERSION=$VERSION
 
 if [[ -z $VERSION ]]; then
   # try to fetch the most recent version and use <version>-dev
-  VERSION=$(git log --pretty=format:'%s' | ruby -e 'puts STDIN.select { |l| !l.strip[/^(\d+)\.(\d+)\.(\d+)$/].nil? }.map(&:strip).first')-dev
+  VERSION=$(git log --pretty=format:'%d' | ruby -e 'puts STDIN.readlines.map { |l| l[/tag: ([\d\.]+)/, 1] }.compact.first')-dev
 fi
 
 echo "building version=${VERSION} revision=${REVISION} library_revision=${LIBRARY_REVISION}"
