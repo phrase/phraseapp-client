@@ -831,7 +831,7 @@ func TestSetFormats(t *testing.T) {
 
 	for _, source := range sources {
 		if source.Format != nil {
-			t.Errorf("expected format to be nil, but was: %s", source.Format)
+			t.Errorf("expected format to be nil, but was: %s", source.Format.ApiName)
 		}
 	}
 
@@ -843,11 +843,11 @@ func TestSetFormats(t *testing.T) {
 	sources.setFormats(formats)
 
 	if sources[0].Format == nil {
-		t.Errorf("expected format yml to be present, but was %s", sources[0].Format)
+		t.Errorf("expected format yml to be present, but was <nil>")
 	}
 
 	if sources[1].Format != nil {
-		t.Errorf("expected no format to be present, but was %s", sources[1].Format)
+		t.Errorf("expected no format to be present, but was %s", sources[1].Format.ApiName)
 	}
 
 }
