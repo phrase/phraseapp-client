@@ -12,6 +12,8 @@ import (
 	"runtime/debug"
 )
 
+const errorsEndpoint = "https://phraseapp.com/errors"
+
 type AppCrash struct {
 	App        string `json:"app"`
 	AppVersion string `json:"app_version"`
@@ -50,7 +52,7 @@ func ReportError(name string, r interface{}, cfg *phraseapp.Config) {
 	if err != nil {
 		return
 	}
-	response, err := http.Post("https://phraseapp.com/errors", "application/json", bytes.NewBuffer(body))
+	response, err := http.Post(errorsEndpoint, "application/json", bytes.NewBuffer(body))
 
 	if err != nil {
 		return

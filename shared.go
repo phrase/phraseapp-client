@@ -20,10 +20,17 @@ type LocaleFile struct {
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
+const docsBaseUrl = "https://phraseapp.com/docs"
+const docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
+
+func docsFormatsUrl(formatName string) string {
+	return fmt.Sprintf("%s/guides/formats/%s", docsBaseUrl, formatName)
+}
+
 func ValidPath(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
 		return fmt.Errorf(
-			"File patterns may not be empty!\nFor more information see http://docs.phraseapp.com/developers/cli/configuration/",
+			"File patterns may not be empty!\nFor more information see %s", docsConfigUrl,
 		)
 	}
 
@@ -39,8 +46,8 @@ func ValidPath(file, formatName, formatExtension string) error {
 
 	if formatExtension != "" && formatExtension != fileExtension {
 		return fmt.Errorf(
-			"File extension %q does not equal %q (format: %q) for file %q.\nFor more information see http://docs.phraseapp.com/guides/formats/%s",
-			fileExtension, formatExtension, formatName, file, formatName,
+			"File extension %q does not equal %q (format: %q) for file %q.\nFor more information see %s",
+			fileExtension, formatExtension, formatName, file, docsFormatsUrl(formatName),
 		)
 	}
 

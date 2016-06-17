@@ -11,6 +11,10 @@ import (
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/version"
 )
 
+const cliLandingPageUrl = "https://phraseapp.com/en/cli"
+
+var releaseURL = "https://github.com/phrase/phraseapp-client/releases/latest"
+
 var PHRASEAPP_VERSION_TMP_FILE = "/tmp/.phraseapp.version"
 
 func ValidateVersion() {
@@ -33,12 +37,10 @@ func validateVersionWithErr() error {
 		return err
 	}
 	if clientVersion.Less(currentVersion) {
-		return fmt.Errorf("Please consider updating the PhraseApp CLI client (%s < %s)\nSee https://phraseapp.com/en/cli", PHRASEAPP_CLIENT_VERSION, currentVersion)
+		return fmt.Errorf("Please consider updating the PhraseApp CLI client (%s < %s)\nSee %s", PHRASEAPP_CLIENT_VERSION, currentVersion, cliLandingPageUrl)
 	}
 	return nil
 }
-
-var releaseURL = "https://github.com/phrase/phraseapp-client/releases/latest"
 
 func getLatestReleaseVersion() (string, error) {
 	req, err := http.NewRequest("HEAD", releaseURL, nil)

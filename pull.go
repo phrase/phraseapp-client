@@ -92,8 +92,7 @@ func (target *Target) CheckPreconditions() error {
 
 	if strings.Count(target.File, "*") > 0 {
 		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n" +
-				"http://docs.phraseapp.com/developers/cli/configuration/#targets",
+			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl,
 		)
 	}
 
@@ -113,7 +112,6 @@ func (target *Target) CheckPreconditions() error {
 }
 
 func (target *Target) Pull(client *phraseapp.Client) error {
-
 	if err := target.CheckPreconditions(); err != nil {
 		return err
 	}

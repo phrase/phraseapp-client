@@ -19,7 +19,6 @@ import (
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const docsURL = "http://docs.phraseapp.com/developers/cli/configuration"
 const parrot = `
                                ppe############eep
                          p############################pp
@@ -265,7 +264,7 @@ func pushConfig(data *WizardData) error {
 	}
 
 	fmt.Println("Enter the path to your local language files, you want to upload to PhraseApp.")
-	fmt.Println("For documentation see http://docs.phraseapp.com/developers/cli/configuration/#sources")
+	fmt.Printf("For documentation see %s#push", docsConfigUrl)
 
 	var pushPath string
 	for {
@@ -295,7 +294,7 @@ func pullConfig(data *WizardData) error {
 	}
 
 	fmt.Println("Enter the path to where you want to store downloaded language files from PhraseApp.")
-	fmt.Println("For documentation see http://docs.phraseapp.com/developers/cli/configuration/#targets")
+	fmt.Printf("For documentation see %s#pull", docsConfigUrl)
 
 	var pullPath string
 	for {
@@ -382,7 +381,7 @@ func writeConfig(data *WizardData, filename string) error {
 	fmt.Println("")
 	fmt.Println(string(bytes))
 
-	printSuccess("You can make changes to this file, see this documentation for more advanced options: " + docsURL)
+	printSuccess("You can make changes to this file, see this documentation for more advanced options: " + docsConfigUrl)
 	printSuccess("Now start using phraseapp push & pull for your workflow:")
 	fmt.Println("")
 	fmt.Println("$ phraseapp push")
