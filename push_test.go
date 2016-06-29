@@ -819,39 +819,6 @@ func TestRemoteLocaleForLocaleFile(t *testing.T) {
 	}
 }
 
-func TestSetFormats(t *testing.T) {
-	sources := Sources{
-		{
-			FileFormat: "yml",
-		},
-		{
-			FileFormat: "",
-		},
-	}
-
-	for _, source := range sources {
-		if source.Format != nil {
-			t.Errorf("expected format to be nil, but was: %s", source.Format.ApiName)
-		}
-	}
-
-	formats := []*phraseapp.Format{
-		{
-			ApiName: "yml",
-		},
-	}
-	sources.setFormats(formats)
-
-	if sources[0].Format == nil {
-		t.Errorf("expected format yml to be present, but was <nil>")
-	}
-
-	if sources[1].Format != nil {
-		t.Errorf("expected no format to be present, but was %s", sources[1].Format.ApiName)
-	}
-
-}
-
 type patternShouldCreateLocale struct {
 	Name         string
 	Code         string

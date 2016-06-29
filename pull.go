@@ -8,9 +8,8 @@ import (
 
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 
-	"strings"
-
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"strings"
 )
 
 type PullCommand struct {
@@ -31,6 +30,21 @@ func (cmd *PullCommand) Run() error {
 	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err
+	}
+
+	projectIds := []string{}
+	for _, target := range targets {
+		projectIds = append(projectIds, target.ProjectID)
+	}
+	projectIdToLocales, err := LocalesForProjects(client, projectIds)
+	if err != nil {
+		return err
+	}
+	for _, target := range targets {
+		val, ok := projectIdToLocales[target.ProjectID]
+		if ok {
+			target.RemoteLocales = val
+		}
 	}
 
 	for _, target := range targets {
@@ -115,12 +129,6 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 	if err := target.CheckPreconditions(); err != nil {
 		return err
 	}
-
-	remoteLocales, err := RemoteLocales(client, target.ProjectID)
-	if err != nil {
-		return err
-	}
-	target.RemoteLocales = remoteLocales
 
 	localeFiles, err := target.LocaleFiles()
 	if err != nil {
