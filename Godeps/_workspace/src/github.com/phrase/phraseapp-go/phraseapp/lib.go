@@ -14,18 +14,12 @@ import (
 )
 
 const (
-	RevisionDocs      = "421bf264a691775ed8d6ad4f60a57718a6a9bcc9"
-	RevisionGenerator = "483343224c2927019ca20b5a09f08c03320a9b42"
+	RevisionDocs      = "4fc36062055363b8fc3e56e08ff53a29eed057ad"
+	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
 )
 
 type Account struct {
-	CreatedAt *time.Time `json:"created_at"`
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-type AccountPreview struct {
+	Company   string     `json:"company"`
 	CreatedAt *time.Time `json:"created_at"`
 	ID        string     `json:"id"`
 	Name      string     `json:"name"`
@@ -85,6 +79,18 @@ type Format struct {
 	RendersDefaultLocale      bool   `json:"renders_default_locale"`
 }
 
+type Invitation struct {
+	AcceptedAt *time.Time       `json:"accepted_at"`
+	CreatedAt  *time.Time       `json:"created_at"`
+	Email      string           `json:"email"`
+	ID         string           `json:"id"`
+	Locales    []*LocalePreview `json:"locales"`
+	Projects   []*ProjectShort  `json:"projects"`
+	Role       string           `json:"role"`
+	State      string           `json:"state"`
+	UpdatedAt  *time.Time       `json:"updated_at"`
+}
+
 type KeyPreview struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
@@ -126,19 +132,41 @@ type LocaleStatistics struct {
 	WordsTotalCount             int64 `json:"words_total_count"`
 }
 
+type Member struct {
+	Email    string            `json:"email"`
+	ID       string            `json:"id"`
+	Projects []*ProjectLocales `json:"projects"`
+	Role     string            `json:"role"`
+	Username string            `json:"username"`
+}
+
 type Project struct {
-	Account    *AccountPreview `json:"account"`
-	CreatedAt  *time.Time      `json:"created_at"`
-	ID         string          `json:"id"`
-	MainFormat string          `json:"main_format"`
-	Name       string          `json:"name"`
-	UpdatedAt  *time.Time      `json:"updated_at"`
+	Account    *Account   `json:"account"`
+	CreatedAt  *time.Time `json:"created_at"`
+	ID         string     `json:"id"`
+	MainFormat string     `json:"main_format"`
+	Name       string     `json:"name"`
+	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
 type ProjectDetails struct {
 	Project
 
 	SharesTranslationMemory bool `json:"shares_translation_memory"`
+}
+
+type ProjectLocales struct {
+	ProjectShort
+
+	Locales []*LocalePreview `json:"locales"`
+}
+
+type ProjectShort struct {
+	CreatedAt  *time.Time `json:"created_at"`
+	ID         string     `json:"id"`
+	MainFormat string     `json:"main_format"`
+	Name       string     `json:"name"`
+	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
 type StatisticsListItem struct {
@@ -1116,6 +1144,56 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+// Get details on a single account.
+func (client *Client) AccountShow(id string) (*Account, error) {
+	retVal := new(Account)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s", id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all accounts the current user has access to.
+func (client *Client) AccountsList(page, perPage int) ([]*Account, error) {
+	retVal := []*Account{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts")
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 // Create a new authorization.
 func (client *Client) AuthorizationCreate(params *AuthorizationParams) (*AuthorizationWithToken, error) {
 	retVal := new(AuthorizationWithToken)
@@ -1559,6 +1637,244 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	retVal := []*Format{}
 	err := func() error {
 		url := fmt.Sprintf("/v2/formats")
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type InvitationCreateParams struct {
+	Email      *string `json:"email,omitempty"  cli:"opt --email"`
+	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+}
+
+func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "email":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Email = &val
+
+		case "locale_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleIDs = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		case "role":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Role = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+func (client *Client) InvitationCreate(account_id string, params *InvitationCreateParams) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing invitation (must not be accepted yet).
+func (client *Client) InvitationDelete(account_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Resend the invitation email (must not be accepted yet).
+func (client *Client) InvitationResend(account_id, id string) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s/resend", account_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Get details on a single invitation.
+func (client *Client) InvitationShow(account_id, id string) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type InvitationUpdateParams struct {
+	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+}
+
+func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "locale_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleIDs = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		case "role":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Role = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used.
+func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*Invitation, error) {
+	retVal := []*Invitation{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2483,6 +2799,142 @@ func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Loca
 	retVal := []*Locale{}
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp.
+func (client *Client) MemberDelete(account_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single user in the account.
+func (client *Client) MemberShow(account_id, id string) (*Member, error) {
+	retVal := new(Member)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type MemberUpdateParams struct {
+	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+}
+
+func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "locale_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleIDs = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		case "role":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Role = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdateParams) (*Member, error) {
+	retVal := new(Member)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used.
+func (client *Client) MembersList(account_id string, page, perPage int) ([]*Member, error) {
+	retVal := []*Member{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/members", account_id)
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {

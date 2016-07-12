@@ -10,12 +10,16 @@ import (
 )
 
 const (
-	RevisionDocs      = "421bf264a691775ed8d6ad4f60a57718a6a9bcc9"
-	RevisionGenerator = "483343224c2927019ca20b5a09f08c03320a9b42"
+	RevisionDocs      = "4fc36062055363b8fc3e56e08ff53a29eed057ad"
+	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r := cli.NewRouter()
+
+	r.Register("account/show", newAccountShow(cfg), "Get details on a single account.")
+
+	r.Register("accounts/list", newAccountsList(cfg), "List all accounts the current user has access to.")
 
 	if cmd, err := newAuthorizationCreate(cfg); err != nil {
 		return nil, err
@@ -78,6 +82,26 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r.Register("comments/list", newCommentsList(cfg), "List all comments for a key.")
 
 	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
+
+	if cmd, err := newInvitationCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("invitation/create", cmd, "Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+	}
+
+	r.Register("invitation/delete", newInvitationDelete(cfg), "Delete an existing invitation (must not be accepted yet).")
+
+	r.Register("invitation/resend", newInvitationResend(cfg), "Resend the invitation email (must not be accepted yet).")
+
+	r.Register("invitation/show", newInvitationShow(cfg), "Get details on a single invitation.")
+
+	if cmd, err := newInvitationUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("invitation/update", cmd, "Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+	}
+
+	r.Register("invitations/list", newInvitationsList(cfg), "List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used.")
 
 	if cmd, err := newKeyCreate(cfg); err != nil {
 		return nil, err
@@ -148,6 +172,18 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	}
 
 	r.Register("locales/list", newLocalesList(cfg), "List all locales for the given project.")
+
+	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp.")
+
+	r.Register("member/show", newMemberShow(cfg), "Get details on a single user in the account.")
+
+	if cmd, err := newMemberUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("member/update", cmd, "Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+	}
+
+	r.Register("members/list", newMembersList(cfg), "Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used.")
 
 	r.Register("order/confirm", newOrderConfirm(cfg), "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
 
@@ -318,6 +354,71 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
 
 	return r, nil
+}
+
+type AccountShow struct {
+	*phraseapp.Config
+
+	ID string `cli:"arg required"`
+}
+
+func newAccountShow(cfg *phraseapp.Config) *AccountShow {
+
+	actionAccountShow := &AccountShow{Config: cfg}
+
+	return actionAccountShow
+}
+
+func (cmd *AccountShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.AccountShow(cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type AccountsList struct {
+	*phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+}
+
+func newAccountsList(cfg *phraseapp.Config) *AccountsList {
+
+	actionAccountsList := &AccountsList{Config: cfg}
+	if cfg.Page != nil {
+		actionAccountsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionAccountsList.PerPage = *cfg.PerPage
+	}
+
+	return actionAccountsList
+}
+
+func (cmd *AccountsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.AccountsList(cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type AuthorizationCreate struct {
@@ -985,6 +1086,211 @@ func (cmd *FormatsList) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
+type InvitationCreate struct {
+	*phraseapp.Config
+
+	phraseapp.InvitationCreateParams
+
+	AccountID string `cli:"arg required"`
+}
+
+func newInvitationCreate(cfg *phraseapp.Config) (*InvitationCreate, error) {
+
+	actionInvitationCreate := &InvitationCreate{Config: cfg}
+
+	val, defaultsPresent := actionInvitationCreate.Config.Defaults["invitation/create"]
+	if defaultsPresent {
+		if err := actionInvitationCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionInvitationCreate, nil
+}
+
+func (cmd *InvitationCreate) Run() error {
+	params := &cmd.InvitationCreateParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.InvitationCreate(cmd.AccountID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type InvitationDelete struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newInvitationDelete(cfg *phraseapp.Config) *InvitationDelete {
+
+	actionInvitationDelete := &InvitationDelete{Config: cfg}
+
+	return actionInvitationDelete
+}
+
+func (cmd *InvitationDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.InvitationDelete(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type InvitationResend struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newInvitationResend(cfg *phraseapp.Config) *InvitationResend {
+
+	actionInvitationResend := &InvitationResend{Config: cfg}
+
+	return actionInvitationResend
+}
+
+func (cmd *InvitationResend) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.InvitationResend(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type InvitationShow struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newInvitationShow(cfg *phraseapp.Config) *InvitationShow {
+
+	actionInvitationShow := &InvitationShow{Config: cfg}
+
+	return actionInvitationShow
+}
+
+func (cmd *InvitationShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.InvitationShow(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type InvitationUpdate struct {
+	*phraseapp.Config
+
+	phraseapp.InvitationUpdateParams
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newInvitationUpdate(cfg *phraseapp.Config) (*InvitationUpdate, error) {
+
+	actionInvitationUpdate := &InvitationUpdate{Config: cfg}
+
+	val, defaultsPresent := actionInvitationUpdate.Config.Defaults["invitation/update"]
+	if defaultsPresent {
+		if err := actionInvitationUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionInvitationUpdate, nil
+}
+
+func (cmd *InvitationUpdate) Run() error {
+	params := &cmd.InvitationUpdateParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.InvitationUpdate(cmd.AccountID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type InvitationsList struct {
+	*phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+}
+
+func newInvitationsList(cfg *phraseapp.Config) *InvitationsList {
+
+	actionInvitationsList := &InvitationsList{Config: cfg}
+	if cfg.Page != nil {
+		actionInvitationsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionInvitationsList.PerPage = *cfg.PerPage
+	}
+
+	return actionInvitationsList
+}
+
+func (cmd *InvitationsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.InvitationsList(cmd.AccountID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
 type KeyCreate struct {
 	*phraseapp.Config
 
@@ -1555,6 +1861,143 @@ func (cmd *LocalesList) Run() error {
 	}
 
 	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type MemberDelete struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newMemberDelete(cfg *phraseapp.Config) *MemberDelete {
+
+	actionMemberDelete := &MemberDelete{Config: cfg}
+
+	return actionMemberDelete
+}
+
+func (cmd *MemberDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.MemberDelete(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type MemberShow struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newMemberShow(cfg *phraseapp.Config) *MemberShow {
+
+	actionMemberShow := &MemberShow{Config: cfg}
+
+	return actionMemberShow
+}
+
+func (cmd *MemberShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.MemberShow(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type MemberUpdate struct {
+	*phraseapp.Config
+
+	phraseapp.MemberUpdateParams
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newMemberUpdate(cfg *phraseapp.Config) (*MemberUpdate, error) {
+
+	actionMemberUpdate := &MemberUpdate{Config: cfg}
+
+	val, defaultsPresent := actionMemberUpdate.Config.Defaults["member/update"]
+	if defaultsPresent {
+		if err := actionMemberUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionMemberUpdate, nil
+}
+
+func (cmd *MemberUpdate) Run() error {
+	params := &cmd.MemberUpdateParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.MemberUpdate(cmd.AccountID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type MembersList struct {
+	*phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+}
+
+func newMembersList(cfg *phraseapp.Config) *MembersList {
+
+	actionMembersList := &MembersList{Config: cfg}
+	if cfg.Page != nil {
+		actionMembersList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionMembersList.PerPage = *cfg.PerPage
+	}
+
+	return actionMembersList
+}
+
+func (cmd *MembersList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.MembersList(cmd.AccountID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
