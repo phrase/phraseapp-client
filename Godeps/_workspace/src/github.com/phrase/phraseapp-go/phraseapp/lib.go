@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "7a0b5ac5b1cf1958754347da2d6c6ce0bd564564"
-	RevisionGenerator = "edf10b6ff26ed4eca0a57c138ab168f0665bee5a"
+	RevisionDocs      = "421bf264a691775ed8d6ad4f60a57718a6a9bcc9"
+	RevisionGenerator = "483343224c2927019ca20b5a09f08c03320a9b42"
 )
 
 type Account struct {
@@ -530,12 +530,14 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 }
 
 type LocaleParams struct {
-	Code           *string `json:"code,omitempty"  cli:"opt --code"`
-	Default        *bool   `json:"default,omitempty"  cli:"opt --default"`
-	Main           *bool   `json:"main,omitempty"  cli:"opt --main"`
-	Name           *string `json:"name,omitempty"  cli:"opt --name"`
-	Rtl            *bool   `json:"rtl,omitempty"  cli:"opt --rtl"`
-	SourceLocaleID *string `json:"source_locale_id,omitempty"  cli:"opt --source-locale-id"`
+	Code                        *string `json:"code,omitempty"  cli:"opt --code"`
+	Default                     *bool   `json:"default,omitempty"  cli:"opt --default"`
+	Main                        *bool   `json:"main,omitempty"  cli:"opt --main"`
+	Name                        *string `json:"name,omitempty"  cli:"opt --name"`
+	Rtl                         *bool   `json:"rtl,omitempty"  cli:"opt --rtl"`
+	SourceLocaleID              *string `json:"source_locale_id,omitempty"  cli:"opt --source-locale-id"`
+	UnverifyNewTranslations     *bool   `json:"unverify_new_translations,omitempty"  cli:"opt --unverify-new-translations"`
+	UnverifyUpdatedTranslations *bool   `json:"unverify_updated_translations,omitempty"  cli:"opt --unverify-updated-translations"`
 }
 
 func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -582,6 +584,20 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.SourceLocaleID = &val
+
+		case "unverify_new_translations":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.UnverifyNewTranslations = &val
+
+		case "unverify_updated_translations":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.UnverifyUpdatedTranslations = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)

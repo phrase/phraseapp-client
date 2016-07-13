@@ -2,6 +2,7 @@ package phraseapp
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -41,14 +42,21 @@ func (msg *ValidationErrorMessage) String() string {
 }
 
 type RateLimitingError struct {
-	Limit     int
-	Remaining int
-	Reset     time.Time
+	Limit           int
+	Remaining       int
+	Reset           time.Time
+	TooManyRequests bool
 }
+
+const errorConcurrencyLimit = "Concurrency limit exceeded"
 
 func NewRateLimitError(resp *http.Response) (*RateLimitingError, error) {
 	var err error
 	re := new(RateLimitingError)
+	b, err := ioutil.ReadAll(resp.Body)
+	if err == nil && strings.TrimSpace(string(b)) == errorConcurrencyLimit {
+		re.TooManyRequests = true
+	}
 
 	limit := resp.Header.Get("X-Rate-Limit-Limit")
 	re.Limit, err = strconv.Atoi(limit)
@@ -73,5 +81,8 @@ func NewRateLimitError(resp *http.Response) (*RateLimitingError, error) {
 }
 
 func (rle *RateLimitingError) Error() string {
+	if rle.TooManyRequests {
+		return fmt.Sprintf("Rate limit exceeded: too many parallel requests")
+	}
 	return fmt.Sprintf("Rate limit exceeded: from %d requests %d are remaning (reset in %d seconds)", rle.Limit, rle.Remaining, int64(rle.Reset.Sub(time.Now()).Seconds()))
 }

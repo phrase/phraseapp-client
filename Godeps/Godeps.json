@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/phrase/phraseapp-client",
 	"GoVersion": "go1.6.2",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
@@ -27,7 +28,7 @@
 		},
 		{
 			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",
-			"Rev": "8472985387a47540f5d05c7bcdcb6d7e95dce8b0"
+			"Rev": "d548c6e537a8d997d3a8fbda7d200a32b52df402"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
