@@ -32,11 +32,7 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	projectIds := []string{}
-	for _, target := range targets {
-		projectIds = append(projectIds, target.ProjectID)
-	}
-	projectIdToLocales, err := LocalesForProjects(client, projectIds)
+	projectIdToLocales, err := LocalesForProjects(client, targets)
 	if err != nil {
 		return err
 	}
@@ -58,6 +54,14 @@ func (cmd *PullCommand) Run() error {
 }
 
 type Targets []*Target
+
+func (targets Targets) ProjectIds() []string {
+	projectIds := []string{}
+	for _, target := range targets {
+		projectIds = append(projectIds, target.ProjectID)
+	}
+	return projectIds
+}
 
 type Target struct {
 	File          string

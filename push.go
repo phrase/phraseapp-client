@@ -34,7 +34,11 @@ func (cmd *PushCommand) Run() error {
 		return err
 	}
 
-	formatMap, _ := GetFormats(client)
+	formatMap, err := GetFormats(client)
+	if err != nil {
+		return fmt.Errorf("Error retrieving format list from PhraseApp: %s", err)
+	}
+
 	for _, source := range sources {
 		formatName := source.GetFileFormat()
 		if val, ok := formatMap[formatName]; ok {
@@ -45,11 +49,7 @@ func (cmd *PushCommand) Run() error {
 		}
 	}
 
-	projectIds := []string{}
-	for _, source := range sources {
-		projectIds = append(projectIds, source.ProjectID)
-	}
-	projectIdToLocales, err := LocalesForProjects(client, projectIds)
+	projectIdToLocales, err := LocalesForProjects(client, sources)
 	if err != nil {
 		return err
 	}
@@ -70,6 +70,14 @@ func (cmd *PushCommand) Run() error {
 }
 
 type Sources []*Source
+
+func (sources Sources) ProjectIds() []string {
+	projectIds := []string{}
+	for _, source := range sources {
+		projectIds = append(projectIds, source.ProjectID)
+	}
+	return projectIds
+}
 
 type Source struct {
 	File        string

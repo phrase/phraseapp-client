@@ -107,9 +107,13 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 	}
 }
 
-func LocalesForProjects(client *phraseapp.Client, projectIds []string) (map[string][]*phraseapp.Locale, error) {
+type ProjectLocales interface {
+	ProjectIds() []string
+}
+
+func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales) (map[string][]*phraseapp.Locale, error) {
 	projectIdToLocales := map[string][]*phraseapp.Locale{}
-	for _, pid := range projectIds {
+	for _, pid := range projectLocales.ProjectIds() {
 		if _, ok := projectIdToLocales[pid]; !ok {
 			remoteLocales, err := RemoteLocales(client, pid)
 			if err != nil {
