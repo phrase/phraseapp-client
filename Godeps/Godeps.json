@@ -1,10 +1,6 @@
 {
 	"ImportPath": "github.com/phrase/phraseapp-client",
-	"GoVersion": "go1.6.2",
-	"GodepVersion": "v74",
-	"Packages": [
-		"./..."
-	],
+	"GoVersion": "go1.6",
 	"Deps": [
 		{
 			"ImportPath": "github.com/bgentry/speakeasy",
@@ -28,7 +24,7 @@
 		},
 		{
 			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",
-			"Rev": "d548c6e537a8d997d3a8fbda7d200a32b52df402"
+			"Rev": "6118f4c692ffa22436211f102bf553c62840eec7"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
