@@ -24,7 +24,7 @@
 		},
 		{
 			"ImportPath": "github.com/phrase/phraseapp-go/phraseapp",
-			"Rev": "6118f4c692ffa22436211f102bf553c62840eec7"
+			"Rev": "58770dcac12c84222a746e11010dfe78bacc7419"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
