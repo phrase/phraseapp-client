@@ -9,9 +9,8 @@ import (
 
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
 
-	"unicode/utf8"
-
 	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"unicode/utf8"
 )
 
 type PushCommand struct {
@@ -35,15 +34,33 @@ func (cmd *PushCommand) Run() error {
 		return err
 	}
 
-	formats, err := client.FormatsList(1, 25)
-	if err == nil {
-		err = sources.setFormats(formats)
-		if err != nil {
+	formatMap, err := GetFormats(client)
+	if err != nil {
+		return fmt.Errorf("Error retrieving format list from PhraseApp: %s", err)
+	}
+
+	for _, source := range sources {
+		formatName := source.GetFileFormat()
+		if val, ok := formatMap[formatName]; ok {
+			source.Format = val
+		}
+		if source.Format == nil {
+			return fmt.Errorf("Format %q of source %q is not supported by PhraseApp!", source.Format.ApiName, source.File)
+		}
+	}
+
+	projectIdToLocales, err := LocalesForProjects(client, sources)
+	if err != nil {
+		return err
+	}
+	for _, source := range sources {
+		val, ok := projectIdToLocales[source.ProjectID]
+		if ok {
+			source.RemoteLocales = val
 		}
 	}
 
 	for _, source := range sources {
-
 		err := source.Push(client)
 		if err != nil {
 			return err
@@ -53,6 +70,14 @@ func (cmd *PushCommand) Run() error {
 }
 
 type Sources []*Source
+
+func (sources Sources) ProjectIds() []string {
+	projectIds := []string{}
+	for _, source := range sources {
+		projectIds = append(projectIds, source.ProjectID)
+	}
+	return projectIds
+}
 
 type Source struct {
 	File        string
@@ -120,12 +145,6 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	if err := source.CheckPreconditions(); err != nil {
 		return err
 	}
-
-	remoteLocales, err := RemoteLocales(client, source.ProjectID)
-	if err != nil {
-		return err
-	}
-	source.RemoteLocales = remoteLocales
 
 	localeFiles, err := source.LocaleFiles()
 	if err != nil {
@@ -645,22 +664,6 @@ func (source *Source) GetFileFormat() string {
 		return source.FileFormat
 	}
 	return ""
-}
-
-func (sources Sources) setFormats(formats []*phraseapp.Format) error {
-	formatMap := map[string]*phraseapp.Format{}
-	for _, format := range formats {
-		formatMap[format.ApiName] = format
-	}
-
-	for _, source := range sources {
-		formatName := source.GetFileFormat()
-		if val, ok := formatMap[formatName]; ok {
-			source.Format = val
-		}
-	}
-
-	return nil
 }
 
 func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
