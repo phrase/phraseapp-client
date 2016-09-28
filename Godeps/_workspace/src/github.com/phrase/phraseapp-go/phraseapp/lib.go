@@ -93,7 +93,7 @@ type GlossaryTerm struct {
 	Description   string                     `json:"description"`
 	ID            string                     `json:"id"`
 	Term          string                     `json:"term"`
-	Translateable bool                       `json:"translateable"`
+	Translatable  bool                       `json:"translatable"`
 	Translations  []*GlossaryTermTranslation `json:"translations"`
 	UpdatedAt     *time.Time                 `json:"updated_at"`
 }
@@ -522,7 +522,7 @@ type GlossaryTermParams struct {
 	CaseSensitive *bool   `json:"case_sensitive,omitempty"  cli:"opt --case-sensitive"`
 	Description   *string `json:"description,omitempty"  cli:"opt --description"`
 	Term          *string `json:"term,omitempty"  cli:"opt --term"`
-	Translateable *bool   `json:"translateable,omitempty"  cli:"opt --translateable"`
+	Translatable  *bool   `json:"translatable,omitempty"  cli:"opt --translatable"`
 }
 
 func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -549,12 +549,12 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 			}
 			params.Term = &val
 
-		case "translateable":
+		case "translatable":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Translateable = &val
+			params.Translatable = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
