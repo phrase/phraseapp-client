@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	RevisionDocs      = "4fc36062055363b8fc3e56e08ff53a29eed057ad"
+	RevisionDocs      = "e5ee68f42b4e4c5990df830df68cd6b57800aa30"
 	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
 )
 
@@ -77,6 +77,33 @@ type Format struct {
 	IncludesLocaleInformation bool   `json:"includes_locale_information"`
 	Name                      string `json:"name"`
 	RendersDefaultLocale      bool   `json:"renders_default_locale"`
+}
+
+type Glossary struct {
+	CreatedAt *time.Time      `json:"created_at"`
+	ID        string          `json:"id"`
+	Name      string          `json:"name"`
+	Projects  []*ProjectShort `json:"projects"`
+	UpdatedAt *time.Time      `json:"updated_at"`
+}
+
+type GlossaryTerm struct {
+	CaseSensitive bool                       `json:"case_sensitive"`
+	CreatedAt     *time.Time                 `json:"created_at"`
+	Description   string                     `json:"description"`
+	ID            string                     `json:"id"`
+	Term          string                     `json:"term"`
+	Translatable  bool                       `json:"translatable"`
+	Translations  []*GlossaryTermTranslation `json:"translations"`
+	UpdatedAt     *time.Time                 `json:"updated_at"`
+}
+
+type GlossaryTermTranslation struct {
+	Content    string     `json:"content"`
+	CreatedAt  *time.Time `json:"created_at"`
+	ID         string     `json:"id"`
+	LocaleCode string     `json:"locale_code"`
+	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
 type Invitation struct {
@@ -422,6 +449,112 @@ func (params *CommentParams) ApplyValuesFromMap(defaults map[string]interface{})
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Message = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type GlossaryParams struct {
+	Name       *string `json:"name,omitempty"  cli:"opt --name"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+}
+
+func (params *GlossaryParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type GlossaryTermTranslationParams struct {
+	Content    *string `json:"content,omitempty"  cli:"opt --content"`
+	LocaleCode *string `json:"locale_code,omitempty"  cli:"opt --locale-code"`
+}
+
+func (params *GlossaryTermTranslationParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "content":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Content = &val
+
+		case "locale_code":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleCode = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type GlossaryTermParams struct {
+	CaseSensitive *bool   `json:"case_sensitive,omitempty"  cli:"opt --case-sensitive"`
+	Description   *string `json:"description,omitempty"  cli:"opt --description"`
+	Term          *string `json:"term,omitempty"  cli:"opt --term"`
+	Translatable  *bool   `json:"translatable,omitempty"  cli:"opt --translatable"`
+}
+
+func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "case_sensitive":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.CaseSensitive = &val
+
+		case "description":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Description = &val
+
+		case "term":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Term = &val
+
+		case "translatable":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Translatable = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -1657,6 +1790,343 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	return retVal, err
 }
 
+// List all glossaries the current user has access to.
+func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*Glossary, error) {
+	retVal := []*Glossary{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new glossary.
+func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) (*Glossary, error) {
+	retVal := new(Glossary)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing glossary.
+func (client *Client) GlossaryDelete(account_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single glossary.
+func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
+	retVal := new(Glossary)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing glossary.
+func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryParams) (*Glossary, error) {
+	retVal := new(Glossary)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new glossary term.
+func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing glossary term.
+func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single glossary term.
+func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing glossary term.
+func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new glossary term translation.
+func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, term_id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
+	retVal := new(GlossaryTermTranslation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations", account_id, glossary_id, term_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing glossary term translation.
+func (client *Client) GlossaryTermTranslationDelete(account_id, glossary_id, term_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Update an existing glossary term translation.
+func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, term_id, id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
+	retVal := new(GlossaryTermTranslation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all glossary terms the current user has access to.
+func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, perPage int) ([]*GlossaryTerm, error) {
+	retVal := []*GlossaryTerm{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if Debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 type InvitationCreateParams struct {
 	Email      *string `json:"email,omitempty"  cli:"opt --email"`
 	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
@@ -1703,7 +2173,7 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
-// Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+// Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationCreate(account_id string, params *InvitationCreateParams) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
@@ -1734,7 +2204,7 @@ func (client *Client) InvitationCreate(account_id string, params *InvitationCrea
 	return retVal, err
 }
 
-// Delete an existing invitation (must not be accepted yet).
+// Delete an existing invitation (must not be accepted yet). Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationDelete(account_id, id string) error {
 
 	err := func() error {
@@ -1751,7 +2221,7 @@ func (client *Client) InvitationDelete(account_id, id string) error {
 	return err
 }
 
-// Resend the invitation email (must not be accepted yet).
+// Resend the invitation email (must not be accepted yet). Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationResend(account_id, id string) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
@@ -1776,7 +2246,7 @@ func (client *Client) InvitationResend(account_id, id string) (*Invitation, erro
 	return retVal, err
 }
 
-// Get details on a single invitation.
+// Get details on a single invitation. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationShow(account_id, id string) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
@@ -1839,7 +2309,7 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
-// Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+// Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
@@ -1870,7 +2340,7 @@ func (client *Client) InvitationUpdate(account_id, id string, params *Invitation
 	return retVal, err
 }
 
-// List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used.
+// List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*Invitation, error) {
 	retVal := []*Invitation{}
 	err := func() error {
@@ -2819,7 +3289,7 @@ func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Loca
 	return retVal, err
 }
 
-// Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp.
+// Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.
 func (client *Client) MemberDelete(account_id, id string) error {
 
 	err := func() error {
@@ -2836,7 +3306,7 @@ func (client *Client) MemberDelete(account_id, id string) error {
 	return err
 }
 
-// Get details on a single user in the account.
+// Get details on a single user in the account. Access token scope must include <code>team.manage</code>.
 func (client *Client) MemberShow(account_id, id string) (*Member, error) {
 	retVal := new(Member)
 	err := func() error {
@@ -2899,7 +3369,7 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
-// Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.
+// Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdateParams) (*Member, error) {
 	retVal := new(Member)
 	err := func() error {
@@ -2930,7 +3400,7 @@ func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdatePa
 	return retVal, err
 }
 
-// Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used.
+// Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.
 func (client *Client) MembersList(account_id string, page, perPage int) ([]*Member, error) {
 	retVal := []*Member{}
 	err := func() error {

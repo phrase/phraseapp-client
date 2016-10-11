@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	RevisionDocs      = "4fc36062055363b8fc3e56e08ff53a29eed057ad"
+	RevisionDocs      = "e5ee68f42b4e4c5990df830df68cd6b57800aa30"
 	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
 )
 
@@ -83,25 +83,75 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
 
+	r.Register("glossaries/list", newGlossariesList(cfg), "List all glossaries the current user has access to.")
+
+	if cmd, err := newGlossaryCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary/create", cmd, "Create a new glossary.")
+	}
+
+	r.Register("glossary/delete", newGlossaryDelete(cfg), "Delete an existing glossary.")
+
+	r.Register("glossary/show", newGlossaryShow(cfg), "Get details on a single glossary.")
+
+	if cmd, err := newGlossaryUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary/update", cmd, "Update an existing glossary.")
+	}
+
+	if cmd, err := newGlossaryTermCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary_term/create", cmd, "Create a new glossary term.")
+	}
+
+	r.Register("glossary_term/delete", newGlossaryTermDelete(cfg), "Delete an existing glossary term.")
+
+	r.Register("glossary_term/show", newGlossaryTermShow(cfg), "Get details on a single glossary term.")
+
+	if cmd, err := newGlossaryTermUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary_term/update", cmd, "Update an existing glossary term.")
+	}
+
+	if cmd, err := newGlossaryTermTranslationCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary_term_translation/create", cmd, "Create a new glossary term translation.")
+	}
+
+	r.Register("glossary_term_translation/delete", newGlossaryTermTranslationDelete(cfg), "Delete an existing glossary term translation.")
+
+	if cmd, err := newGlossaryTermTranslationUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("glossary_term_translation/update", cmd, "Update an existing glossary term translation.")
+	}
+
+	r.Register("glossary_terms/list", newGlossaryTermsList(cfg), "List all glossary terms the current user has access to.")
+
 	if cmd, err := newInvitationCreate(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("invitation/create", cmd, "Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+		r.Register("invitation/create", cmd, "Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.")
 	}
 
-	r.Register("invitation/delete", newInvitationDelete(cfg), "Delete an existing invitation (must not be accepted yet).")
+	r.Register("invitation/delete", newInvitationDelete(cfg), "Delete an existing invitation (must not be accepted yet). Access token scope must include <code>team.manage</code>.")
 
-	r.Register("invitation/resend", newInvitationResend(cfg), "Resend the invitation email (must not be accepted yet).")
+	r.Register("invitation/resend", newInvitationResend(cfg), "Resend the invitation email (must not be accepted yet). Access token scope must include <code>team.manage</code>.")
 
-	r.Register("invitation/show", newInvitationShow(cfg), "Get details on a single invitation.")
+	r.Register("invitation/show", newInvitationShow(cfg), "Get details on a single invitation. Access token scope must include <code>team.manage</code>.")
 
 	if cmd, err := newInvitationUpdate(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("invitation/update", cmd, "Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+		r.Register("invitation/update", cmd, "Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.")
 	}
 
-	r.Register("invitations/list", newInvitationsList(cfg), "List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used.")
+	r.Register("invitations/list", newInvitationsList(cfg), "List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.")
 
 	if cmd, err := newKeyCreate(cfg); err != nil {
 		return nil, err
@@ -173,17 +223,17 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("locales/list", newLocalesList(cfg), "List all locales for the given project.")
 
-	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp.")
+	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.")
 
-	r.Register("member/show", newMemberShow(cfg), "Get details on a single user in the account.")
+	r.Register("member/show", newMemberShow(cfg), "Get details on a single user in the account. Access token scope must include <code>team.manage</code>.")
 
 	if cmd, err := newMemberUpdate(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("member/update", cmd, "Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them.")
+		r.Register("member/update", cmd, "Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.")
 	}
 
-	r.Register("members/list", newMembersList(cfg), "Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used.")
+	r.Register("members/list", newMembersList(cfg), "Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.")
 
 	r.Register("order/confirm", newOrderConfirm(cfg), "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
 
@@ -1078,6 +1128,474 @@ func (cmd *FormatsList) Run() error {
 	}
 
 	res, err := client.FormatsList(cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossariesList struct {
+	*phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+}
+
+func newGlossariesList(cfg *phraseapp.Config) *GlossariesList {
+
+	actionGlossariesList := &GlossariesList{Config: cfg}
+	if cfg.Page != nil {
+		actionGlossariesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionGlossariesList.PerPage = *cfg.PerPage
+	}
+
+	return actionGlossariesList
+}
+
+func (cmd *GlossariesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossariesList(cmd.AccountID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryCreate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryParams
+
+	AccountID string `cli:"arg required"`
+}
+
+func newGlossaryCreate(cfg *phraseapp.Config) (*GlossaryCreate, error) {
+
+	actionGlossaryCreate := &GlossaryCreate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryCreate.Config.Defaults["glossary/create"]
+	if defaultsPresent {
+		if err := actionGlossaryCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryCreate, nil
+}
+
+func (cmd *GlossaryCreate) Run() error {
+	params := &cmd.GlossaryParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryCreate(cmd.AccountID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryDelete struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newGlossaryDelete(cfg *phraseapp.Config) *GlossaryDelete {
+
+	actionGlossaryDelete := &GlossaryDelete{Config: cfg}
+
+	return actionGlossaryDelete
+}
+
+func (cmd *GlossaryDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.GlossaryDelete(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type GlossaryShow struct {
+	*phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newGlossaryShow(cfg *phraseapp.Config) *GlossaryShow {
+
+	actionGlossaryShow := &GlossaryShow{Config: cfg}
+
+	return actionGlossaryShow
+}
+
+func (cmd *GlossaryShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryShow(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryUpdate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryParams
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newGlossaryUpdate(cfg *phraseapp.Config) (*GlossaryUpdate, error) {
+
+	actionGlossaryUpdate := &GlossaryUpdate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryUpdate.Config.Defaults["glossary/update"]
+	if defaultsPresent {
+		if err := actionGlossaryUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryUpdate, nil
+}
+
+func (cmd *GlossaryUpdate) Run() error {
+	params := &cmd.GlossaryParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryUpdate(cmd.AccountID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermCreate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryTermParams
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+}
+
+func newGlossaryTermCreate(cfg *phraseapp.Config) (*GlossaryTermCreate, error) {
+
+	actionGlossaryTermCreate := &GlossaryTermCreate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryTermCreate.Config.Defaults["glossary_term/create"]
+	if defaultsPresent {
+		if err := actionGlossaryTermCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryTermCreate, nil
+}
+
+func (cmd *GlossaryTermCreate) Run() error {
+	params := &cmd.GlossaryTermParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermCreate(cmd.AccountID, cmd.GlossaryID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermDelete struct {
+	*phraseapp.Config
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	ID         string `cli:"arg required"`
+}
+
+func newGlossaryTermDelete(cfg *phraseapp.Config) *GlossaryTermDelete {
+
+	actionGlossaryTermDelete := &GlossaryTermDelete{Config: cfg}
+
+	return actionGlossaryTermDelete
+}
+
+func (cmd *GlossaryTermDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.GlossaryTermDelete(cmd.AccountID, cmd.GlossaryID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type GlossaryTermShow struct {
+	*phraseapp.Config
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	ID         string `cli:"arg required"`
+}
+
+func newGlossaryTermShow(cfg *phraseapp.Config) *GlossaryTermShow {
+
+	actionGlossaryTermShow := &GlossaryTermShow{Config: cfg}
+
+	return actionGlossaryTermShow
+}
+
+func (cmd *GlossaryTermShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermShow(cmd.AccountID, cmd.GlossaryID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermUpdate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryTermParams
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	ID         string `cli:"arg required"`
+}
+
+func newGlossaryTermUpdate(cfg *phraseapp.Config) (*GlossaryTermUpdate, error) {
+
+	actionGlossaryTermUpdate := &GlossaryTermUpdate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryTermUpdate.Config.Defaults["glossary_term/update"]
+	if defaultsPresent {
+		if err := actionGlossaryTermUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryTermUpdate, nil
+}
+
+func (cmd *GlossaryTermUpdate) Run() error {
+	params := &cmd.GlossaryTermParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermUpdate(cmd.AccountID, cmd.GlossaryID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermTranslationCreate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryTermTranslationParams
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	TermID     string `cli:"arg required"`
+}
+
+func newGlossaryTermTranslationCreate(cfg *phraseapp.Config) (*GlossaryTermTranslationCreate, error) {
+
+	actionGlossaryTermTranslationCreate := &GlossaryTermTranslationCreate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryTermTranslationCreate.Config.Defaults["glossary_term_translation/create"]
+	if defaultsPresent {
+		if err := actionGlossaryTermTranslationCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryTermTranslationCreate, nil
+}
+
+func (cmd *GlossaryTermTranslationCreate) Run() error {
+	params := &cmd.GlossaryTermTranslationParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermTranslationCreate(cmd.AccountID, cmd.GlossaryID, cmd.TermID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermTranslationDelete struct {
+	*phraseapp.Config
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	TermID     string `cli:"arg required"`
+	ID         string `cli:"arg required"`
+}
+
+func newGlossaryTermTranslationDelete(cfg *phraseapp.Config) *GlossaryTermTranslationDelete {
+
+	actionGlossaryTermTranslationDelete := &GlossaryTermTranslationDelete{Config: cfg}
+
+	return actionGlossaryTermTranslationDelete
+}
+
+func (cmd *GlossaryTermTranslationDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	err = client.GlossaryTermTranslationDelete(cmd.AccountID, cmd.GlossaryID, cmd.TermID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type GlossaryTermTranslationUpdate struct {
+	*phraseapp.Config
+
+	phraseapp.GlossaryTermTranslationParams
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+	TermID     string `cli:"arg required"`
+	ID         string `cli:"arg required"`
+}
+
+func newGlossaryTermTranslationUpdate(cfg *phraseapp.Config) (*GlossaryTermTranslationUpdate, error) {
+
+	actionGlossaryTermTranslationUpdate := &GlossaryTermTranslationUpdate{Config: cfg}
+
+	val, defaultsPresent := actionGlossaryTermTranslationUpdate.Config.Defaults["glossary_term_translation/update"]
+	if defaultsPresent {
+		if err := actionGlossaryTermTranslationUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionGlossaryTermTranslationUpdate, nil
+}
+
+func (cmd *GlossaryTermTranslationUpdate) Run() error {
+	params := &cmd.GlossaryTermTranslationParams
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermTranslationUpdate(cmd.AccountID, cmd.GlossaryID, cmd.TermID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type GlossaryTermsList struct {
+	*phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID  string `cli:"arg required"`
+	GlossaryID string `cli:"arg required"`
+}
+
+func newGlossaryTermsList(cfg *phraseapp.Config) *GlossaryTermsList {
+
+	actionGlossaryTermsList := &GlossaryTermsList{Config: cfg}
+	if cfg.Page != nil {
+		actionGlossaryTermsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionGlossaryTermsList.PerPage = *cfg.PerPage
+	}
+
+	return actionGlossaryTermsList
+}
+
+func (cmd *GlossaryTermsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GlossaryTermsList(cmd.AccountID, cmd.GlossaryID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
