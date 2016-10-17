@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/version"
+	"github.com/dynport/dgtk/version"
 )
 
 const cliLandingPageUrl = "https://phraseapp.com/en/cli"

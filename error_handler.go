@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 	"net/http"
 	"os"
 	"runtime"
 	"runtime/debug"
+
+	ct "github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const errorsEndpoint = "https://phraseapp.com/errors"

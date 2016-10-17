@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	ct "github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 var Debug bool

@@ -1,20 +1,23 @@
+.PHONY: vendor
+PACKAGES = $(shell go list ./... | grep -v "/vendor")
+
 default: build
 
 all: build test vet
 
 test:
-	go test ./...
+	@go test ${PACKAGES}
 
 vet:
-	go vet ./...
+	@go vet ${PACKAGES}
 
 build:
-	go get ./...
+	@go get ${PACKAGES}
 
-godep:
-	godep save -r ./...
-	@godep save -r ./...
+vendor:
+	godep save ./...
+	@godep save ./...
 
 update_lib:
 	godep update github.com/phrase/phraseapp-go/...
-	make godep
+	make vendor

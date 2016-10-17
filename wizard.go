@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/daviddengcn/go-colortext"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	ct "github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const parrot = `

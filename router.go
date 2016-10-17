@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/dynport/dgtk/cli"
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 const (

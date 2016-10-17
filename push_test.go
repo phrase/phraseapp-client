@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func getBaseSource() *Source {
@@ -102,7 +102,7 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 
 func TestSourceLocaleFilesTwo(t *testing.T) {
 	source := getBaseSource()
-	source.File = "./**/<locale_name>.yml"
+	source.File = "./tests/<locale_name>.yml"
 	localeFiles, err := source.LocaleFiles()
 
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp"
+	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
 func newClient(creds *phraseapp.Credentials) (*phraseapp.Client, error) {
