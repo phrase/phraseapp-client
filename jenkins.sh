@@ -31,10 +31,11 @@ if [[ -z $VERSION ]]; then
 fi
 
 # test and vet
-docker run --rm -i -v "$PWD":$PROJ_DIR -w $PROJ_DIR golang:$GOVERSION bash <<EOF
+docker run --rm -i -v "$PWD":$PROJ_DIR -w $PROJ_DIR golang:$GOVERSION bash <<"EOF"
 set -xe
-go test ./...
-go vet ./...
+packages=$(go list ./... | grep -v "/vendor/")
+go test ${packages}
+go vet ${packages}
 EOF
 
 echo "building version=${VERSION} revision=${REVISION} library_revision=${LIBRARY_REVISION}"
