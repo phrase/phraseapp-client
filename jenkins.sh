@@ -27,7 +27,7 @@ fi
 
 if [[ -z $VERSION ]]; then
   # try to fetch the most recent version and use <version>-dev
-  VERSION=$(git log --pretty=format:'%d' | ruby -e 'puts STDIN.readlines.map { |l| l[/tag: ([\d\.]+)/, 1] }.compact.first')-dev
+  VERSION=$(git log --pretty=format:'%d' | grep -o 'tag: .*' | cut -d ')' -f 1 | awk '{ print $2 }' | sed -s 's/,$//g')-dev
 fi
 
 # test and vet

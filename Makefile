@@ -1,4 +1,4 @@
-.PHONY: vendor
+.PHONY: vendor build
 PACKAGES = $(shell go list ./... | grep -v "/vendor")
 
 default: build
