@@ -184,6 +184,15 @@ func (source *Source) Push(client *phraseapp.Client) error {
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+	localeDetails, err := source.localeShow(client, localeFile)
+	if err != nil && !strings.Contains(err.Error(), "404") {
+		return nil, err
+	}
+
+	if localeDetails != nil {
+		return localeDetails, nil
+	}
+
 	localeParams := new(phraseapp.LocaleParams)
 
 	if localeFile.Name != "" {
@@ -205,7 +214,7 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 		localeParams.Code = &localeFile.Code
 	}
 
-	localeDetails, err := client.LocaleCreate(source.ProjectID, localeParams)
+	localeDetails, err = client.LocaleCreate(source.ProjectID, localeParams)
 	if err != nil {
 		return nil, err
 	}
@@ -374,7 +383,6 @@ func findFilesInPath(root string) ([]string, error) {
 
 // Return all locale files from disk that match the source pattern.
 func (source *Source) LocaleFiles() (LocaleFiles, error) {
-
 	filePaths, err := source.SystemFiles()
 	if err != nil {
 		return nil, err
@@ -681,4 +689,38 @@ func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
 	// we assume that it should be created
 	// every other source should be uploaded and validated in uploads#create
 	return (localeFile.Name != "" || localeFile.Code != "")
+}
+
+func (source *Source) localeShow(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+	identifier := localeFile.localeIdentifier(source)
+	if identifier == "" {
+		return nil, nil
+	}
+
+	localeDetail, err := client.LocaleShow(source.ProjectID, identifier)
+	if err != nil {
+		return nil, err
+	}
+	if localeDetail != nil {
+		return localeDetail, nil
+	}
+
+	return nil, nil
+}
+
+func (localeFile *LocaleFile) localeIdentifier(source *Source) string {
+	localeName := source.replacePlaceholderInParams(localeFile)
+	if localeName != "" && localeName != localeFile.Code {
+		return localeName
+	}
+
+	if localeFile.Name != "" {
+		return localeFile.Name
+	}
+
+	if localeFile.Code != "" {
+		return localeFile.Code
+	}
+
+	return ""
 }
