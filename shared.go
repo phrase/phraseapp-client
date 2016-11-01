@@ -13,11 +13,7 @@ import (
 
 var Debug bool
 
-type LocaleFiles []*LocaleFile
-type LocaleFile struct {
-	Path, Name, ID, Code, Tag, FileFormat string
-	ExistsRemote                          bool
-}
+var separator = string(os.PathSeparator)
 
 var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 
@@ -53,59 +49,6 @@ func ValidPath(file, formatName, formatExtension string) error {
 	}
 
 	return nil
-}
-
-func (localeFile *LocaleFile) RelPath() string {
-	callerPath, _ := os.Getwd()
-	relativePath, _ := filepath.Rel(callerPath, localeFile.Path)
-	return relativePath
-}
-
-// Locale to Path mapping
-func (localeFile *LocaleFile) Message() string {
-	str := ""
-	if Debug {
-		if localeFile.Name != "" {
-			str = fmt.Sprintf("%s Name: %s", str, localeFile.Name)
-		}
-		if localeFile.ID != "" {
-			str = fmt.Sprintf("%s Id: %s", str, localeFile.ID)
-		}
-		if localeFile.Code != "" {
-			str = fmt.Sprintf("%s Code: %s", str, localeFile.Code)
-		}
-		if localeFile.Tag != "" {
-			str = fmt.Sprintf("%s Tag: %s", str, localeFile.Tag)
-		}
-		if localeFile.FileFormat != "" {
-			str = fmt.Sprintf("%s Format: %s", str, localeFile.FileFormat)
-		}
-	} else {
-		str = fmt.Sprintf("%s", localeFile.Name)
-	}
-	return strings.TrimSpace(str)
-}
-
-func sharedMessage(method string, localeFile *LocaleFile) {
-	local := localeFile.RelPath()
-
-	if method == "pull" {
-		remote := localeFile.Message()
-		fmt.Print("Downloaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(remote)
-		ct.ResetColor()
-		fmt.Print(" to ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local, "\n")
-		ct.ResetColor()
-	} else {
-		fmt.Print("Uploaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local)
-		ct.ResetColor()
-		fmt.Println(" successfully.")
-	}
 }
 
 type ProjectLocales interface {
@@ -170,4 +113,34 @@ func Exists(absPath string) error {
 		return fmt.Errorf("no such file or directory: %s", absPath)
 	}
 	return nil
+}
+
+func isDir(path string) bool {
+	stat, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return stat.IsDir()
+}
+
+func sharedMessage(method string, localeFile *LocaleFile) {
+	local := localeFile.RelPath()
+
+	if method == "pull" {
+		remote := localeFile.Message()
+		fmt.Print("Downloaded ")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(remote)
+		ct.ResetColor()
+		fmt.Print(" to ")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(local, "\n")
+		ct.ResetColor()
+	} else {
+		fmt.Print("Uploaded ")
+		ct.Foreground(ct.Green, true)
+		fmt.Print(local)
+		ct.ResetColor()
+		fmt.Println(" successfully.")
+	}
 }
