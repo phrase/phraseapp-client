@@ -144,3 +144,7 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 		fmt.Println(" successfully.")
 	}
 }
+
+func isNotFound(err error) bool {
+	return (err != nil && strings.Contains(err.Error(), "404"))
+}
