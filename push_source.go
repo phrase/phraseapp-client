@@ -193,9 +193,7 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	localeDetails, found, err := source.getLocaleIfExist(client, localeFile)
 	if err != nil {
 		return nil, err
-	}
-
-	if found {
+	} else if found {
 		return localeDetails, nil
 	}
 
@@ -234,10 +232,9 @@ func (source *Source) getLocaleIfExist(client *phraseapp.Client, localeFile *Loc
 	}
 
 	localeDetail, err := client.LocaleShow(source.ProjectID, identifier)
-	if err != nil {
-		if isNotFound(err) {
-			return nil, false, nil
-		}
+	if isNotFound(err) {
+		return nil, false, nil
+	} else if err != nil {
 		return nil, false, err
 	}
 
