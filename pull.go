@@ -127,6 +127,10 @@ func (target *Target) CheckPreconditions() error {
 		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
 	}
 
+	if target.GetLocaleID() == "" && !containsAnyPlaceholders(target.File) {
+		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder!")
+	}
+
 	return nil
 }
 
@@ -205,6 +209,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
 	localeID := target.GetLocaleID()
+
 	files := []*LocaleFile{}
 	for _, remoteLocale := range target.RemoteLocales {
 		if localeID != "" && !(remoteLocale.ID == localeID || remoteLocale.Name == localeID) {

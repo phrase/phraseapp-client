@@ -20,6 +20,10 @@ var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 const docsBaseUrl = "https://phraseapp.com/docs"
 const docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
 
+func containsAnyPlaceholders(s string) bool {
+	return placeholderRegexp.MatchString(s)
+}
+
 func docsFormatsUrl(formatName string) string {
 	return fmt.Sprintf("%s/guides/formats/%s", docsBaseUrl, formatName)
 }
