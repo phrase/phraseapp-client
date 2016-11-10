@@ -229,12 +229,12 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		return nil, err
 	}
 
-	tokens := splitPathToTokens(source.File)
+	patternTokens := splitPathToTokens(source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
 		pathTokens := splitPathToTokens(path)
-		localeFile := extractParamsFromPathTokens(tokens, pathTokens)
+		localeFile := extractParamsFromPathTokens(patternTokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
 		if err != nil {
@@ -371,55 +371,64 @@ func splitPathToTokens(s string) []string {
 	return tokens
 }
 
-func extractParamsFromPathTokens(srcTokens, pathTokens []string) *LocaleFile {
+func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile {
 	localeFile := new(LocaleFile)
 
-	for idx, token := range srcTokens {
-		pathToken := pathTokens[idx]
-		if token == "*" {
-			continue
-		}
-		if token == "**" {
-			break
-		}
-		extractParamFromPathToken(localeFile, token, pathToken)
+	if Debug {
+		fmt.Println("pattern:", patternTokens)
+		fmt.Println("path:", pathTokens)
 	}
 
-	if Contains(srcTokens, "**") {
+	for idx, patternToken := range patternTokens {
+		pathToken := pathTokens[idx]
+
+		if patternToken == "*" {
+			continue
+		}
+		if patternToken == "**" {
+			break
+		}
+		localeFile.extractParamFromPathToken(patternToken, pathToken)
+	}
+
+	if Contains(patternTokens, "**") {
 		offset := 1
-		for idx := len(srcTokens) - 1; idx >= 0; idx-- {
-			token := srcTokens[idx]
+		for idx := len(patternTokens) - 1; idx >= 0; idx-- {
+			patternToken := patternTokens[idx]
 			pathToken := pathTokens[len(pathTokens)-offset]
 			offset += 1
 
-			if token == "*" {
+			if patternToken == "*" {
 				continue
-			}
-			if token == "**" {
+			} else if patternToken == "**" {
 				break
 			}
 
-			extractParamFromPathToken(localeFile, token, pathToken)
+			localeFile.extractParamFromPathToken(patternToken, pathToken)
 		}
 	}
 
 	return localeFile
 }
 
-func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken string) {
-	groups := placeholderRegexp.FindAllString(srcToken, -1)
+func (localeFile *LocaleFile) extractParamFromPathToken(patternToken, pathToken string) {
+	groups := placeholderRegexp.FindAllString(patternToken, -1)
 	if len(groups) <= 0 {
 		return
 	}
 
-	match := strings.Replace(srcToken, ".", "[.]", -1)
-	if strings.HasPrefix(match, "*") {
+	match := strings.Replace(patternToken, ".", "[.]", -1)
+	if strings.Contains(match, "*") {
 		match = strings.Replace(match, "*", ".*", -1)
 	}
 
 	for _, group := range groups {
 		replacer := fmt.Sprintf("(?P%s.+)", group)
 		match = strings.Replace(match, group, replacer, 1)
+	}
+
+	if Debug {
+		fmt.Println("  expanded: ", match)
 	}
 
 	if match == "" {
@@ -433,6 +442,13 @@ func extractParamFromPathToken(localeFile *LocaleFile, srcToken, pathToken strin
 
 	namedMatches := tmpRegexp.SubexpNames()
 	subMatches := tmpRegexp.FindStringSubmatch(pathToken)
+
+	if Debug {
+		fmt.Println("  namedMatches: ", namedMatches)
+		fmt.Println("  subMatches: ", subMatches)
+		fmt.Println()
+	}
+
 	for i, subMatch := range subMatches {
 		value := strings.Trim(subMatch, separator)
 		switch namedMatches[i] {
