@@ -47,8 +47,9 @@ func (cmd *PushCommand) Run() error {
 		if val, ok := formatMap[formatName]; ok {
 			source.Format = val
 		}
+
 		if source.Format == nil {
-			return fmt.Errorf("Format %q of source %q is not supported by PhraseApp!", source.Format.ApiName, source.File)
+			return fmt.Errorf("Format %q of source %q is not supported by PhraseApp!", formatName, source.File)
 		}
 	}
 
