@@ -27,6 +27,7 @@ func TestPullPreconditions(t *testing.T) {
 		"./**/**/en.yml",
 		"./**/*/*/en.yml",
 		"./**/*/en.yml",
+		"./en.yml",
 		"./**/*/<locale_name>/<locale_code>/<tag>.yml",
 	} {
 		target.File = file
@@ -37,7 +38,6 @@ func TestPullPreconditions(t *testing.T) {
 
 	for _, file := range []string{
 		"./<tag>/<locale_code>.yml",
-		"./en.yml",
 		"./<locale_name>/<locale_code>/<tag>.yml",
 	} {
 		target.File = file
@@ -81,13 +81,13 @@ func TestTargetLocaleFiles(t *testing.T) {
 	expectedFiles := []*LocaleFile{
 		&LocaleFile{
 			Name: "english",
-			Code:  "en",
+			Code: "en",
 			ID:   "en-locale-id",
 			Path: enPath,
 		},
 		&LocaleFile{
 			Name: "german",
-			Code:  "de",
+			Code: "de",
 			ID:   "de-locale-id",
 			Path: dePath,
 		},
@@ -107,7 +107,7 @@ func TestReplacePlaceholders(t *testing.T) {
 	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
 	localeFile := &LocaleFile{
 		Name: "english",
-		Code:  "en",
+		Code: "en",
 		ID:   "en-locale-id",
 		Tag:  "abc",
 		Path: "",
