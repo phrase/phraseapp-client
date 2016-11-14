@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/dynport/dgtk/cli"
@@ -10,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "e5ee68f42b4e4c5990df830df68cd6b57800aa30"
-	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
+	RevisionDocs      = "72ae3531d8460b33c6cb4a87636e7fcc66e37447"
+	RevisionGenerator = "ceb47e5be23d139da3a18a815c6da3ac70d0b412"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -2273,7 +2272,7 @@ func (cmd *LocaleDownload) Run() error {
 		return err
 	}
 
-	fmt.Println(string(res))
+	os.Stdout.Write(res)
 	return nil
 }
 

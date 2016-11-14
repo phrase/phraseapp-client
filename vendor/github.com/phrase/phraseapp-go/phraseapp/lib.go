@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "e5ee68f42b4e4c5990df830df68cd6b57800aa30"
-	RevisionGenerator = "8509abb5f6ffe365e0c33db40f00f3db0a450671"
+	RevisionDocs      = "72ae3531d8460b33c6cb4a87636e7fcc66e37447"
+	RevisionGenerator = "ceb47e5be23d139da3a18a815c6da3ac70d0b412"
 )
 
 type Account struct {
@@ -1143,6 +1143,7 @@ type UploadParams struct {
 	SkipUnverification *bool             `json:"skip_unverification,omitempty"  cli:"opt --skip-unverification"`
 	SkipUploadTags     *bool             `json:"skip_upload_tags,omitempty"  cli:"opt --skip-upload-tags"`
 	Tags               *string           `json:"tags,omitempty"  cli:"opt --tags"`
+	UpdateDescriptions *bool             `json:"update_descriptions,omitempty"  cli:"opt --update-descriptions"`
 	UpdateTranslations *bool             `json:"update_translations,omitempty"  cli:"opt --update-translations"`
 }
 
@@ -1215,6 +1216,13 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Tags = &val
+
+		case "update_descriptions":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.UpdateDescriptions = &val
 
 		case "update_translations":
 			val, ok := v.(bool)
@@ -4696,6 +4704,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 
 		if params.Tags != nil {
 			err := writer.WriteField("tags", *params.Tags)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.UpdateDescriptions != nil {
+			err := writer.WriteField("update_descriptions", strconv.FormatBool(*params.UpdateDescriptions))
 			if err != nil {
 				return err
 			}
