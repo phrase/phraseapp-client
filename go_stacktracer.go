@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"runtime/debug"
 	"strings"
 )
 
@@ -12,26 +11,27 @@ type StackTrace struct {
 	RealStack string
 }
 
-func NewStackTrace() StackTrace {
-	stack := string(debug.Stack())
+func NewStackTrace(stack string) StackTrace {
 	stackSlice := strings.Split(stack, "\n")
+	stackSlice = stackSlice[1:len(stackSlice)]
 
 	stackTrace := StackTrace{
 		RealStack: stack,
 	}
 
-	for i := 0; i < len(stackSlice); i += 2 {
-		stackItem := strings.TrimSpace(stackSlice[i])
-		if stackItem == "" {
+	for i := range stackSlice {
+		stackMethod := strings.TrimSpace(stackSlice[i])
+
+		if stackMethod == "" && i%2 == 1 {
 			continue
 		}
 
-		var stackMethod string
+		var stackPath string
 		if i+1 < len(stackSlice) {
-			stackMethod = strings.TrimSpace(stackSlice[i+1])
+			stackPath = strings.TrimSpace(stackSlice[i+1])
 		}
 
-		if newStackItem := NewStackItem(stackItem, stackMethod); newStackItem != nil {
+		if newStackItem := NewStackItem(stackMethod, stackPath); newStackItem != nil {
 			stackTrace.Stack = append(stackTrace.Stack, newStackItem)
 		}
 	}
@@ -39,7 +39,7 @@ func NewStackTrace() StackTrace {
 	return stackTrace
 }
 
-func (s *StackTrace) ErrorStrings() (errorStrings []string) {
+func (s *StackTrace) ErrorList() (errorStrings []string) {
 	for _, err := range s.Errors() {
 		errorStrings = append(errorStrings, err.Error())
 	}
@@ -47,12 +47,16 @@ func (s *StackTrace) ErrorStrings() (errorStrings []string) {
 }
 
 func (s *StackTrace) ErrorContext() string {
-	for i := len(s.Stack) - 1; i >= 0; i-- {
-		stackItem := s.Stack[i]
-		if strings.Contains(stackItem.Raw, "panic.go") {
-			stackItemBefore := s.Stack[i+1]
-			return stackItemBefore.ItemContext()
-		}
+	panicIndex := s.panicIndex()
+	if panicIndex == -1 {
+		return ""
+	}
+
+	if panicIndex+1 < len(s.Stack) {
+		panicIndex = panicIndex + 1
+	}
+	if item := s.Stack[panicIndex]; item != nil {
+		return item.ItemContext()
 	}
 	return ""
 }
@@ -60,18 +64,30 @@ func (s *StackTrace) ErrorContext() string {
 func (s *StackTrace) Errors() []error {
 	var stackErrors []error
 
-	for i := len(s.Stack) - 1; i >= 0; i-- {
-		stackItem := s.Stack[i]
-		if strings.Contains(stackItem.Raw, "panic.go") {
-			stackItemBefore := s.Stack[i+1]
-			stackErrors = append(stackErrors, errors.New(stackItemBefore.Line()))
-			for j := i; j > 1; j-- {
-				stackErrors = append(stackErrors, errors.New(s.Stack[j].Line()))
-			}
-		}
+	panicIndex := s.panicIndex()
+	if panicIndex == -1 {
+		return stackErrors
+	}
+
+	for _, stackItem := range s.Stack[panicIndex:len(s.Stack)] {
+		stackErrors = append(stackErrors, errors.New(stackItem.Line()))
+	}
+
+	for i, j := 0, len(stackErrors)-1; i < j; i, j = i+1, j-1 {
+		stackErrors[i], stackErrors[j] = stackErrors[j], stackErrors[i]
 	}
 
 	return stackErrors
+}
+
+func (s *StackTrace) panicIndex() int {
+	index := -1
+	for i := range s.Stack {
+		if strings.Contains(s.Stack[i].Raw, "panic.go") {
+			index = i
+		}
+	}
+	return index
 }
 
 type StackItem struct {
@@ -84,6 +100,11 @@ type StackItem struct {
 
 func NewStackItem(rawItem, stackMethod string) *StackItem {
 	rawItem = strings.TrimSpace(rawItem)
+
+	stackMethodParts := strings.Split(stackMethod, "(")
+	if len(stackMethodParts) > 1 {
+		stackMethod = fmt.Sprintf("%s()", stackMethodParts[0])
+	}
 
 	var absolutePath string
 	var fileName string

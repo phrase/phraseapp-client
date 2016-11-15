@@ -35,7 +35,24 @@ type ErrorData struct {
 
 func ReportError(r interface{}, cfg *phraseapp.Config) {
 	last8, projectID := identification(cfg)
-	body, err := createBody(fmt.Sprintf("%s", r), last8, projectID)
+	stackTrace := NewStackTrace(string(debug.Stack()))
+	crash := &AppCrash{
+		Message:    fmt.Sprintf("%s", r),
+		App:        "phraseapp-client",
+		AppVersion: PHRASEAPP_CLIENT_VERSION,
+		ErrorData: ErrorData{
+			Context:    stackTrace.ErrorContext(),
+			Last8:      last8,
+			ProjectID:  projectID,
+			ClientInfo: NewInfo(),
+			Arch:       runtime.GOARCH,
+			Os:         runtime.GOOS,
+			StackTrace: stackTrace.ErrorList(),
+			RawStack:   string(debug.Stack()),
+		},
+	}
+
+	body, err := json.Marshal(crash)
 	if err != nil {
 		return
 	}
@@ -60,26 +77,6 @@ func identification(cfg *phraseapp.Config) (string, string) {
 	}
 
 	return last8, projectID
-}
-
-func createBody(message, last8, projectID string) ([]byte, error) {
-	stackTrace := NewStackTrace()
-	crash := &AppCrash{
-		Message:    message,
-		App:        "phraseapp-client",
-		AppVersion: PHRASEAPP_CLIENT_VERSION,
-		ErrorData: ErrorData{
-			Context:    stackTrace.ErrorContext(),
-			Last8:      last8,
-			ProjectID:  projectID,
-			ClientInfo: NewInfo(),
-			Arch:       runtime.GOARCH,
-			Os:         runtime.GOOS,
-			StackTrace: stackTrace.ErrorStrings(),
-			RawStack:   string(debug.Stack()),
-		},
-	}
-	return json.Marshal(crash)
 }
 
 func printErr(err error) {
