@@ -172,9 +172,17 @@ func TestPanicDifferentFormat(t *testing.T) {
 	}
 }
 
-func TestPanicEmpty(t *testing.T) {
+func TestPanicPathEmpty(t *testing.T) {
 	stackItem := NewStackItem("", "panic")
 	expected := ": - panic"
+	if stackItem.ItemContext() != expected {
+		t.Fatalf("expected item context to eq\n%q, but was:\n%q", expected, stackItem.ItemContext())
+	}
+}
+
+func TestPanicMethodAndPathEmpty(t *testing.T) {
+	stackItem := NewStackItem("", "")
+	expected := ": - "
 	if stackItem.ItemContext() != expected {
 		t.Fatalf("expected item context to eq\n%q, but was:\n%q", expected, stackItem.ItemContext())
 	}
