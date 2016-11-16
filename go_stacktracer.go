@@ -32,21 +32,23 @@ func NewStackTrace(stack string) StackTrace {
 		}
 
 		if newStackItem := NewStackItem(stackMethod, stackPath); newStackItem != nil {
-			stackTrace.Stack = append(stackTrace.Stack, newStackItem)
+			if newStackItem.IsGoFile() {
+				stackTrace.Stack = append(stackTrace.Stack, newStackItem)
+			}
 		}
 	}
 
 	return stackTrace
 }
 
-func (s *StackTrace) ErrorList() (errorStrings []string) {
-	for _, err := range s.Errors() {
+func (s *StackTrace) List() (errorStrings []string) {
+	for _, err := range s.errors() {
 		errorStrings = append(errorStrings, err.Error())
 	}
 	return errorStrings
 }
 
-func (s *StackTrace) ErrorContext() string {
+func (s *StackTrace) ErrorLocation() string {
 	panicIndex := s.panicIndex()
 	if panicIndex == -1 {
 		return ""
@@ -61,7 +63,7 @@ func (s *StackTrace) ErrorContext() string {
 	return ""
 }
 
-func (s *StackTrace) Errors() []error {
+func (s *StackTrace) errors() []error {
 	var stackErrors []error
 
 	panicIndex := s.panicIndex()
@@ -90,6 +92,7 @@ func (s *StackTrace) panicIndex() int {
 	return index
 }
 
+// List items
 type StackItem struct {
 	Raw          string
 	Method       string
@@ -117,10 +120,6 @@ func NewStackItem(rawItem, stackMethod string) *StackItem {
 		absolutePath = strings.TrimSpace(pathWithLineNo[0])
 		pathTokens := strings.Split(absolutePath, separator)
 		fileName = strings.TrimSpace(pathTokens[len(pathTokens)-1])
-
-		if !strings.Contains(fileName, ".go") {
-			return nil
-		}
 	}
 
 	if len(pathWithLineNo) > 1 {
@@ -136,6 +135,10 @@ func NewStackItem(rawItem, stackMethod string) *StackItem {
 	}
 
 	return stackItem
+}
+
+func (s *StackItem) IsGoFile() bool {
+	return strings.Contains(s.Name, ".go")
 }
 
 func (s *StackItem) Line() string {

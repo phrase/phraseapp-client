@@ -41,13 +41,13 @@ func ReportError(r interface{}, cfg *phraseapp.Config) {
 		App:        "phraseapp-client",
 		AppVersion: PHRASEAPP_CLIENT_VERSION,
 		ErrorData: ErrorData{
-			Context:    stackTrace.ErrorContext(),
+			Context:    stackTrace.ErrorLocation(),
 			Last8:      last8,
 			ProjectID:  projectID,
 			ClientInfo: NewInfo(),
 			Arch:       runtime.GOARCH,
 			Os:         runtime.GOOS,
-			StackTrace: stackTrace.ErrorList(),
+			StackTrace: stackTrace.List(),
 			RawStack:   string(debug.Stack()),
 		},
 	}
