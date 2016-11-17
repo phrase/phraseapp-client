@@ -8,7 +8,7 @@ func TestPanicWithEmptyStack(t *testing.T) {
 		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "", stackTrace.RealStack)
 	}
 
-	expected := ""
+	expected := "no error location found"
 	if stackTrace.ErrorLocation() != expected {
 		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
 	}
@@ -24,7 +24,7 @@ func TestPanicWithoutTrace(t *testing.T) {
 		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "panic.go", stackTrace.RealStack)
 	}
 
-	expected := ""
+	expected := "no error location found"
 	if stackTrace.ErrorLocation() != expected {
 		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
 	}

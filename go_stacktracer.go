@@ -37,13 +37,9 @@ func (s *StackTrace) ErrorLocation() string {
 
 	var errorLocation *StackItem
 	for _, item := range s.Stack[lastPanicIndex : len(s.Stack)-1] {
-		if item.isGoLibFile() {
-			errorLocation = item
-			break
-		}
+		errorLocation = item
 
-		if item.isClientFile() {
-			errorLocation = item
+		if item.isGoLibFile() || item.isClientFile() {
 			break
 		}
 	}
