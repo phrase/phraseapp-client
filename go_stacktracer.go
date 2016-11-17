@@ -22,6 +22,8 @@ func (s *StackTrace) List() (items []string) {
 }
 
 func (s *StackTrace) ErrorLocation() string {
+	defaultMessage := "no error location found"
+
 	lastPanicIndex := -1
 	for index, item := range s.Stack {
 		if item.isPanic() {
@@ -30,7 +32,7 @@ func (s *StackTrace) ErrorLocation() string {
 	}
 
 	if lastPanicIndex == -1 {
-		return ""
+		return defaultMessage
 	}
 
 	var errorLocation *StackItem
@@ -50,7 +52,7 @@ func (s *StackTrace) ErrorLocation() string {
 		return errorLocation.ItemContext()
 	}
 
-	return "no error location found"
+	return defaultMessage
 }
 
 type StackItem struct {
