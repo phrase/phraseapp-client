@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -11,134 +10,54 @@ type StackTrace struct {
 	RealStack string
 }
 
-func NewStackTrace(stack string) StackTrace {
-	stackSlice := strings.Split(stack, "\n")
-	stackSlice = stackSlice[1:len(stackSlice)]
-
-	stackTrace := StackTrace{
-		RealStack: stack,
-	}
-
-	for i := range stackSlice {
-		stackMethod := strings.TrimSpace(stackSlice[i])
-
-		if stackMethod == "" && i%2 == 1 {
-			continue
-		}
-
-		var stackPath string
-		if i+1 < len(stackSlice) {
-			stackPath = strings.TrimSpace(stackSlice[i+1])
-		}
-
-		if newStackItem := NewStackItem(stackMethod, stackPath); newStackItem != nil {
-			if newStackItem.IsGoFile() {
-				stackTrace.Stack = append(stackTrace.Stack, newStackItem)
-			}
-		}
-	}
-
-	return stackTrace
+func NewStackTrace(in string) StackTrace {
+	return parseStackTrace(in)
 }
 
-func (s *StackTrace) List() (errorStrings []string) {
-	for _, err := range s.errors() {
-		errorStrings = append(errorStrings, err.Error())
+func (s *StackTrace) List() (items []string) {
+	for _, stackItem := range s.Stack {
+		items = append(items, stackItem.Line())
 	}
-	return errorStrings
+	return items
 }
 
 func (s *StackTrace) ErrorLocation() string {
-	panicIndex := s.panicIndex()
-	if panicIndex == -1 {
+	lastPanicIndex := -1
+	for index, item := range s.Stack {
+		if item.isPanic() {
+			lastPanicIndex = index
+		}
+	}
+
+	if lastPanicIndex == -1 {
 		return ""
 	}
 
-	if panicIndex+1 < len(s.Stack) {
-		panicIndex = panicIndex + 1
-	}
-	if item := s.Stack[panicIndex]; item != nil {
-		return item.ItemContext()
-	}
-	return ""
-}
+	var errorLocation *StackItem
+	for _, item := range s.Stack[lastPanicIndex : len(s.Stack)-1] {
+		if item.isGoLibFile() {
+			errorLocation = item
+			break
+		}
 
-func (s *StackTrace) errors() []error {
-	var stackErrors []error
-
-	panicIndex := s.panicIndex()
-	if panicIndex == -1 {
-		return stackErrors
-	}
-
-	for _, stackItem := range s.Stack[panicIndex:len(s.Stack)] {
-		stackErrors = append(stackErrors, errors.New(stackItem.Line()))
-	}
-
-	for i, j := 0, len(stackErrors)-1; i < j; i, j = i+1, j-1 {
-		stackErrors[i], stackErrors[j] = stackErrors[j], stackErrors[i]
-	}
-
-	return stackErrors
-}
-
-func (s *StackTrace) panicIndex() int {
-	index := -1
-	for i := range s.Stack {
-		if strings.Contains(s.Stack[i].Raw, "panic.go") {
-			index = i
+		if item.isClientFile() {
+			errorLocation = item
+			break
 		}
 	}
-	return index
+
+	if errorLocation != nil {
+		return errorLocation.ItemContext()
+	}
+
+	return "no error location found"
 }
 
-// List items
 type StackItem struct {
-	Raw          string
 	Method       string
 	Name         string
 	AbsolutePath string
 	LineNo       string
-}
-
-func NewStackItem(rawItem, stackMethod string) *StackItem {
-	rawItem = strings.TrimSpace(rawItem)
-
-	stackMethodParts := strings.Split(stackMethod, "(")
-	if len(stackMethodParts) > 1 {
-		stackMethod = fmt.Sprintf("%s()", stackMethodParts[0])
-	}
-
-	var absolutePath string
-	var fileName string
-	var lineNo string
-
-	tokens := strings.Split(rawItem, " ")
-	pathWithLineNo := strings.Split(tokens[0], ":")
-
-	if len(pathWithLineNo) > 0 {
-		absolutePath = strings.TrimSpace(pathWithLineNo[0])
-		pathTokens := strings.Split(absolutePath, separator)
-		fileName = strings.TrimSpace(pathTokens[len(pathTokens)-1])
-	}
-
-	if len(pathWithLineNo) > 1 {
-		lineNo = strings.TrimSpace(pathWithLineNo[1])
-	}
-
-	stackItem := &StackItem{
-		Raw:          rawItem,
-		Method:       strings.TrimSpace(stackMethod),
-		Name:         fileName,
-		AbsolutePath: absolutePath,
-		LineNo:       lineNo,
-	}
-
-	return stackItem
-}
-
-func (s *StackItem) IsGoFile() bool {
-	return strings.Contains(s.Name, ".go")
 }
 
 func (s *StackItem) Line() string {
@@ -147,4 +66,20 @@ func (s *StackItem) Line() string {
 
 func (s *StackItem) ItemContext() string {
 	return fmt.Sprintf("%s:%s - %s", s.Name, s.LineNo, s.Method)
+}
+
+func (s *StackItem) isVendored() bool {
+	return strings.Contains(s.AbsolutePath, "/vendor/") || strings.Contains(s.AbsolutePath, "/Godeps/")
+}
+
+func (s *StackItem) isPanic() bool {
+	return strings.Contains(s.AbsolutePath, "panic.go")
+}
+
+func (s *StackItem) isGoLibFile() bool {
+	return strings.Contains(s.AbsolutePath, "/github.com/phrase/phraseapp-go/")
+}
+
+func (s *StackItem) isClientFile() bool {
+	return strings.Contains(s.AbsolutePath, "/github.com/phrase/phraseapp-client/") && !s.isVendored()
 }

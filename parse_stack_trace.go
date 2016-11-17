@@ -6,7 +6,7 @@ import (
 )
 
 func parseStackTrace(in string) StackTrace {
-	s := StackTrace{RealStack: in}
+	stackTrace := StackTrace{RealStack: in}
 	var current *StackItem
 	for i, line := range strings.Split(in, "\n") {
 		if i == 0 {
@@ -28,10 +28,10 @@ func parseStackTrace(in string) StackTrace {
 			current.AbsolutePath = path
 			current.LineNo = line
 			current.Name = filepath.Base(path)
-			s.Stack = append(s.Stack, current)
+			stackTrace.Stack = append(stackTrace.Stack, current)
 		}
 	}
-	return s
+	return stackTrace
 }
 
 func pathAndLineNoFromLine(line string) (string, string, bool) {
