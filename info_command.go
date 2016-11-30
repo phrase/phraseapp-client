@@ -9,7 +9,7 @@ import (
 )
 
 type ClientInfo struct {
-	BuildAt                 string `json:"buil_at"`
+	BuiltAt                 string `json:"built_at"`
 	ClientRevision          string `json:"client_revision"`
 	LibraryRevision         string `json:"library_revision"`
 	ClientDocRevision       string `json:"client_doc_revision"`
@@ -21,7 +21,7 @@ type ClientInfo struct {
 
 func NewInfo() ClientInfo {
 	return ClientInfo{
-		BuildAt:                 BUILT_AT,
+		BuiltAt:                 BUILT_AT,
 		ClientRevision:          REVISION,
 		LibraryRevision:         LIBRARY_REVISION,
 		ClientDocRevision:       RevisionDocs,
