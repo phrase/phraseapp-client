@@ -20,7 +20,7 @@ func Run() {
 	defer func() {
 		if recovery := recover(); recovery != nil {
 			if PHRASEAPP_CLIENT_VERSION != "DEV" {
-				ReportError("PhraseApp Client Error", recovery, cfg)
+				ReportError(recovery, cfg)
 			}
 			printErr(fmt.Errorf("This should not have happened: %s - Contact support: %s", recovery, phraseAppSupport))
 			os.Exit(1)

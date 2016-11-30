@@ -16,43 +16,47 @@ import (
 const errorsEndpoint = "https://phraseapp.com/errors"
 
 type AppCrash struct {
+	Message    string `json:"message"`
 	App        string `json:"app"`
 	AppVersion string `json:"app_version"`
 	ErrorData  `json:"data"`
-	Message    string `json:"message"`
-	Name       string `json:"name"`
 }
 
 type ErrorData struct {
-	ShortAccessToken string `json:"short_access_token"`
-	ProjectID        string `json:"project_id"`
-	Arch             string `json:"arch"`
-	Os               string `json:"os"`
-	Stack            string `json:"stack_trace"`
-	ClientInfo       string `json:"client_info"`
+	Context    string `json:"context"`
+	Last8      string `json:"last8"`
+	ProjectID  string `json:"project_id"`
+	ClientInfo `json:"client_info"`
+	Arch       string   `json:"arch"`
+	Os         string   `json:"os"`
+	StackTrace []string `json:"stack_trace"`
+	RawStack   string   `json:"raw_stack_trace"`
 }
 
-func identification(cfg *phraseapp.Config) (string, string) {
-	var shortToken string
-	var projectID string
-	if cfg != nil {
-		if len(cfg.Token) == 64 {
-			shortToken = cfg.Token[len(cfg.Token)-8:]
-		}
-		projectID = cfg.DefaultProjectID
+func ReportError(r interface{}, cfg *phraseapp.Config) {
+	last8, projectID := identification(cfg)
+	stackTrace := NewStackTrace(string(debug.Stack()))
+	crash := &AppCrash{
+		Message:    fmt.Sprintf("%s", r),
+		App:        "phraseapp-client",
+		AppVersion: PHRASEAPP_CLIENT_VERSION,
+		ErrorData: ErrorData{
+			Context:    stackTrace.ErrorLocation(),
+			Last8:      last8,
+			ProjectID:  projectID,
+			ClientInfo: NewInfo(),
+			Arch:       runtime.GOARCH,
+			Os:         runtime.GOOS,
+			StackTrace: stackTrace.List(),
+			RawStack:   string(debug.Stack()),
+		},
 	}
 
-	return shortToken, projectID
-}
-
-func ReportError(name string, r interface{}, cfg *phraseapp.Config) {
-	message := fmt.Sprintf("%s", r)
-
-	shortToken, projectID := identification(cfg)
-	body, err := createBody(name, message, shortToken, projectID)
+	body, err := json.Marshal(crash)
 	if err != nil {
 		return
 	}
+
 	response, err := http.Post(errorsEndpoint, "application/json", bytes.NewBuffer(body))
 
 	if err != nil {
@@ -62,23 +66,17 @@ func ReportError(name string, r interface{}, cfg *phraseapp.Config) {
 	response.Body.Close()
 }
 
-func createBody(name, message, shortToken, projectID string) ([]byte, error) {
-	crash := &AppCrash{
-		App:        "phraseapp-client",
-		AppVersion: PHRASEAPP_CLIENT_VERSION,
-		ErrorData: ErrorData{
-			ShortAccessToken: shortToken,
-			ProjectID:        projectID,
-			Arch:             runtime.GOARCH,
-			Os:               runtime.GOOS,
-			Stack:            string(debug.Stack()),
-			ClientInfo:       GetInfo(),
-		},
-		Name:    name,
-		Message: message,
+func identification(cfg *phraseapp.Config) (string, string) {
+	var last8 string
+	var projectID string
+	if cfg != nil {
+		if len(cfg.Token) == 64 {
+			last8 = cfg.Token[len(cfg.Token)-8:]
+		}
+		projectID = cfg.DefaultProjectID
 	}
 
-	return json.Marshal(crash)
+	return last8, projectID
 }
 
 func printErr(err error) {
