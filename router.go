@@ -400,6 +400,8 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
 
+	r.Register("upload/cleanup", &UploadCleanupCommand{Config: cfg}, "Delete unmentioned keys for given upload")
+
 	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
 
 	return r, nil
