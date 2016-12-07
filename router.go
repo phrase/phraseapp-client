@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "72ae3531d8460b33c6cb4a87636e7fcc66e37447"
-	RevisionGenerator = "ceb47e5be23d139da3a18a815c6da3ac70d0b412"
+	RevisionDocs      = "761efe68accc5311584907137539a5064d47410c"
+	RevisionGenerator = "099f5b4a3f1990d9db20f9b9642f9119fbeff6bc"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -394,13 +394,7 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("webhooks/list", newWebhooksList(cfg), "List all webhooks for the given project.")
 
-	r.Register("pull", &PullCommand{Config: cfg}, "Download locales from your PhraseApp project.\n  You can provide parameters supported by the locales#download endpoint http://docs.phraseapp.com/api/v2/locales/#download\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
-
-	r.Register("push", &PushCommand{Config: cfg}, "Upload locales to your PhraseApp project.\n  You can provide parameters supported by the uploads#create endpoint http://docs.phraseapp.com/api/v2/uploads/#create\n  in your configuration (.phraseapp.yml) for each source.\n  See our configuration guide for more information http://docs.phraseapp.com/developers/cli/configuration/")
-
-	r.Register("init", &WizardCommand{}, "Configure your PhraseApp client.")
-
-	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
+	ApplyNonRestRoutes(r, cfg)
 
 	return r, nil
 }
