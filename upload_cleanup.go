@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
@@ -9,8 +10,8 @@ import (
 
 type UploadCleanupCommand struct {
 	*phraseapp.Config
-	ID             string `cli:"arg required"`
-	SuppressPrompt bool   `cli:"opt --yes desc='Don’t ask for confirmation'"`
+	ID      string `cli:"arg required"`
+	Confirm bool   `cli:"opt --confirm desc='Don’t ask for confirmation'"`
 }
 
 func (cmd *UploadCleanupCommand) Run() error {
@@ -48,9 +49,10 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 			names[i] = key.Name
 		}
 
-		if !cmd.SuppressPrompt {
+		if !cmd.Confirm {
 			fmt.Println("You are about to delete the following key(s) from your project:")
-			fmt.Println(strings.Join(names, " "))
+			sort.Strings(names)
+			fmt.Println(strings.Join(names, "\n"))
 			fmt.Print("Are you sure you want to continue? (y/n) [n] ")
 
 			confirmation := prompt()
