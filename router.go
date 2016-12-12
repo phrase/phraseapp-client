@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "761efe68accc5311584907137539a5064d47410c"
-	RevisionGenerator = "099f5b4a3f1990d9db20f9b9642f9119fbeff6bc"
+	RevisionDocs      = ""
+	RevisionGenerator = ""
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {

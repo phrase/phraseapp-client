@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "72ae3531d8460b33c6cb4a87636e7fcc66e37447"
-	RevisionGenerator = "ceb47e5be23d139da3a18a815c6da3ac70d0b412"
+	RevisionDocs      = "4a96ca8f890ec8b312c09b087a621bd61a2ec123"
+	RevisionGenerator = "81a8d6648577481425c6d3d10fe6e2162d7addd9"
 )
 
 type Account struct {

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"os"
 
@@ -58,15 +57,9 @@ func (client *Client) authenticate(req *http.Request) error {
 		return fmt.Errorf("no auth handler registered")
 	}
 
-	if err := client.Credentials.validate(); err != nil {
-		return err
-	}
-
-	req.Header.Set("User-Agent", GetUserAgent())
-	switch {
-	case client.Credentials.Token != "":
+	if client.Credentials.Token != "" {
 		req.Header.Set("Authorization", "token "+client.Credentials.Token)
-	case client.Credentials.Username != "":
+	} else if client.Credentials.Username != "" {
 		pwd, err := speakeasy.Ask("Password: ")
 		if err != nil {
 			return err
@@ -80,56 +73,29 @@ func (client *Client) authenticate(req *http.Request) error {
 			}
 			req.Header.Set("X-PhraseApp-OTP", token)
 		}
+	} else {
+		return fmt.Errorf("either username or token must be given")
 	}
+
+	req.Header.Set("User-Agent", GetUserAgent())
 
 	return nil
 }
 
-func (ah *Credentials) validate() error {
-	switch {
-	case ah.Username == "" && ah.Token == "":
-		return fmt.Errorf("either username or token must be given")
-	default:
-		return nil
-	}
-}
-
-func (client *Client) sendRequestPaginated(method, rawurl, ctype string, r io.Reader, status, page, perPage int) (io.ReadCloser, error) {
-	endpointUrl := client.Credentials.Host + rawurl
-	u, err := url.Parse(endpointUrl)
+func (client *Client) sendRequestPaginated(method, urlPath, contentType string, body io.Reader, expectedStatus, page, perPage int) (io.ReadCloser, error) {
+	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
 	if err != nil {
 		return nil, err
 	}
 
-	query := u.Query()
-	query.Add("page", strconv.Itoa(page))
-	query.Add("per_page", strconv.Itoa(perPage))
+	addPagination(endpointURL, page, perPage)
 
-	u.RawQuery = query.Encode()
-
-	if Debug {
-		fmt.Fprintln(os.Stderr, method, u)
-		if r != nil {
-			bytes, err := ioutil.ReadAll(r)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
-			}
-			str := string(bytes)
-			fmt.Fprintln(os.Stderr, str)
-			r = strings.NewReader(str)
-		}
-	}
-
-	req, err := http.NewRequest(method, u.String(), r)
+	req, err := buildRequest(method, endpointURL, body, contentType)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctype != "" {
-		req.Header.Add("Content-Type", ctype)
-	}
-
-	resp, err := client.send(req, status)
+	resp, err := client.send(req, expectedStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -137,37 +103,25 @@ func (client *Client) sendRequestPaginated(method, rawurl, ctype string, r io.Re
 	return resp.Body, nil
 }
 
-func (client *Client) sendRequest(method, url, ctype string, r io.Reader, status int) (io.ReadCloser, error) {
-	endpointUrl := client.Credentials.Host + url
-	if Debug {
-		fmt.Fprintln(os.Stderr, method, url)
-		if r != nil {
-			bytes, err := ioutil.ReadAll(r)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
-			}
-			str := string(bytes)
-			fmt.Fprintln(os.Stderr, str)
-			r = strings.NewReader(str)
-		}
-	}
-	req, err := http.NewRequest(method, endpointUrl, r)
+func (client *Client) sendRequest(method, urlPath, contentType string, body io.Reader, expectedStatus int) (io.ReadCloser, error) {
+	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctype != "" {
-		req.Header.Add("Content-Type", ctype)
+	req, err := buildRequest(method, endpointURL, body, contentType)
+	if err != nil {
+		return nil, err
 	}
 
-	resp, err := client.send(req, status)
+	resp, err := client.send(req, expectedStatus)
 	if err != nil {
 		return nil, err
 	}
 	return resp.Body, nil
 }
 
-func (client *Client) send(req *http.Request, status int) (*http.Response, error) {
+func (client *Client) send(req *http.Request, expectedStatus int) (*http.Response, error) {
 	err := client.authenticate(req)
 	if err != nil {
 		return nil, err
@@ -180,19 +134,9 @@ func (client *Client) send(req *http.Request, status int) (*http.Response, error
 			return nil, err
 		}
 
-		bytes, err := ioutil.ReadAll(b)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Fprintln(os.Stderr, string(bytes))
-
-		r := req.Body
-		if r != nil {
-			var by []byte
-			_, err = r.Read(by)
-			fmt.Fprintln(os.Stderr, string(by))
-		}
+		fmt.Fprintln(os.Stderr, "Header:", b.String())
 	}
+
 	resp, err := client.Client.Do(req)
 	if err != nil {
 		return nil, err
@@ -202,9 +146,45 @@ func (client *Client) send(req *http.Request, status int) (*http.Response, error
 		fmt.Fprintf(os.Stderr, "\nResponse HTTP Status Code: %s\n", resp.Status)
 	}
 
-	err = handleResponseStatus(resp, status)
+	err = handleResponseStatus(resp, expectedStatus)
 	if err != nil {
 		resp.Body.Close()
 	}
 	return resp, err
+}
+
+func addPagination(u *url.URL, page, perPage int) {
+	query := u.Query()
+	query.Add("page", strconv.Itoa(page))
+	query.Add("per_page", strconv.Itoa(perPage))
+
+	u.RawQuery = query.Encode()
+}
+
+func buildRequest(method string, u *url.URL, body io.Reader, contentType string) (*http.Request, error) {
+	if Debug {
+		fmt.Fprintln(os.Stderr, "Method:", method)
+		fmt.Fprintln(os.Stderr, "URL:", u)
+
+		if body != nil {
+			bodyBytes, err := ioutil.ReadAll(body)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error reading body:", err.Error())
+			}
+
+			fmt.Fprintln(os.Stderr, "Body:", string(bodyBytes))
+			body = bytes.NewReader(bodyBytes)
+		}
+	}
+
+	req, err := http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	if contentType != "" {
+		req.Header.Add("Content-Type", contentType)
+	}
+
+	return req, nil
 }
