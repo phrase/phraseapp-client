@@ -35,7 +35,7 @@ type ErrorData struct {
 
 func ReportError(r interface{}, cfg *phraseapp.Config) {
 	last8, projectID := identification(cfg)
-	stackTrace := NewStackTrace(string(debug.Stack()))
+	stackTrace := ParseStackTrace(debug.Stack())
 	crash := &AppCrash{
 		Message:    fmt.Sprintf("%s", r),
 		App:        "phraseapp-client",

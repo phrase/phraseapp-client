@@ -1,20 +1,54 @@
 package main
 
 import "testing"
+import "bytes"
+
+func TestParseStackTraceWithEmptyStack(t *testing.T) {
+	stackTrace := ParseStackTrace([]byte{})
+	if len(stackTrace.RealStack) != 0 {
+		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "", stackTrace.RealStack)
+	}
+
+	expected := "no error location found"
+	if stackTrace.ErrorLocation() != expected {
+		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
+	}
+
+	if len(stackTrace.List()) != 0 {
+		t.Fatalf("expected: %d - was: %d", 0, len(stackTrace.List()))
+	}
+}
+
+func TestParseStackTraceWithoutTrace(t *testing.T) {
+	stack := []byte("panic.go")
+	stackTrace := ParseStackTrace(stack)
+	if !bytes.Equal(stackTrace.RealStack, stack) {
+		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "panic.go", stackTrace.RealStack)
+	}
+
+	expected := "no error location found"
+	if stackTrace.ErrorLocation() != expected {
+		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
+	}
+
+	if len(stackTrace.List()) != 0 {
+		t.Fatalf("expected: %d - was: %d", 0, len(stackTrace.List()))
+	}
+}
 
 func TestParseStackTraceMain(t *testing.T) {
-	s := parseStackTrace(stackInMainFile)
+	s := ParseStackTrace(stackInMainFile)
 	tests := []struct{ Has, Want interface{} }{
-		{len(s.Stack), 20},
+		{len(s.Items), 20},
 		{s.ErrorLocation(), "config.go:41 - github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phraseapp-go/phraseapp.ReadConfig"},
-		{s.Stack[0].Name, "stack.go"},
-		{s.Stack[0].Method, "runtime/debug.Stack"},
-		{s.Stack[0].AbsolutePath, "/usr/local/go/src/runtime/debug/stack.go"},
-		{s.Stack[0].LineNo, "24"},
-		{s.Stack[1].Name, "error_handler.go"},
-		{s.Stack[1].Method, "main.createBody"},
-		{s.Stack[1].AbsolutePath, "/go/src/github.com/phrase/phraseapp-client/error_handler.go"},
-		{s.Stack[1].LineNo, "73"},
+		{s.Items[0].Name, "stack.go"},
+		{s.Items[0].Method, "runtime/debug.Stack"},
+		{s.Items[0].AbsolutePath, "/usr/local/go/src/runtime/debug/stack.go"},
+		{s.Items[0].LineNo, "24"},
+		{s.Items[1].Name, "error_handler.go"},
+		{s.Items[1].Method, "main.createBody"},
+		{s.Items[1].AbsolutePath, "/go/src/github.com/phrase/phraseapp-client/error_handler.go"},
+		{s.Items[1].LineNo, "73"},
 	}
 	for i, tc := range tests {
 		if tc.Has != tc.Want {
@@ -24,18 +58,18 @@ func TestParseStackTraceMain(t *testing.T) {
 }
 
 func TestParseStackTraceOther(t *testing.T) {
-	s := parseStackTrace(stackInOtherFile)
+	s := ParseStackTrace(stackInOtherFile)
 	tests := []struct{ Has, Want interface{} }{
-		{len(s.Stack), 10},
+		{len(s.Items), 10},
 		{s.ErrorLocation(), "info_command.go:38 - main.GetInfo"},
-		{s.Stack[0].Name, "stack.go"},
-		{s.Stack[0].Method, "runtime/debug.Stack"},
-		{s.Stack[0].AbsolutePath, "/path_to_go/1.7.1/libexec/src/runtime/debug/stack.go"},
-		{s.Stack[0].LineNo, "24"},
-		{s.Stack[1].Name, "main.go"},
-		{s.Stack[1].Method, "main.Run.func1"},
-		{s.Stack[1].AbsolutePath, "/homepath/src/github.com/phrase/phraseapp-client/main.go"},
-		{s.Stack[1].LineNo, "23"},
+		{s.Items[0].Name, "stack.go"},
+		{s.Items[0].Method, "runtime/debug.Stack"},
+		{s.Items[0].AbsolutePath, "/path_to_go/1.7.1/libexec/src/runtime/debug/stack.go"},
+		{s.Items[0].LineNo, "24"},
+		{s.Items[1].Name, "main.go"},
+		{s.Items[1].Method, "main.Run.func1"},
+		{s.Items[1].AbsolutePath, "/homepath/src/github.com/phrase/phraseapp-client/main.go"},
+		{s.Items[1].LineNo, "23"},
 	}
 	for i, tc := range tests {
 		if tc.Has != tc.Want {
@@ -44,7 +78,7 @@ func TestParseStackTraceOther(t *testing.T) {
 	}
 }
 
-var stackInMainFile = `goroutine 1 [running]:
+var stackInMainFile = []byte(`goroutine 1 [running]:
 runtime/debug.Stack(0x0, 0x0, 0xc420051480)
   /usr/local/go/src/runtime/debug/stack.go:24 +0x79
 main.createBody(0x779a53, 0x16, 0xc420010ac0, 0x34, 0x0, 0x0, 0x0, 0x0, 0xc420051500, 0x8b0a9d, ...)
@@ -84,9 +118,9 @@ github.com/phrase/phraseapp-client/Godeps/_workspace/src/github.com/phrase/phras
 main.Run()
   /go/src/github.com/phrase/phraseapp-client/main.go:33 +0x9e
 main.main()
-  /go/src/github.com/phrase/phraseapp-client/main.go:13 +0x14`
+  /go/src/github.com/phrase/phraseapp-client/main.go:13 +0x14`)
 
-var stackInOtherFile = `goroutine 1 [running]:
+var stackInOtherFile = []byte(`goroutine 1 [running]:
 runtime/debug.Stack(0xc4200519c0, 0x31ca80, 0xc4200101c0)
   /path_to_go/1.7.1/libexec/src/runtime/debug/stack.go:24 +0x79
 main.Run.func1(0xc420051f18)
@@ -106,4 +140,4 @@ github.com/phrase/phraseapp-client/vendor/github.com/dynport/dgtk/cli.(*Router).
 main.Run()
   /homepath/src/github.com/phrase/phraseapp-client/main.go:47 +0xee
 main.main()
-  /homepath/src/github.com/phrase/phraseapp-client/main.go:14 +0x14`
+  /homepath/src/github.com/phrase/phraseapp-client/main.go:14 +0x14`)

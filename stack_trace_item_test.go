@@ -2,40 +2,8 @@ package main
 
 import "testing"
 
-func TestPanicWithEmptyStack(t *testing.T) {
-	stackTrace := NewStackTrace("")
-	if stackTrace.RealStack != "" {
-		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "", stackTrace.RealStack)
-	}
-
-	expected := "no error location found"
-	if stackTrace.ErrorLocation() != expected {
-		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
-	}
-
-	if len(stackTrace.List()) != 0 {
-		t.Fatalf("expected: %d - was: %d", 0, len(stackTrace.List()))
-	}
-}
-
-func TestPanicWithoutTrace(t *testing.T) {
-	stackTrace := NewStackTrace("panic.go")
-	if stackTrace.RealStack != "panic.go" {
-		t.Fatalf("expected real stack to eq\n%q, but was:\n%q", "panic.go", stackTrace.RealStack)
-	}
-
-	expected := "no error location found"
-	if stackTrace.ErrorLocation() != expected {
-		t.Fatalf("expected: %q - was: %q", expected, stackTrace.ErrorLocation())
-	}
-
-	if len(stackTrace.List()) != 0 {
-		t.Fatalf("expected: %d - was: %d", 0, len(stackTrace.List()))
-	}
-}
-
-func TestNewStackItem(t *testing.T) {
-	stackItem := &StackItem{
+func TestStackItem(t *testing.T) {
+	stackItem := &StackTraceItem{
 		LineNo:       "458",
 		Method:       "panic",
 		Name:         "runtime/panic.go",
@@ -73,16 +41,16 @@ func TestNewStackItem(t *testing.T) {
 	}
 }
 
-func TestPanicPathEmpty(t *testing.T) {
-	stackItem := &StackItem{Name: "panic"}
+func TestItemContextPathEmpty(t *testing.T) {
+	stackItem := &StackTraceItem{Name: "panic"}
 	expected := "panic: - "
 	if stackItem.ItemContext() != expected {
 		t.Fatalf("expected item context to eq\n%q, but was:\n%q", expected, stackItem.ItemContext())
 	}
 }
 
-func TestPanicMethodAndPathEmpty(t *testing.T) {
-	stackItem := &StackItem{Name: ""}
+func TestItemContextMethodAndPathEmpty(t *testing.T) {
+	stackItem := &StackTraceItem{Name: ""}
 	expected := ": - "
 	if stackItem.ItemContext() != expected {
 		t.Fatalf("expected item context to eq\n%q, but was:\n%q", expected, stackItem.ItemContext())
