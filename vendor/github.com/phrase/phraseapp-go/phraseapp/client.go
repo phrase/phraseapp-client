@@ -45,8 +45,13 @@ func NewClient(credentials *Credentials) (*Client, error) {
 		EnableDebug()
 	}
 
-	if credentials.Host == "" {
-		client.Credentials.Host = "https://api.phraseapp.com"
+	if client.Credentials.Host == "" {
+		envHost := os.Getenv("PHRASEAPP_HOST")
+		if envHost != "" {
+			client.Credentials.Host = envHost
+		} else {
+			client.Credentials.Host = "https://api.phraseapp.com"
+		}
 	}
 
 	return client, nil

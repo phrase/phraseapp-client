@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
@@ -27,8 +27,8 @@ type Config struct {
 const configName = ".phraseapp.yml"
 
 func ReadConfig() (*Config, error) {
-	cfg := new(Config)
-	cfg.Credentials = new(Credentials)
+	cfg := &Config{}
+	cfg.Credentials = &Credentials{}
 	rawCfg := struct{ PhraseApp *Config }{PhraseApp: cfg}
 
 	content, err := configContent()
@@ -55,24 +55,25 @@ func configContent() ([]byte, error) {
 }
 
 func configPath() (string, error) {
-	if envConfig := os.Getenv("PHRASEAPP_CONFIG"); envConfig != "" {
-		possiblePath := path.Join(envConfig)
-		switch _, err := os.Stat(possiblePath); {
-		case err == nil:
+	if possiblePath := os.Getenv("PHRASEAPP_CONFIG"); possiblePath != "" {
+		_, err := os.Stat(possiblePath)
+		if err == nil {
 			return possiblePath, nil
-		case os.IsNotExist(err):
-			return "", fmt.Errorf("file %q (given in PHRASEAPP_CONFIG) doesn't exist", possiblePath)
-		default:
-			return "", err
 		}
+
+		if os.IsNotExist(err) {
+			err = fmt.Errorf("file %q (from PHRASEAPP_CONFIG environment variable) doesn't exist", possiblePath)
+		}
+
+		return "", err
 	}
 
-	callerPath, err := os.Getwd()
+	workingDir, err := os.Getwd()
 	if err != nil {
 		return "", nil
 	}
 
-	possiblePath := path.Join(callerPath, configName)
+	possiblePath := filepath.Join(workingDir, configName)
 	if _, err := os.Stat(possiblePath); err == nil {
 		return possiblePath, nil
 	}

@@ -53,9 +53,9 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 			fmt.Println("You are about to delete the following key(s) from your project:")
 			sort.Strings(names)
 			fmt.Println(strings.Join(names, "\n"))
-			fmt.Print("Are you sure you want to continue? (y/n) [n] ")
 
-			confirmation := prompt()
+			confirmation := ""
+			err := promptWithDefault("Are you sure you want to continue? (y/n) ", &confirmation, "n")
 			if err != nil {
 				return err
 			}

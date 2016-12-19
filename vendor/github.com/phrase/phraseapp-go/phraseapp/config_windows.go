@@ -3,10 +3,10 @@
 package phraseapp
 
 import (
-	"path"
 	"os"
+	"path/filepath"
 )
 
 func defaultConfigDir() string {
-	return path.Join(os.Getenv("HomePath"), configName)
+	return filepath.Join(os.Getenv("HomePath"), configName)
 }
