@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
+	"time"
 	"unicode/utf8"
 
+	"github.com/jpillora/backoff"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -94,17 +95,35 @@ func (source *Source) Push(client *phraseapp.Client) error {
 			}
 		}
 
-		err = source.uploadFile(client, localeFile)
+		upload, err := source.uploadFile(client, localeFile)
 		if err != nil {
 			return err
 		}
 
-		sharedMessage("push", localeFile)
+		taskResult := make(chan string, 1)
+		taskErr := make(chan error, 1)
+
+		withSpinner("Waiting for your file to be processed... ", func(taskFinished chan<- struct{}) {
+			result, err := getUploadResult(client, source.ProjectID, upload)
+			taskResult <- result
+			taskErr <- err
+			taskFinished <- struct{}{}
+		})
+
+		if err := <-taskErr; err != nil {
+			return err
+		}
+
+		switch <-taskResult {
+		case "success":
+			printSuccess("Uploaded " + localeFile.RelPath() + " successfully.")
+		case "error":
+			printFailure("There was an error processing " + localeFile.RelPath() + ". Your changes were not saved online.")
+		}
 
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
 		}
-
 	}
 
 	return nil
@@ -478,4 +497,23 @@ func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
 	// we assume that it should be created
 	// every other source should be uploaded and validated in uploads#create
 	return (localeFile.Name != "" || localeFile.Code != "")
+}
+
+func getUploadResult(client *phraseapp.Client, projectID string, upload *phraseapp.Upload) (result string, err error) {
+	b := &backoff.Backoff{
+		Min:    500 * time.Millisecond,
+		Max:    10 * time.Second,
+		Factor: 2,
+		Jitter: true,
+	}
+
+	for ; result != "success" && result != "error"; result = upload.State {
+		time.Sleep(b.Duration())
+		upload, err = client.UploadShow(projectID, upload.ID)
+		if err != nil {
+			break
+		}
+	}
+
+	return
 }
