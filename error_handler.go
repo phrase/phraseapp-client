@@ -3,62 +3,50 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
 	"runtime"
-	"runtime/debug"
 
-	ct "github.com/daviddengcn/go-colortext"
+	"error-proxy/errors"
+
+	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const errorsEndpoint = "https://phraseapp.com/errors"
+const ErrorReportingEndpoint = "http://localhost:8080/error"
 
-type AppCrash struct {
-	Message    string `json:"message"`
-	App        string `json:"app"`
-	AppVersion string `json:"app_version"`
-	ErrorData  `json:"data"`
-}
+func reportError(cliErr *bserrors.Error, cfg *phraseapp.Config) {
+	serializableErr := errors.NewFromBugsnagError(cliErr)
 
-type ErrorData struct {
-	Context    string `json:"context"`
-	Last8      string `json:"last8"`
-	ProjectID  string `json:"project_id"`
-	ClientInfo `json:"client_info"`
-	Arch       string   `json:"arch"`
-	Os         string   `json:"os"`
-	StackTrace []string `json:"stack_trace"`
-	RawStack   string   `json:"raw_stack_trace"`
-}
-
-func ReportError(r interface{}, cfg *phraseapp.Config) {
-	last8, projectID := identification(cfg)
-	stackTrace := ParseStackTrace(debug.Stack())
-	crash := &AppCrash{
-		Message:    fmt.Sprintf("%s", r),
-		App:        "phraseapp-client",
-		AppVersion: PHRASEAPP_CLIENT_VERSION,
-		ErrorData: ErrorData{
-			Context:    stackTrace.ErrorLocation(),
-			Last8:      last8,
-			ProjectID:  projectID,
-			ClientInfo: NewInfo(),
-			Arch:       runtime.GOARCH,
-			Os:         runtime.GOOS,
-			StackTrace: stackTrace.List(),
-			RawStack:   string(debug.Stack()),
+	serializableErr.MetaData = errors.MetaData{
+		Environment: errors.Environment{
+			Arch: runtime.GOARCH,
+			OS:   runtime.GOOS,
+		},
+		Project: errors.Project{
+			ID: projectID(cfg),
+		},
+		User: errors.User{
+			AccessToken: abbreviatedToken(cfg),
+			Username:    username(cfg),
+		},
+		Version: errors.Version{
+			BuiltAt:                  BUILT_AT,
+			Revision:                 REVISION,
+			GeneratorRevision:        RevisionGenerator,
+			DocRevision:              RevisionDocs,
+			LibraryRevision:          LIBRARY_REVISION,
+			LibraryGeneratorRevision: phraseapp.RevisionGenerator,
+			LibraryDocRevision:       phraseapp.RevisionDocs,
+			GoVersion:                runtime.Version(),
 		},
 	}
 
-	body, err := json.Marshal(crash)
+	jsonErr, err := json.Marshal(serializableErr)
 	if err != nil {
 		return
 	}
 
-	response, err := http.Post(errorsEndpoint, "application/json", bytes.NewBuffer(body))
-
+	response, err := http.Post(ErrorReportingEndpoint, "application/json", bytes.NewBuffer(jsonErr))
 	if err != nil {
 		return
 	}
@@ -66,21 +54,28 @@ func ReportError(r interface{}, cfg *phraseapp.Config) {
 	response.Body.Close()
 }
 
-func identification(cfg *phraseapp.Config) (string, string) {
-	var last8 string
-	var projectID string
+func projectID(cfg *phraseapp.Config) string {
 	if cfg != nil {
-		if len(cfg.Token) == 64 {
-			last8 = cfg.Token[len(cfg.Token)-8:]
-		}
-		projectID = cfg.DefaultProjectID
+		return cfg.DefaultProjectID
 	}
 
-	return last8, projectID
+	return ""
 }
 
-func printErr(err error) {
-	ct.Foreground(ct.Red, true)
-	fmt.Fprintf(os.Stderr, "\nERROR: %s\n", err)
-	ct.ResetColor()
+func abbreviatedToken(cfg *phraseapp.Config) string {
+	if cfg != nil && cfg.Credentials != nil {
+		if len(cfg.Token) == 64 {
+			return cfg.Token[len(cfg.Token)-8:]
+		}
+	}
+
+	return ""
+}
+
+func username(cfg *phraseapp.Config) string {
+	if cfg != nil && cfg.Credentials != nil {
+		return cfg.Username
+	}
+
+	return ""
 }
