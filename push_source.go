@@ -156,7 +156,7 @@ func (sources Sources) ProjectIds() []string {
 	}
 	return projectIds
 }
-func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile) error {
+func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.Upload, error) {
 	if Debug {
 		fmt.Fprintln(os.Stdout, "Source file pattern:", source.File)
 		fmt.Fprintln(os.Stdout, "Actual file location:", localeFile.Path)
@@ -185,8 +185,7 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		params.Tags = &v
 	}
 
-	_, err := client.UploadCreate(source.ProjectID, params)
-	return err
+	return client.UploadCreate(source.ProjectID, params)
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
