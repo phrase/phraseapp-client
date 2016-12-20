@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	ct "github.com/daviddengcn/go-colortext"
 )
@@ -47,23 +49,28 @@ const parrot = `
 `
 
 func printParrot() {
-	printWithColor(parrot, ct.Cyan, true)
+	printWithColor(ct.Cyan, parrot)
 }
 
-func printSuccess(msg string) {
-	printWithColor(msg, ct.Green, true)
+func printSuccess(msg string, args ...interface{}) {
+	printWithColor(ct.Green, msg, args...)
 }
 
-func printErrorStr(errorMsg string) {
-	printWithColor(errorMsg, ct.Red, true)
+func printFailure(msg string, args ...interface{}) {
+	printWithColor(ct.Red, msg, args...)
+}
+
+func printWithColor(color ct.Color, msg string, args ...interface{}) {
+	fprintWithColor(os.Stdout, color, msg, args...)
 }
 
 func printError(err error) {
-	printWithColor(err.Error(), ct.Red, true)
+	fprintWithColor(os.Stderr, ct.Red, "ERROR: %s", err)
 }
 
-func printWithColor(msg string, color ct.Color, bright bool) {
-	ct.Foreground(color, bright)
-	fmt.Println(msg)
+func fprintWithColor(w io.Writer, color ct.Color, msg string, args ...interface{}) {
+	ct.Foreground(color, true)
+	fmt.Fprintf(w, msg, args...)
+	fmt.Fprintln(w)
 	ct.ResetColor()
 }
