@@ -3,16 +3,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"error-proxy/errors" // TODO: proper import path
 	"net/http"
+	"os"
 	"runtime"
-
-	"error-proxy/errors"
 
 	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const ErrorReportingEndpoint = "http://localhost:8080/error"
+const DefaultErrorReportingEndpoint = "http://localhost:8080/error" // TODO: put production ready endpoint here
 
 func reportError(cliErr *bserrors.Error, cfg *phraseapp.Config) {
 	serializableErr := errors.NewFromBugsnagError(cliErr)
@@ -46,7 +46,12 @@ func reportError(cliErr *bserrors.Error, cfg *phraseapp.Config) {
 		return
 	}
 
-	response, err := http.Post(ErrorReportingEndpoint, "application/json", bytes.NewBuffer(jsonErr))
+	endpoint := os.Getenv("ERROR_REPORTING_ENDPOINT")
+	if endpoint == "" {
+		endpoint = DefaultErrorReportingEndpoint
+	}
+
+	response, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonErr))
 	if err != nil {
 		return
 	}
