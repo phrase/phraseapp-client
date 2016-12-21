@@ -10,6 +10,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/phrase/phraseapp-client/paclient"
+	"github.com/phrase/phraseapp-client/spinner"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -108,7 +110,7 @@ func (cmd *InitCommand) Run() error {
 }
 
 func (cmd *InitCommand) askForToken() error {
-	printParrot()
+	paclient.PrintParrot()
 	fmt.Println("PhraseApp.com API Client Setup")
 	fmt.Println()
 
@@ -148,7 +150,7 @@ func (cmd *InitCommand) selectProject() error {
 		return err
 	}
 
-	withSpinner("Loading projects... ", func(taskFinished chan<- struct{}) {
+	spinner.Spin("Loading projects... ", func(taskFinished chan<- struct{}) {
 		projects, err := client.ProjectsList(1, 25)
 		taskResult <- projects
 		taskErr <- err
@@ -258,7 +260,7 @@ func (cmd *InitCommand) selectFormat() error {
 
 	promptText := "Select the format to use for language files you download from PhraseApp"
 	if cmd.FileFormat != nil {
-		promptText += fmt.Sprintf(" (or leave blank to use the default, %s)", cmd.FileFormat)
+		promptText += fmt.Sprintf(" (or leave blank to use the default, %s)", cmd.FileFormat.Name)
 	}
 	promptText += ": "
 
@@ -277,7 +279,7 @@ func (cmd *InitCommand) selectFormat() error {
 
 func (cmd *InitCommand) configureSources() error {
 	fmt.Println("Enter the path to the language file you want to upload to PhraseApp.")
-	fmt.Printf("For documentation, see %s#push\n", docsConfigUrl)
+	fmt.Printf("For documentation, see %s#push\n", paclient.DocsConfigUrl)
 
 	pushPath := ""
 	for {
@@ -288,7 +290,7 @@ func (cmd *InitCommand) configureSources() error {
 
 		println(pushPath)
 
-		err = ValidPath(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
+		err = paclient.ValidPath(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -310,7 +312,7 @@ func (cmd *InitCommand) configureSources() error {
 
 func (cmd *InitCommand) configureTargets() error {
 	fmt.Println("Enter the path to which to download language files from PhraseApp.")
-	fmt.Printf("For documentation, see %s#pull\n", docsConfigUrl)
+	fmt.Printf("For documentation, see %s#pull\n", paclient.DocsConfigUrl)
 
 	pullPath := ""
 	for {
@@ -319,7 +321,7 @@ func (cmd *InitCommand) configureTargets() error {
 			return err
 		}
 
-		err = ValidPath(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
+		err = paclient.ValidPath(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -357,13 +359,13 @@ func (cmd *InitCommand) writeConfig() error {
 		return err
 	}
 
-	printSuccess("We created the following configuration file for you: " + filename)
+	paclient.PrintSuccess("We created the following configuration file for you: " + filename)
 
 	fmt.Println()
 	fmt.Println(string(yamlBytes))
 
-	printSuccess("For advanced configuration options, take a look at the documentation: " + docsConfigUrl)
-	printSuccess("You can now use the push & pull commands in your workflow:")
+	paclient.PrintSuccess("For advanced configuration options, take a look at the documentation: " + paclient.DocsConfigUrl)
+	paclient.PrintSuccess("You can now use the push & pull commands in your workflow:")
 	fmt.Println()
 	fmt.Println("$ phraseapp push")
 	fmt.Println("$ phraseapp pull")
@@ -378,7 +380,7 @@ func (cmd *InitCommand) writeConfig() error {
 		}
 	}
 
-	printSuccess("Project initialization completed!")
+	paclient.PrintSuccess("Project initialization completed!")
 
 	return nil
 }
