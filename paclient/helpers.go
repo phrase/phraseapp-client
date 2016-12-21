@@ -40,31 +40,16 @@ func isDir(path string) bool {
 	return stat.IsDir()
 }
 
-func splitPathIntoSegments(path string) []string {
+func splitPathIntoSegments(path string, separator uint8) []string {
 	segments := []string{}
 	start := 0
 	for i := range path {
-		if os.IsPathSeparator(path[i]) {
+		if path[i] == separator {
 			segments = append(segments, path[start:i])
 			start = i + 1
 		}
 	}
 	return append(segments, path[start:])
-}
-
-func findFilesInPath(root string) ([]string, error) {
-	files := []string{}
-	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !f.Mode().IsDir() {
-			files = append(files, path)
-		}
-		return nil
-	})
-
-	return files, err
 }
 
 func splitString(s string, set string) []string {
@@ -93,8 +78,8 @@ func splitString(s string, set string) []string {
 	return slist
 }
 
-func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) bool {
-	candTokens := splitPathIntoSegments(cand)
+func validateFileCandidate(separator uint8, tokens []string, ignoreTokenCnt int, cand string) bool {
+	candTokens := splitPathIntoSegments(cand, separator)
 	candTokenCnt := len(candTokens)
 
 	if candTokenCnt < (len(tokens) + ignoreTokenCnt) {

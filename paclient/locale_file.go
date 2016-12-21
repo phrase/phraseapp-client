@@ -37,7 +37,7 @@ func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
 	return (localeFile.Name != "" || localeFile.Code != "")
 }
 
-func (localeFile *LocaleFile) extractParamFromPathToken(patternToken, pathToken string) {
+func (localeFile *LocaleFile) extractParamFromPathToken(globber GlobFinder, patternToken, pathToken string) {
 	groups := PlaceholderRegexp.FindAllString(patternToken, -1)
 	if len(groups) <= 0 {
 		return
@@ -76,7 +76,7 @@ func (localeFile *LocaleFile) extractParamFromPathToken(patternToken, pathToken 
 	}
 
 	for i, subMatch := range subMatches {
-		value := strings.Trim(subMatch, separator)
+		value := strings.Trim(subMatch, string(globber.Separator()))
 		switch namedMatches[i] {
 		case "locale_code":
 			localeFile.Code = value

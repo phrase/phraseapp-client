@@ -2,6 +2,7 @@ package paclient
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -218,18 +219,18 @@ func isNotFound(err error) bool {
 }
 
 // Return all locale files from disk that match the source pattern.
-func (source *Source) LocaleFiles() (LocaleFiles, error) {
-	filePaths, err := source.SystemFiles()
+func (source *Source) LocaleFiles(globber GlobFinder) (LocaleFiles, error) {
+	filePaths, err := source.SystemFiles(globber)
 	if err != nil {
 		return nil, err
 	}
 
-	patternTokens := splitPathToTokens(source.File)
+	patternTokens := splitPathToTokens(globber, source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		pathTokens := splitPathToTokens(path)
-		localeFile := extractParamsFromPathTokens(patternTokens, pathTokens)
+		pathTokens := splitPathToTokens(globber, path)
+		localeFile := extractParamsFromPathTokens(globber, patternTokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
 		if err != nil {
@@ -267,7 +268,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 }
 
 func (source *Source) Push(client *phraseapp.Client) error {
-	localeFiles, err := source.LocaleFiles()
+	localeFiles, err := source.LocaleFiles(&LocalGlobFinder{})
 	if err != nil {
 		return err
 	}
@@ -320,51 +321,58 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	return nil
 }
 
-func (source *Source) SystemFiles() ([]string, error) {
+func isPathSeparator(globber GlobFinder, s uint8) bool {
+	return globber.Separator() == s
+}
+
+func (source *Source) pattern(globber GlobFinder) (pre, post string) {
 	pattern := PlaceholderRegexp.ReplaceAllString(source.File, "*")
 	parts := strings.SplitN(pattern, "**", 2)
-	var pre, post string
-
 	pre = parts[0]
 	// strip trailing path separators
-	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre)-1]) {
+	for len(pre) > 0 && isPathSeparator(globber, pre[len(pre)-1]) {
 		pre = pre[0 : len(pre)-1]
 	}
 
 	if len(parts) == 2 {
 		post = parts[1]
-		for len(post) > 0 && os.IsPathSeparator(post[0]) {
+		for len(post) > 0 && isPathSeparator(globber, post[0]) {
 			post = post[1:]
 		}
 	}
+	return pre, post
+}
 
-	candidates, err := filepath.Glob(pre)
+func (source *Source) SystemFiles(globber GlobFinder) ([]string, error) {
+	pre, post := source.pattern(globber)
+	candidates, err := globber.Glob(pre)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("candidates: %#v", candidates)
 
-	prefix := "." + string(os.PathSeparator)
+	prefix := "." + string(globber.Separator())
 	if strings.HasPrefix(pre, prefix) {
 		pre = strings.TrimLeft(pre, prefix)
 	}
 
 	var matches []string
 	if post != "" {
-		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1))
-		tokenCountPre := len(splitPathIntoSegments(pre))
+		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1), globber.Separator())
+		tokenCountPre := len(splitPathIntoSegments(pre, globber.Separator()))
 
 		for _, cand := range candidates {
 			if !isDir(cand) {
 				continue
 			}
 
-			cands, err := findFilesInPath(cand)
+			cands, err := globber.Find(cand)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, c := range cands {
-				if validateFileCandidate(tokens, tokenCountPre, c) {
+				if validateFileCandidate(globber.Separator(), tokens, tokenCountPre, c) {
 					matches = append(matches, c)
 				}
 			}
@@ -434,10 +442,10 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	}
 }
 
-func splitPathToTokens(s string) []string {
+func splitPathToTokens(globber GlobFinder, s string) []string {
 	tokens := []string{}
-	splitSet := separator
-	if separator == "\\" {
+	splitSet := string(globber.Separator())
+	if splitSet == "\\" {
 		splitSet = "\\/"
 	}
 	for _, token := range splitString(s, splitSet) {
@@ -449,7 +457,7 @@ func splitPathToTokens(s string) []string {
 	return tokens
 }
 
-func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile {
+func extractParamsFromPathTokens(globber GlobFinder, patternTokens, pathTokens []string) *LocaleFile {
 	localeFile := new(LocaleFile)
 
 	if Debug {
@@ -466,7 +474,7 @@ func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile
 		if patternToken == "**" {
 			break
 		}
-		localeFile.extractParamFromPathToken(patternToken, pathToken)
+		localeFile.extractParamFromPathToken(globber, patternToken, pathToken)
 	}
 
 	if Contains(patternTokens, "**") {
@@ -482,7 +490,7 @@ func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile
 				break
 			}
 
-			localeFile.extractParamFromPathToken(patternToken, pathToken)
+			localeFile.extractParamFromPathToken(globber, patternToken, pathToken)
 		}
 	}
 

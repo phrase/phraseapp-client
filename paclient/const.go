@@ -1,12 +1,8 @@
 package paclient
 
-import (
-	"os"
-	"regexp"
-)
+import "regexp"
 
 var (
-	separator         = string(os.PathSeparator)
 	PlaceholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
 )
 

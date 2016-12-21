@@ -338,10 +338,11 @@ func (patterns Patterns) TestPatterns(t *testing.T) {
 }
 
 func (pattern *Pattern) TestPattern(t *testing.T, idx int) {
-	tokens := splitPathToTokens(pattern.File)
-	pathTokens := splitPathToTokens(pattern.TestPath)
+	lg := &LocalGlobFinder{}
+	tokens := splitPathToTokens(lg, pattern.File)
+	pathTokens := splitPathToTokens(lg, pattern.TestPath)
 
-	localeFile := extractParamsFromPathTokens(tokens, pathTokens)
+	localeFile := extractParamsFromPathTokens(lg, tokens, pathTokens)
 
 	if localeFile.Code != pattern.ExpectedCode {
 		t.Errorf("Expected Code to equal '%s' but was '%s' Pattern: %d", pattern.ExpectedCode, localeFile.Code, idx+1)

@@ -75,7 +75,7 @@ func TestSourceFields(t *testing.T) {
 
 func TestSourceLocaleFilesOne(t *testing.T) {
 	source := getBaseSource()
-	localeFiles, err := source.LocaleFiles()
+	localeFiles, err := source.LocaleFiles(lg)
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -100,10 +100,13 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 	}
 }
 
+var lg = &LocalGlobFinder{}
+
 func TestSourceLocaleFilesTwo(t *testing.T) {
 	source := getBaseSource()
 	source.File = "./tests/<locale_name>.yml"
-	localeFiles, err := source.LocaleFiles()
+
+	localeFiles, err := source.LocaleFiles(lg)
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -315,7 +318,7 @@ func TestSystemFiles(t *testing.T) {
 		src := new(Source)
 		src.File = tti.pattern
 
-		matches, err := src.SystemFiles()
+		matches, err := src.SystemFiles(&LocalGlobFinder{})
 		if err != nil {
 			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
 			continue
@@ -382,7 +385,7 @@ func TestLocaleFiles(t *testing.T) {
 		src.File = tti.pattern
 
 		src.RemoteLocales = append(src.RemoteLocales, &phraseapp.Locale{ID: "random", Code: "y", Name: "YY"})
-		files, err := src.LocaleFiles()
+		files, err := src.LocaleFiles(lg)
 		if err != nil {
 			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
 			continue
