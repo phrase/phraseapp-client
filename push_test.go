@@ -481,7 +481,7 @@ func TestUploadFile(t *testing.T) {
 	file.Code = "locale-code"
 	file.Tag = "sometag"
 
-	err := src.uploadFile(c, file)
+	_, err := src.uploadFile(c, file)
 	if err != nil {
 		t.Errorf("didn't expect an error, got: %s", err)
 	}
