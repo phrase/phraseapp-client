@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/phrase/phraseapp-client/spinner"
@@ -219,7 +218,7 @@ func isNotFound(err error) bool {
 }
 
 // Return all locale files from disk that match the source pattern.
-func (source *Source) LocaleFiles(globber GlobFinder) (LocaleFiles, error) {
+func (source *Source) LocaleFiles(globber *GlobFinder) (LocaleFiles, error) {
 	filePaths, err := source.SystemFiles(globber)
 	if err != nil {
 		return nil, err
@@ -232,7 +231,7 @@ func (source *Source) LocaleFiles(globber GlobFinder) (LocaleFiles, error) {
 		pathTokens := splitPathToTokens(globber, path)
 		localeFile := extractParamsFromPathTokens(globber, patternTokens, pathTokens)
 
-		absolutePath, err := filepath.Abs(path)
+		absolutePath, err := globber.Abs(path)
 		if err != nil {
 			return nil, err
 		}
@@ -258,7 +257,7 @@ func (source *Source) LocaleFiles(globber GlobFinder) (LocaleFiles, error) {
 	}
 
 	if len(localeFiles) <= 0 {
-		abs, err := filepath.Abs(source.File)
+		abs, err := globber.Abs(source.File)
 		if err != nil {
 			abs = source.File
 		}
@@ -268,7 +267,7 @@ func (source *Source) LocaleFiles(globber GlobFinder) (LocaleFiles, error) {
 }
 
 func (source *Source) Push(client *phraseapp.Client) error {
-	localeFiles, err := source.LocaleFiles(&LocalGlobFinder{})
+	localeFiles, err := source.LocaleFiles(NewLocalGlobber())
 	if err != nil {
 		return err
 	}
@@ -321,11 +320,11 @@ func (source *Source) Push(client *phraseapp.Client) error {
 	return nil
 }
 
-func isPathSeparator(globber GlobFinder, s uint8) bool {
-	return globber.Separator() == s
+func isPathSeparator(globber *GlobFinder, s uint8) bool {
+	return globber.Separator == s
 }
 
-func (source *Source) pattern(globber GlobFinder) (pre, post string) {
+func (source *Source) pattern(globber *GlobFinder) (pre, post string) {
 	pattern := PlaceholderRegexp.ReplaceAllString(source.File, "*")
 	parts := strings.SplitN(pattern, "**", 2)
 	pre = parts[0]
@@ -343,7 +342,7 @@ func (source *Source) pattern(globber GlobFinder) (pre, post string) {
 	return pre, post
 }
 
-func (source *Source) SystemFiles(globber GlobFinder) ([]string, error) {
+func (source *Source) SystemFiles(globber *GlobFinder) ([]string, error) {
 	pre, post := source.pattern(globber)
 	candidates, err := globber.Glob(pre)
 	if err != nil {
@@ -351,15 +350,15 @@ func (source *Source) SystemFiles(globber GlobFinder) ([]string, error) {
 	}
 	log.Printf("candidates: %#v", candidates)
 
-	prefix := "." + string(globber.Separator())
+	prefix := "." + string(globber.Separator)
 	if strings.HasPrefix(pre, prefix) {
 		pre = strings.TrimLeft(pre, prefix)
 	}
 
 	var matches []string
 	if post != "" {
-		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1), globber.Separator())
-		tokenCountPre := len(splitPathIntoSegments(pre, globber.Separator()))
+		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1), globber.Separator)
+		tokenCountPre := len(splitPathIntoSegments(pre, globber.Separator))
 
 		for _, cand := range candidates {
 			if !isDir(cand) {
@@ -372,7 +371,7 @@ func (source *Source) SystemFiles(globber GlobFinder) ([]string, error) {
 			}
 
 			for _, c := range cands {
-				if validateFileCandidate(globber.Separator(), tokens, tokenCountPre, c) {
+				if validateFileCandidate(globber.Separator, tokens, tokenCountPre, c) {
 					matches = append(matches, c)
 				}
 			}
@@ -442,9 +441,9 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	}
 }
 
-func splitPathToTokens(globber GlobFinder, s string) []string {
+func splitPathToTokens(globber *GlobFinder, s string) []string {
 	tokens := []string{}
-	splitSet := string(globber.Separator())
+	splitSet := string(globber.Separator)
 	if splitSet == "\\" {
 		splitSet = "\\/"
 	}
@@ -457,7 +456,7 @@ func splitPathToTokens(globber GlobFinder, s string) []string {
 	return tokens
 }
 
-func extractParamsFromPathTokens(globber GlobFinder, patternTokens, pathTokens []string) *LocaleFile {
+func extractParamsFromPathTokens(globber *GlobFinder, patternTokens, pathTokens []string) *LocaleFile {
 	localeFile := new(LocaleFile)
 
 	if Debug {

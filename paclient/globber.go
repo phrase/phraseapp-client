@@ -5,10 +5,19 @@ import (
 	"path/filepath"
 )
 
-type GlobFinder interface {
-	Glob(pre string) ([]string, error)
-	Find(candidate string) ([]string, error)
-	Separator() uint8
+func NewLocalGlobber() *GlobFinder {
+	return &GlobFinder{
+		Glob:      filepath.Glob,
+		Separator: filepath.Separator,
+		Abs:       filepath.Abs,
+	}
+}
+
+type GlobFinder struct {
+	Glob      func(string) ([]string, error)
+	Find      func(string) ([]string, error)
+	Separator uint8
+	Abs       func(string) (string, error)
 }
 
 type LocalGlobFinder struct {
@@ -16,6 +25,10 @@ type LocalGlobFinder struct {
 
 func (l *LocalGlobFinder) Glob(pre string) ([]string, error) {
 	return filepath.Glob(pre)
+}
+
+func (l *LocalGlobFinder) Abs(input string) (string, error) {
+	return filepath.Abs(input)
 }
 
 func (l *LocalGlobFinder) Find(candidate string) (files []string, err error) {

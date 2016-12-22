@@ -70,7 +70,7 @@ func TestTargetFields(t *testing.T) {
 
 func TestTargetLocaleFiles(t *testing.T) {
 	target := getBaseTarget()
-	localeFiles, err := target.LocaleFiles()
+	localeFiles, err := target.LocaleFiles(lg)
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
@@ -112,7 +112,7 @@ func TestReplacePlaceholders(t *testing.T) {
 		Tag:  "abc",
 		Path: "",
 	}
-	newPath, err := target.ReplacePlaceholders(localeFile)
+	newPath, err := target.ReplacePlaceholders(lg, localeFile)
 	if err != nil {
 		t.Errorf(err.Error())
 		t.Fail()

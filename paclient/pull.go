@@ -96,7 +96,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		return err
 	}
 
-	localeFiles, err := target.LocaleFiles()
+	localeFiles, err := target.LocaleFiles(NewLocalGlobber())
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 	return nil
 }
 
-func (target *Target) LocaleFiles() (LocaleFiles, error) {
+func (target *Target) LocaleFiles(globber *GlobFinder) (LocaleFiles, error) {
 	localeID := target.GetLocaleID()
 
 	files := []*LocaleFile{}
@@ -186,7 +186,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 			Path:       target.File,
 		}
 
-		absPath, err := target.ReplacePlaceholders(localeFile)
+		absPath, err := target.ReplacePlaceholders(globber, localeFile)
 		if err != nil {
 			return nil, err
 		}
@@ -209,8 +209,8 @@ func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) 
 	return nil
 }
 
-func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error) {
-	absPath, err := filepath.Abs(target.File)
+func (target *Target) ReplacePlaceholders(globber *GlobFinder, localeFile *LocaleFile) (string, error) {
+	absPath, err := globber.Abs(target.File)
 	if err != nil {
 		return "", err
 	}

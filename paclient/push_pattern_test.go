@@ -337,8 +337,9 @@ func (patterns Patterns) TestPatterns(t *testing.T) {
 	}
 }
 
+var lg = NewLocalGlobber()
+
 func (pattern *Pattern) TestPattern(t *testing.T, idx int) {
-	lg := &LocalGlobFinder{}
 	tokens := splitPathToTokens(lg, pattern.File)
 	pathTokens := splitPathToTokens(lg, pattern.TestPath)
 

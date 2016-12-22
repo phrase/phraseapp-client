@@ -100,8 +100,6 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 	}
 }
 
-var lg = &LocalGlobFinder{}
-
 func TestSourceLocaleFilesTwo(t *testing.T) {
 	source := getBaseSource()
 	source.File = "./tests/<locale_name>.yml"
@@ -318,7 +316,7 @@ func TestSystemFiles(t *testing.T) {
 		src := new(Source)
 		src.File = tti.pattern
 
-		matches, err := src.SystemFiles(&LocalGlobFinder{})
+		matches, err := src.SystemFiles(NewLocalGlobber())
 		if err != nil {
 			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
 			continue
