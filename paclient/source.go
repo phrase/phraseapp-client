@@ -2,7 +2,6 @@ package paclient
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -348,7 +347,6 @@ func (source *Source) SystemFiles(globber *GlobFinder) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("candidates: %#v", candidates)
 
 	prefix := "." + string(globber.Separator)
 	if strings.HasPrefix(pre, prefix) {
