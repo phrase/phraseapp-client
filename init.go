@@ -258,7 +258,7 @@ func (cmd *InitCommand) selectFormat() error {
 
 	promptText := "Select the format to use for language files you download from PhraseApp"
 	if cmd.FileFormat != nil {
-		promptText += fmt.Sprintf(" (or leave blank to use the default, %s)", cmd.FileFormat)
+		promptText += fmt.Sprintf(" (or leave blank to use the default, %s)", cmd.FileFormat.Name)
 	}
 	promptText += ": "
 
