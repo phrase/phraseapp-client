@@ -15,6 +15,7 @@ import (
 
 type PushCommand struct {
 	*phraseapp.Config
+	Wait bool `cli:"opt --wait desc='Wait for files to be processed'"`
 }
 
 func (cmd *PushCommand) Run() error {
@@ -66,7 +67,7 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	for _, source := range sources {
-		err := source.Push(client)
+		err := source.Push(client, cmd.Wait)
 		if err != nil {
 			return err
 		}
@@ -74,14 +75,14 @@ func (cmd *PushCommand) Run() error {
 	return nil
 }
 
-func (source *Source) Push(client *phraseapp.Client) error {
+func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error {
 	localeFiles, err := source.LocaleFiles()
 	if err != nil {
 		return err
 	}
 
 	for _, localeFile := range localeFiles {
-		fmt.Println("Uploading", localeFile.RelPath())
+		fmt.Printf("Uploading %s... ", localeFile.RelPath())
 
 		if localeFile.shouldCreateLocale(source) {
 			localeDetails, err := source.createLocale(client, localeFile)
@@ -100,25 +101,32 @@ func (source *Source) Push(client *phraseapp.Client) error {
 			return err
 		}
 
-		taskResult := make(chan string, 1)
-		taskErr := make(chan error, 1)
+		if waitForResults {
+			fmt.Println()
 
-		withSpinner("Waiting for your file to be processed... ", func(taskFinished chan<- struct{}) {
-			result, err := getUploadResult(client, source.ProjectID, upload)
-			taskResult <- result
-			taskErr <- err
-			taskFinished <- struct{}{}
-		})
+			taskResult := make(chan string, 1)
+			taskErr := make(chan error, 1)
 
-		if err := <-taskErr; err != nil {
-			return err
-		}
+			withSpinner("Waiting for your file to be processed... ", func(taskFinished chan<- struct{}) {
+				result, err := getUploadResult(client, source.ProjectID, upload)
+				taskResult <- result
+				taskErr <- err
+				taskFinished <- struct{}{}
+			})
 
-		switch <-taskResult {
-		case "success":
-			printSuccess("Uploaded " + localeFile.RelPath() + " successfully.")
-		case "error":
-			printFailure("There was an error processing " + localeFile.RelPath() + ". Your changes were not saved online.")
+			if err := <-taskErr; err != nil {
+				return err
+			}
+
+			switch <-taskResult {
+			case "success":
+				printSuccess("Successfully uploaded and processed %s.", localeFile.RelPath())
+			case "error":
+				printFailure("There was an error processing %s. Your changes were not saved online.", localeFile.RelPath())
+			}
+		} else {
+			fmt.Println("done!")
+			fmt.Printf("Check upload %s for information about processing results.\n", upload.ID)
 		}
 
 		if Debug {
