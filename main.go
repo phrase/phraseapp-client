@@ -29,7 +29,7 @@ func Run() {
 	}()
 
 	phraseapp.ClientVersion = PHRASEAPP_CLIENT_VERSION
-	ValidateVersion()
+	CheckForUpdate()
 
 	cfg, err := phraseapp.ReadConfig()
 	if err != nil {

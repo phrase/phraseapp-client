@@ -103,6 +103,7 @@ func GetFormats(client *phraseapp.Client) (map[string]*phraseapp.Format, error) 
 	return formatMap, nil
 }
 
+// Contains returns true if str is an element of seq.
 func Contains(seq []string, str string) bool {
 	for _, elem := range seq {
 		if str == elem {
@@ -151,4 +152,15 @@ func sharedMessage(method string, localeFile *LocaleFile) {
 
 func isNotFound(err error) bool {
 	return (err != nil && strings.Contains(err.Error(), "404"))
+}
+
+// containsAnySub returns true if s contains at least one element in subs.
+func containsAnySub(s string, subs []string) bool {
+	for _, sub := range subs {
+		if strings.Contains(s, sub) {
+			return true
+		}
+	}
+
+	return false
 }

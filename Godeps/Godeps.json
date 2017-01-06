@@ -23,6 +23,11 @@
 			"Rev": "aa7703c9414b36d4e9b2e42e6c704d0bfae7db64"
 		},
 		{
+			"ImportPath": "github.com/coreos/go-semver/semver",
+			"Comment": "v0.2.0-2-g9474efc",
+			"Rev": "9474efc580562cce8f761659fbce31b6feb8ce88"
+		},
+		{
 			"ImportPath": "github.com/daviddengcn/go-colortext",
 			"Rev": "511bcaf42ccd42c38aba7427b6673277bf19e2a1"
 		},
@@ -32,10 +37,6 @@
 		},
 		{
 			"ImportPath": "github.com/dynport/dgtk/tagparse",
-			"Rev": "31c7c12b1d6eb1823d775041589f8e4fff12549b"
-		},
-		{
-			"ImportPath": "github.com/dynport/dgtk/version",
 			"Rev": "31c7c12b1d6eb1823d775041589f8e4fff12549b"
 		},
 		{
