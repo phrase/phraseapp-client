@@ -97,8 +97,7 @@ func (cmd *InitCommand) Run() error {
 	for step != StepFinished {
 		err := stepFuncs[step](cmd)
 		if err != nil {
-			printErr(err)
-			break
+			return err
 		}
 
 		step = nextStep[step]

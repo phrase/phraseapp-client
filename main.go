@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 
+	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
@@ -18,11 +19,11 @@ const phraseAppSupport = "support@phraseapp.com"
 func Run() {
 	var cfg *phraseapp.Config
 	defer func() {
-		if recovery := recover(); recovery != nil {
-			if PHRASEAPP_CLIENT_VERSION != "DEV" {
-				ReportError(recovery, cfg)
+		if recovered := recover(); recovered != nil {
+			if recovered, ok := recovered.(error); ok && PHRASEAPP_CLIENT_VERSION != "DEV" {
+				reportError(bserrors.New(recovered, 3), cfg)
 			}
-			printErr(fmt.Errorf("This should not have happened: %s - Contact support: %s", recovery, phraseAppSupport))
+			printError(fmt.Errorf("This should not have happened: %s - Contact support: %s", recovered, phraseAppSupport))
 			os.Exit(1)
 		}
 	}()
@@ -38,7 +39,7 @@ func Run() {
 
 	r, err := router(cfg)
 	if err != nil {
-		printErr(err)
+		printError(err)
 		os.Exit(3)
 	}
 
@@ -48,7 +49,7 @@ func Run() {
 	case nil:
 		os.Exit(0)
 	default:
-		printErr(err)
+		printError(err)
 		os.Exit(1)
 	}
 }
