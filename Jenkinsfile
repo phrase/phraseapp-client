@@ -7,7 +7,4 @@ node {
 
   stage "Build"
   sh "bash build/build.sh"
-
-  stage "Push"
-  sh "bash build/push.sh"
 }
