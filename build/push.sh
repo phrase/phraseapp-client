@@ -6,8 +6,12 @@ BIN_DIR=$(cat ${WD}/.bin_dir)
 BUILD_VERSION=$(cat $BIN_DIR/.build_version)
 
 if ! which aws > /dev/null; then
-  apt-get update
-  apt-get install -y python-pip
+  if which yum > /dev/null 2>&1 ; then
+    yum install -y python2-pip
+  else
+    apt-get update
+    apt-get install -y python-pip
+  fi
   pip install awscli
 fi
 
