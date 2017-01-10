@@ -11,6 +11,7 @@ import (
 
 func TestGetLatestVersionFromURL(t *testing.T) {
 	clearCache()
+	defer clearCache()
 
 	expected := "1.1.3"
 
@@ -33,8 +34,8 @@ func TestGetLatestVersionFromCache(t *testing.T) {
 	setupTestCache(expected)
 	defer clearCache()
 
-	v, _, ok := getLatestVersionFromCache()
-	if !ok {
+	v, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
@@ -64,6 +65,7 @@ func TestGetLatestVersionWithCache(t *testing.T) {
 
 func TestGetLatestVersionWithoutCache(t *testing.T) {
 	clearCache()
+	defer clearCache()
 
 	expected := "2.0.0"
 
@@ -79,8 +81,8 @@ func TestGetLatestVersionWithoutCache(t *testing.T) {
 		t.Errorf("expected latest version to be %q, was %q", expected, v)
 	}
 
-	cv, _, ok := getLatestVersionFromCache()
-	if !ok {
+	cv, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
@@ -108,8 +110,8 @@ func TestGetLatestVersionWithInvalidCache(t *testing.T) {
 		t.Errorf("expected latest version to be %q, was %q", expected, v)
 	}
 
-	cv, _, ok := getLatestVersionFromCache()
-	if !ok {
+	cv, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
@@ -118,8 +120,9 @@ func TestGetLatestVersionWithInvalidCache(t *testing.T) {
 	}
 }
 
-func ExampleCheckForUpdateWithUpdateAvailable() {
+func ExampleCheckForUpdate_withUpdateAvailable() {
 	clearCache()
+	defer clearCache()
 
 	resetVersion := setupFakeVersion("1.1.3")
 	defer resetVersion()
@@ -136,8 +139,9 @@ func ExampleCheckForUpdateWithUpdateAvailable() {
 	// You can get the latest version from https://phraseapp.com/en/cli.
 }
 
-func ExampleCheckForUpdateWithNoUpdateAvailable() {
+func ExampleCheckForUpdate_withNoUpdateAvailable() {
 	clearCache()
+	defer clearCache()
 
 	latest := "1.7.0"
 
@@ -152,8 +156,9 @@ func ExampleCheckForUpdateWithNoUpdateAvailable() {
 	// Output:
 }
 
-func ExampleCheckForUpdateWithDevVersion() {
+func ExampleCheckForUpdate_withDevVersion() {
 	clearCache()
+	defer clearCache()
 
 	resetVersion := setupFakeVersion("1.1.3-dev")
 	defer resetVersion()
