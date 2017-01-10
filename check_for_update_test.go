@@ -33,8 +33,8 @@ func TestGetLatestVersionFromCache(t *testing.T) {
 	setupTestCache(expected)
 	defer clearCache()
 
-	v, _, ok := getLatestVersionFromCache()
-	if !ok {
+	v, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
@@ -79,8 +79,8 @@ func TestGetLatestVersionWithoutCache(t *testing.T) {
 		t.Errorf("expected latest version to be %q, was %q", expected, v)
 	}
 
-	cv, _, ok := getLatestVersionFromCache()
-	if !ok {
+	cv, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
@@ -108,8 +108,8 @@ func TestGetLatestVersionWithInvalidCache(t *testing.T) {
 		t.Errorf("expected latest version to be %q, was %q", expected, v)
 	}
 
-	cv, _, ok := getLatestVersionFromCache()
-	if !ok {
+	cv, _, err := getLatestVersionFromCache()
+	if err != nil {
 		t.Errorf("could not read version from cache!")
 	}
 
