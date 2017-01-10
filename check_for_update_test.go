@@ -11,6 +11,7 @@ import (
 
 func TestGetLatestVersionFromURL(t *testing.T) {
 	clearCache()
+	defer clearCache()
 
 	expected := "1.1.3"
 
@@ -64,6 +65,7 @@ func TestGetLatestVersionWithCache(t *testing.T) {
 
 func TestGetLatestVersionWithoutCache(t *testing.T) {
 	clearCache()
+	defer clearCache()
 
 	expected := "2.0.0"
 
@@ -120,6 +122,7 @@ func TestGetLatestVersionWithInvalidCache(t *testing.T) {
 
 func ExampleCheckForUpdateWithUpdateAvailable() {
 	clearCache()
+	defer clearCache()
 
 	resetVersion := setupFakeVersion("1.1.3")
 	defer resetVersion()
@@ -138,6 +141,7 @@ func ExampleCheckForUpdateWithUpdateAvailable() {
 
 func ExampleCheckForUpdateWithNoUpdateAvailable() {
 	clearCache()
+	defer clearCache()
 
 	latest := "1.7.0"
 
@@ -154,6 +158,7 @@ func ExampleCheckForUpdateWithNoUpdateAvailable() {
 
 func ExampleCheckForUpdateWithDevVersion() {
 	clearCache()
+	defer clearCache()
 
 	resetVersion := setupFakeVersion("1.1.3-dev")
 	defer resetVersion()
