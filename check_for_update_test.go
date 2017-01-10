@@ -120,7 +120,7 @@ func TestGetLatestVersionWithInvalidCache(t *testing.T) {
 	}
 }
 
-func ExampleCheckForUpdateWithUpdateAvailable() {
+func ExampleCheckForUpdate_withUpdateAvailable() {
 	clearCache()
 	defer clearCache()
 
@@ -139,7 +139,7 @@ func ExampleCheckForUpdateWithUpdateAvailable() {
 	// You can get the latest version from https://phraseapp.com/en/cli.
 }
 
-func ExampleCheckForUpdateWithNoUpdateAvailable() {
+func ExampleCheckForUpdate_withNoUpdateAvailable() {
 	clearCache()
 	defer clearCache()
 
@@ -156,7 +156,7 @@ func ExampleCheckForUpdateWithNoUpdateAvailable() {
 	// Output:
 }
 
-func ExampleCheckForUpdateWithDevVersion() {
+func ExampleCheckForUpdate_withDevVersion() {
 	clearCache()
 	defer clearCache()
 
