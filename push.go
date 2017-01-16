@@ -19,9 +19,9 @@ type PushCommand struct {
 }
 
 func (cmd *PushCommand) Run() error {
-	if cmd.Debug {
+	if cmd.Credentials.Debug {
 		// suppresses content output
-		cmd.Debug = false
+		cmd.Credentials.Debug = false
 		Debug = true
 	}
 

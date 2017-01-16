@@ -83,13 +83,9 @@ type InitCommand struct {
 }
 
 func (cmd *InitCommand) Run() error {
-	if cmd.Config.Credentials == nil {
-		cmd.Config.Credentials = &phraseapp.Credentials{}
-	} else {
-		// keep host if specified in config file or as command line parameter
-		if cmd.Config.Credentials.Host != "" {
-			cmd.YAML.Host = cmd.Config.Credentials.Host
-		}
+	// keep host if specified in config file or as command line parameter
+	if cmd.Config.Credentials.Host != "" {
+		cmd.YAML.Host = cmd.Config.Credentials.Host
 	}
 
 	step := StepAskForToken

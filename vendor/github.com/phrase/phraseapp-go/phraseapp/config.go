@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	*Credentials
+	Credentials Credentials
 
 	Page    *int
 	PerPage *int
@@ -28,7 +28,6 @@ const configName = ".phraseapp.yml"
 
 func ReadConfig() (*Config, error) {
 	cfg := &Config{}
-	cfg.Credentials = &Credentials{}
 	rawCfg := struct{ PhraseApp *Config }{PhraseApp: cfg}
 
 	content, err := configContent()
@@ -87,10 +86,6 @@ func configPath() (string, error) {
 }
 
 func (cfg *Config) UnmarshalYAML(unmarshal func(i interface{}) error) error {
-	if cfg.Credentials == nil {
-		cfg.Credentials = new(Credentials)
-	}
-
 	m := map[string]interface{}{}
 	err := ParseYAMLToMap(unmarshal, map[string]interface{}{
 		"access_token": &cfg.Credentials.Token,

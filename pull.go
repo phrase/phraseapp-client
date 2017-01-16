@@ -18,9 +18,9 @@ type PullCommand struct {
 }
 
 func (cmd *PullCommand) Run() error {
-	if cmd.Debug {
+	if cmd.Credentials.Debug {
 		// suppresses content output
-		cmd.Debug = false
+		cmd.Credentials.Debug = false
 		Debug = true
 	}
 	client, err := newClient(cmd.Config.Credentials)

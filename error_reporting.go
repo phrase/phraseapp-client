@@ -68,9 +68,10 @@ func projectID(cfg *phraseapp.Config) string {
 }
 
 func abbreviatedToken(cfg *phraseapp.Config) string {
-	if cfg != nil && cfg.Credentials != nil {
-		if len(cfg.Token) == 64 {
-			return cfg.Token[len(cfg.Token)-8:]
+	if cfg != nil {
+		token := cfg.Credentials.Token
+		if len(token) == 64 {
+			return token[len(token)-8:]
 		}
 	}
 
@@ -78,8 +79,8 @@ func abbreviatedToken(cfg *phraseapp.Config) string {
 }
 
 func username(cfg *phraseapp.Config) string {
-	if cfg != nil && cfg.Credentials != nil {
-		return cfg.Username
+	if cfg != nil {
+		return cfg.Credentials.Username
 	}
 
 	return ""
