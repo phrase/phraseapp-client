@@ -12,7 +12,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const DefaultErrorReportingEndpoint = "https://phraseapp-client-errors.herokuapp.com/errors"
+const DefaultErrorReportingEndpoint = "https://client-errors.phraseapp.io/errors"
 
 func reportError(cliErr *bserrors.Error, cfg *phraseapp.Config) {
 	serializableErr := errors.NewFromBugsnagError(cliErr)
