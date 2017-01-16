@@ -5,12 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"gopkg.in/yaml.v2"
-
 	"strings"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"gopkg.in/yaml.v2"
 )
 
 type PullCommand struct {

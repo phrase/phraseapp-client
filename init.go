@@ -8,9 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"gopkg.in/yaml.v2"
 )
 
 // The steps for a successful project initialization.
