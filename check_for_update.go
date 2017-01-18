@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -20,7 +21,7 @@ var (
 	versionCacheFilename = filepath.Join(os.TempDir(), ".phraseapp.version")
 )
 
-func CheckForUpdate() {
+func CheckForUpdate(w io.Writer) {
 	latestVersion, err := getLatestVersion()
 	if err != nil {
 		printError(err)
@@ -28,7 +29,7 @@ func CheckForUpdate() {
 	}
 
 	if containsAnySub(strings.ToLower(PHRASEAPP_CLIENT_VERSION), []string{"dev", "test"}) {
-		fmt.Printf("You're running a development version (%s) of the PhraseApp client! Latest version is %s.\n", PHRASEAPP_CLIENT_VERSION, latestVersion)
+		fmt.Fprintf(w, "You're running a development version (%s) of the PhraseApp client! Latest version is %s.\n", PHRASEAPP_CLIENT_VERSION, latestVersion)
 		return
 	}
 
@@ -39,7 +40,7 @@ func CheckForUpdate() {
 	}
 
 	if version.LessThan(*latestVersion) {
-		fmt.Printf("Please consider updating the PhraseApp CLI client (%s < %s)\nYou can get the latest version from %s.\n", version, latestVersion, downloadPageURL)
+		fmt.Fprintf(w, "Please consider updating the PhraseApp CLI client (%s < %s)\nYou can get the latest version from %s.\n", version, latestVersion, downloadPageURL)
 	}
 }
 

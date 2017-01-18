@@ -132,7 +132,7 @@ func ExampleCheckForUpdate_withUpdateAvailable() {
 	cleanupTestServer := setupTestServer(expected)
 	defer cleanupTestServer()
 
-	CheckForUpdate()
+	CheckForUpdate(os.Stdout)
 
 	// Output:
 	// Please consider updating the PhraseApp CLI client (1.1.3 < 2.0.0)
@@ -151,7 +151,7 @@ func ExampleCheckForUpdate_withNoUpdateAvailable() {
 	cleanupTestServer := setupTestServer(latest)
 	defer cleanupTestServer()
 
-	CheckForUpdate()
+	CheckForUpdate(os.Stdout)
 
 	// Output:
 }
@@ -166,7 +166,7 @@ func ExampleCheckForUpdate_withDevVersion() {
 	cleanupTestServer := setupTestServer("2.0.0")
 	defer cleanupTestServer()
 
-	CheckForUpdate()
+	CheckForUpdate(os.Stdout)
 
 	// Output: You're running a development version (1.1.3-dev) of the PhraseApp client! Latest version is 2.0.0.
 }
