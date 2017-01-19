@@ -5,12 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"gopkg.in/yaml.v2"
-
 	"strings"
 
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"gopkg.in/yaml.v2"
 )
 
 type PullCommand struct {
@@ -18,9 +16,9 @@ type PullCommand struct {
 }
 
 func (cmd *PullCommand) Run() error {
-	if cmd.Debug {
+	if cmd.Credentials.Debug {
 		// suppresses content output
-		cmd.Debug = false
+		cmd.Credentials.Debug = false
 		Debug = true
 	}
 	client, err := newClient(cmd.Config.Credentials)

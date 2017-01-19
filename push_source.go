@@ -5,9 +5,8 @@ import (
 	"os"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/phrase/phraseapp-go/phraseapp"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func SourcesFromConfig(cmd *PushCommand) (Sources, error) {

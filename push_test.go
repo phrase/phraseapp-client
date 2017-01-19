@@ -466,7 +466,6 @@ func TestUploadFile(t *testing.T) {
 	srv := httptest.NewServer(th)
 
 	c := new(phraseapp.Client)
-	c.Credentials = new(phraseapp.Credentials)
 	c.Credentials.Host = srv.URL
 	c.Credentials.Token = "some_token"
 

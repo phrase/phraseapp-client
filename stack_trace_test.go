@@ -1,7 +1,9 @@
 package main
 
-import "testing"
-import "bytes"
+import (
+	"bytes"
+	"testing"
+)
 
 func TestParseStackTraceWithEmptyStack(t *testing.T) {
 	stackTrace := ParseStackTrace([]byte{})

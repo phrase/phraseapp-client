@@ -7,9 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
-
 	"os"
+	"strconv"
 
 	"github.com/bgentry/speakeasy"
 )
@@ -22,7 +21,7 @@ func EnableDebug() {
 
 type Client struct {
 	http.Client
-	Credentials *Credentials
+	Credentials Credentials
 }
 
 type Credentials struct {
@@ -33,7 +32,7 @@ type Credentials struct {
 	Debug    bool   `cli:"opt --verbose -v desc='Verbose output'"`
 }
 
-func NewClient(credentials *Credentials) (*Client, error) {
+func NewClient(credentials Credentials) (*Client, error) {
 	client := &Client{Credentials: credentials}
 
 	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
@@ -58,10 +57,6 @@ func NewClient(credentials *Credentials) (*Client, error) {
 }
 
 func (client *Client) authenticate(req *http.Request) error {
-	if client.Credentials == nil {
-		return fmt.Errorf("no auth handler registered")
-	}
-
 	if client.Credentials.Token != "" {
 		req.Header.Set("Authorization", "token "+client.Credentials.Token)
 	} else if client.Credentials.Username != "" {

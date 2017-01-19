@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
-
 	"fmt"
+	"os"
 
 	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/dynport/dgtk/cli"
