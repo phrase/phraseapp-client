@@ -1,0 +1,9 @@
+language: go
+
+sudo: false
+
+go:
+    - 1.7.4
+    - 1.8rc1
+
+script: make all
