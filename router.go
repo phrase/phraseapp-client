@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = ""
-	RevisionGenerator = ""
+	RevisionDocs      = "ae7df97629e13d98990793ba65bfd94f6a50cda8"
+	RevisionGenerator = "e51df86b2d0cf519540791cefb4f6d24751d38b0"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -400,21 +400,21 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 }
 
 type AccountShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ID string `cli:"arg required"`
 }
 
 func newAccountShow(cfg *phraseapp.Config) *AccountShow {
 
-	actionAccountShow := &AccountShow{Config: cfg}
+	actionAccountShow := &AccountShow{Config: *cfg}
 
 	return actionAccountShow
 }
 
 func (cmd *AccountShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -429,7 +429,7 @@ func (cmd *AccountShow) Run() error {
 }
 
 type AccountsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -437,7 +437,7 @@ type AccountsList struct {
 
 func newAccountsList(cfg *phraseapp.Config) *AccountsList {
 
-	actionAccountsList := &AccountsList{Config: cfg}
+	actionAccountsList := &AccountsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionAccountsList.Page = *cfg.Page
 	}
@@ -450,7 +450,7 @@ func newAccountsList(cfg *phraseapp.Config) *AccountsList {
 
 func (cmd *AccountsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -465,14 +465,14 @@ func (cmd *AccountsList) Run() error {
 }
 
 type AuthorizationCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.AuthorizationParams
 }
 
 func newAuthorizationCreate(cfg *phraseapp.Config) (*AuthorizationCreate, error) {
 
-	actionAuthorizationCreate := &AuthorizationCreate{Config: cfg}
+	actionAuthorizationCreate := &AuthorizationCreate{Config: *cfg}
 
 	val, defaultsPresent := actionAuthorizationCreate.Config.Defaults["authorization/create"]
 	if defaultsPresent {
@@ -486,7 +486,7 @@ func newAuthorizationCreate(cfg *phraseapp.Config) (*AuthorizationCreate, error)
 func (cmd *AuthorizationCreate) Run() error {
 	params := &cmd.AuthorizationParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -501,21 +501,21 @@ func (cmd *AuthorizationCreate) Run() error {
 }
 
 type AuthorizationDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ID string `cli:"arg required"`
 }
 
 func newAuthorizationDelete(cfg *phraseapp.Config) *AuthorizationDelete {
 
-	actionAuthorizationDelete := &AuthorizationDelete{Config: cfg}
+	actionAuthorizationDelete := &AuthorizationDelete{Config: *cfg}
 
 	return actionAuthorizationDelete
 }
 
 func (cmd *AuthorizationDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -530,21 +530,21 @@ func (cmd *AuthorizationDelete) Run() error {
 }
 
 type AuthorizationShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ID string `cli:"arg required"`
 }
 
 func newAuthorizationShow(cfg *phraseapp.Config) *AuthorizationShow {
 
-	actionAuthorizationShow := &AuthorizationShow{Config: cfg}
+	actionAuthorizationShow := &AuthorizationShow{Config: *cfg}
 
 	return actionAuthorizationShow
 }
 
 func (cmd *AuthorizationShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -559,7 +559,7 @@ func (cmd *AuthorizationShow) Run() error {
 }
 
 type AuthorizationUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.AuthorizationParams
 
@@ -568,7 +568,7 @@ type AuthorizationUpdate struct {
 
 func newAuthorizationUpdate(cfg *phraseapp.Config) (*AuthorizationUpdate, error) {
 
-	actionAuthorizationUpdate := &AuthorizationUpdate{Config: cfg}
+	actionAuthorizationUpdate := &AuthorizationUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionAuthorizationUpdate.Config.Defaults["authorization/update"]
 	if defaultsPresent {
@@ -582,7 +582,7 @@ func newAuthorizationUpdate(cfg *phraseapp.Config) (*AuthorizationUpdate, error)
 func (cmd *AuthorizationUpdate) Run() error {
 	params := &cmd.AuthorizationParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -597,7 +597,7 @@ func (cmd *AuthorizationUpdate) Run() error {
 }
 
 type AuthorizationsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -605,7 +605,7 @@ type AuthorizationsList struct {
 
 func newAuthorizationsList(cfg *phraseapp.Config) *AuthorizationsList {
 
-	actionAuthorizationsList := &AuthorizationsList{Config: cfg}
+	actionAuthorizationsList := &AuthorizationsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionAuthorizationsList.Page = *cfg.Page
 	}
@@ -618,7 +618,7 @@ func newAuthorizationsList(cfg *phraseapp.Config) *AuthorizationsList {
 
 func (cmd *AuthorizationsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -633,7 +633,7 @@ func (cmd *AuthorizationsList) Run() error {
 }
 
 type BlacklistedKeyCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.BlacklistedKeyParams
 
@@ -642,7 +642,7 @@ type BlacklistedKeyCreate struct {
 
 func newBlacklistedKeyCreate(cfg *phraseapp.Config) (*BlacklistedKeyCreate, error) {
 
-	actionBlacklistedKeyCreate := &BlacklistedKeyCreate{Config: cfg}
+	actionBlacklistedKeyCreate := &BlacklistedKeyCreate{Config: *cfg}
 	actionBlacklistedKeyCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionBlacklistedKeyCreate.Config.Defaults["blacklisted_key/create"]
@@ -657,7 +657,7 @@ func newBlacklistedKeyCreate(cfg *phraseapp.Config) (*BlacklistedKeyCreate, erro
 func (cmd *BlacklistedKeyCreate) Run() error {
 	params := &cmd.BlacklistedKeyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -672,7 +672,7 @@ func (cmd *BlacklistedKeyCreate) Run() error {
 }
 
 type BlacklistedKeyDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -680,7 +680,7 @@ type BlacklistedKeyDelete struct {
 
 func newBlacklistedKeyDelete(cfg *phraseapp.Config) *BlacklistedKeyDelete {
 
-	actionBlacklistedKeyDelete := &BlacklistedKeyDelete{Config: cfg}
+	actionBlacklistedKeyDelete := &BlacklistedKeyDelete{Config: *cfg}
 	actionBlacklistedKeyDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionBlacklistedKeyDelete
@@ -688,7 +688,7 @@ func newBlacklistedKeyDelete(cfg *phraseapp.Config) *BlacklistedKeyDelete {
 
 func (cmd *BlacklistedKeyDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -703,7 +703,7 @@ func (cmd *BlacklistedKeyDelete) Run() error {
 }
 
 type BlacklistedKeyShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -711,7 +711,7 @@ type BlacklistedKeyShow struct {
 
 func newBlacklistedKeyShow(cfg *phraseapp.Config) *BlacklistedKeyShow {
 
-	actionBlacklistedKeyShow := &BlacklistedKeyShow{Config: cfg}
+	actionBlacklistedKeyShow := &BlacklistedKeyShow{Config: *cfg}
 	actionBlacklistedKeyShow.ProjectID = cfg.DefaultProjectID
 
 	return actionBlacklistedKeyShow
@@ -719,7 +719,7 @@ func newBlacklistedKeyShow(cfg *phraseapp.Config) *BlacklistedKeyShow {
 
 func (cmd *BlacklistedKeyShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -734,7 +734,7 @@ func (cmd *BlacklistedKeyShow) Run() error {
 }
 
 type BlacklistedKeyUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.BlacklistedKeyParams
 
@@ -744,7 +744,7 @@ type BlacklistedKeyUpdate struct {
 
 func newBlacklistedKeyUpdate(cfg *phraseapp.Config) (*BlacklistedKeyUpdate, error) {
 
-	actionBlacklistedKeyUpdate := &BlacklistedKeyUpdate{Config: cfg}
+	actionBlacklistedKeyUpdate := &BlacklistedKeyUpdate{Config: *cfg}
 	actionBlacklistedKeyUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionBlacklistedKeyUpdate.Config.Defaults["blacklisted_key/update"]
@@ -759,7 +759,7 @@ func newBlacklistedKeyUpdate(cfg *phraseapp.Config) (*BlacklistedKeyUpdate, erro
 func (cmd *BlacklistedKeyUpdate) Run() error {
 	params := &cmd.BlacklistedKeyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -774,7 +774,7 @@ func (cmd *BlacklistedKeyUpdate) Run() error {
 }
 
 type BlacklistedKeysList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -784,7 +784,7 @@ type BlacklistedKeysList struct {
 
 func newBlacklistedKeysList(cfg *phraseapp.Config) *BlacklistedKeysList {
 
-	actionBlacklistedKeysList := &BlacklistedKeysList{Config: cfg}
+	actionBlacklistedKeysList := &BlacklistedKeysList{Config: *cfg}
 	actionBlacklistedKeysList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionBlacklistedKeysList.Page = *cfg.Page
@@ -798,7 +798,7 @@ func newBlacklistedKeysList(cfg *phraseapp.Config) *BlacklistedKeysList {
 
 func (cmd *BlacklistedKeysList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -813,7 +813,7 @@ func (cmd *BlacklistedKeysList) Run() error {
 }
 
 type CommentCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.CommentParams
 
@@ -823,7 +823,7 @@ type CommentCreate struct {
 
 func newCommentCreate(cfg *phraseapp.Config) (*CommentCreate, error) {
 
-	actionCommentCreate := &CommentCreate{Config: cfg}
+	actionCommentCreate := &CommentCreate{Config: *cfg}
 	actionCommentCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionCommentCreate.Config.Defaults["comment/create"]
@@ -838,7 +838,7 @@ func newCommentCreate(cfg *phraseapp.Config) (*CommentCreate, error) {
 func (cmd *CommentCreate) Run() error {
 	params := &cmd.CommentParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -853,7 +853,7 @@ func (cmd *CommentCreate) Run() error {
 }
 
 type CommentDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -862,7 +862,7 @@ type CommentDelete struct {
 
 func newCommentDelete(cfg *phraseapp.Config) *CommentDelete {
 
-	actionCommentDelete := &CommentDelete{Config: cfg}
+	actionCommentDelete := &CommentDelete{Config: *cfg}
 	actionCommentDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionCommentDelete
@@ -870,7 +870,7 @@ func newCommentDelete(cfg *phraseapp.Config) *CommentDelete {
 
 func (cmd *CommentDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -885,7 +885,7 @@ func (cmd *CommentDelete) Run() error {
 }
 
 type CommentMarkCheck struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -894,7 +894,7 @@ type CommentMarkCheck struct {
 
 func newCommentMarkCheck(cfg *phraseapp.Config) *CommentMarkCheck {
 
-	actionCommentMarkCheck := &CommentMarkCheck{Config: cfg}
+	actionCommentMarkCheck := &CommentMarkCheck{Config: *cfg}
 	actionCommentMarkCheck.ProjectID = cfg.DefaultProjectID
 
 	return actionCommentMarkCheck
@@ -902,7 +902,7 @@ func newCommentMarkCheck(cfg *phraseapp.Config) *CommentMarkCheck {
 
 func (cmd *CommentMarkCheck) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -917,7 +917,7 @@ func (cmd *CommentMarkCheck) Run() error {
 }
 
 type CommentMarkRead struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -926,7 +926,7 @@ type CommentMarkRead struct {
 
 func newCommentMarkRead(cfg *phraseapp.Config) *CommentMarkRead {
 
-	actionCommentMarkRead := &CommentMarkRead{Config: cfg}
+	actionCommentMarkRead := &CommentMarkRead{Config: *cfg}
 	actionCommentMarkRead.ProjectID = cfg.DefaultProjectID
 
 	return actionCommentMarkRead
@@ -934,7 +934,7 @@ func newCommentMarkRead(cfg *phraseapp.Config) *CommentMarkRead {
 
 func (cmd *CommentMarkRead) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -949,7 +949,7 @@ func (cmd *CommentMarkRead) Run() error {
 }
 
 type CommentMarkUnread struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -958,7 +958,7 @@ type CommentMarkUnread struct {
 
 func newCommentMarkUnread(cfg *phraseapp.Config) *CommentMarkUnread {
 
-	actionCommentMarkUnread := &CommentMarkUnread{Config: cfg}
+	actionCommentMarkUnread := &CommentMarkUnread{Config: *cfg}
 	actionCommentMarkUnread.ProjectID = cfg.DefaultProjectID
 
 	return actionCommentMarkUnread
@@ -966,7 +966,7 @@ func newCommentMarkUnread(cfg *phraseapp.Config) *CommentMarkUnread {
 
 func (cmd *CommentMarkUnread) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -981,7 +981,7 @@ func (cmd *CommentMarkUnread) Run() error {
 }
 
 type CommentShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
@@ -990,7 +990,7 @@ type CommentShow struct {
 
 func newCommentShow(cfg *phraseapp.Config) *CommentShow {
 
-	actionCommentShow := &CommentShow{Config: cfg}
+	actionCommentShow := &CommentShow{Config: *cfg}
 	actionCommentShow.ProjectID = cfg.DefaultProjectID
 
 	return actionCommentShow
@@ -998,7 +998,7 @@ func newCommentShow(cfg *phraseapp.Config) *CommentShow {
 
 func (cmd *CommentShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1013,7 +1013,7 @@ func (cmd *CommentShow) Run() error {
 }
 
 type CommentUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.CommentParams
 
@@ -1024,7 +1024,7 @@ type CommentUpdate struct {
 
 func newCommentUpdate(cfg *phraseapp.Config) (*CommentUpdate, error) {
 
-	actionCommentUpdate := &CommentUpdate{Config: cfg}
+	actionCommentUpdate := &CommentUpdate{Config: *cfg}
 	actionCommentUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionCommentUpdate.Config.Defaults["comment/update"]
@@ -1039,7 +1039,7 @@ func newCommentUpdate(cfg *phraseapp.Config) (*CommentUpdate, error) {
 func (cmd *CommentUpdate) Run() error {
 	params := &cmd.CommentParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1054,7 +1054,7 @@ func (cmd *CommentUpdate) Run() error {
 }
 
 type CommentsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1065,7 +1065,7 @@ type CommentsList struct {
 
 func newCommentsList(cfg *phraseapp.Config) *CommentsList {
 
-	actionCommentsList := &CommentsList{Config: cfg}
+	actionCommentsList := &CommentsList{Config: *cfg}
 	actionCommentsList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionCommentsList.Page = *cfg.Page
@@ -1079,7 +1079,7 @@ func newCommentsList(cfg *phraseapp.Config) *CommentsList {
 
 func (cmd *CommentsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1094,7 +1094,7 @@ func (cmd *CommentsList) Run() error {
 }
 
 type FormatsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1102,7 +1102,7 @@ type FormatsList struct {
 
 func newFormatsList(cfg *phraseapp.Config) *FormatsList {
 
-	actionFormatsList := &FormatsList{Config: cfg}
+	actionFormatsList := &FormatsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionFormatsList.Page = *cfg.Page
 	}
@@ -1115,7 +1115,7 @@ func newFormatsList(cfg *phraseapp.Config) *FormatsList {
 
 func (cmd *FormatsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1130,7 +1130,7 @@ func (cmd *FormatsList) Run() error {
 }
 
 type GlossariesList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1140,7 +1140,7 @@ type GlossariesList struct {
 
 func newGlossariesList(cfg *phraseapp.Config) *GlossariesList {
 
-	actionGlossariesList := &GlossariesList{Config: cfg}
+	actionGlossariesList := &GlossariesList{Config: *cfg}
 	if cfg.Page != nil {
 		actionGlossariesList.Page = *cfg.Page
 	}
@@ -1153,7 +1153,7 @@ func newGlossariesList(cfg *phraseapp.Config) *GlossariesList {
 
 func (cmd *GlossariesList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1168,7 +1168,7 @@ func (cmd *GlossariesList) Run() error {
 }
 
 type GlossaryCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryParams
 
@@ -1177,7 +1177,7 @@ type GlossaryCreate struct {
 
 func newGlossaryCreate(cfg *phraseapp.Config) (*GlossaryCreate, error) {
 
-	actionGlossaryCreate := &GlossaryCreate{Config: cfg}
+	actionGlossaryCreate := &GlossaryCreate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryCreate.Config.Defaults["glossary/create"]
 	if defaultsPresent {
@@ -1191,7 +1191,7 @@ func newGlossaryCreate(cfg *phraseapp.Config) (*GlossaryCreate, error) {
 func (cmd *GlossaryCreate) Run() error {
 	params := &cmd.GlossaryParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1206,7 +1206,7 @@ func (cmd *GlossaryCreate) Run() error {
 }
 
 type GlossaryDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1214,14 +1214,14 @@ type GlossaryDelete struct {
 
 func newGlossaryDelete(cfg *phraseapp.Config) *GlossaryDelete {
 
-	actionGlossaryDelete := &GlossaryDelete{Config: cfg}
+	actionGlossaryDelete := &GlossaryDelete{Config: *cfg}
 
 	return actionGlossaryDelete
 }
 
 func (cmd *GlossaryDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1236,7 +1236,7 @@ func (cmd *GlossaryDelete) Run() error {
 }
 
 type GlossaryShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1244,14 +1244,14 @@ type GlossaryShow struct {
 
 func newGlossaryShow(cfg *phraseapp.Config) *GlossaryShow {
 
-	actionGlossaryShow := &GlossaryShow{Config: cfg}
+	actionGlossaryShow := &GlossaryShow{Config: *cfg}
 
 	return actionGlossaryShow
 }
 
 func (cmd *GlossaryShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1266,7 +1266,7 @@ func (cmd *GlossaryShow) Run() error {
 }
 
 type GlossaryUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryParams
 
@@ -1276,7 +1276,7 @@ type GlossaryUpdate struct {
 
 func newGlossaryUpdate(cfg *phraseapp.Config) (*GlossaryUpdate, error) {
 
-	actionGlossaryUpdate := &GlossaryUpdate{Config: cfg}
+	actionGlossaryUpdate := &GlossaryUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryUpdate.Config.Defaults["glossary/update"]
 	if defaultsPresent {
@@ -1290,7 +1290,7 @@ func newGlossaryUpdate(cfg *phraseapp.Config) (*GlossaryUpdate, error) {
 func (cmd *GlossaryUpdate) Run() error {
 	params := &cmd.GlossaryParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1305,7 +1305,7 @@ func (cmd *GlossaryUpdate) Run() error {
 }
 
 type GlossaryTermCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryTermParams
 
@@ -1315,7 +1315,7 @@ type GlossaryTermCreate struct {
 
 func newGlossaryTermCreate(cfg *phraseapp.Config) (*GlossaryTermCreate, error) {
 
-	actionGlossaryTermCreate := &GlossaryTermCreate{Config: cfg}
+	actionGlossaryTermCreate := &GlossaryTermCreate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryTermCreate.Config.Defaults["glossary_term/create"]
 	if defaultsPresent {
@@ -1329,7 +1329,7 @@ func newGlossaryTermCreate(cfg *phraseapp.Config) (*GlossaryTermCreate, error) {
 func (cmd *GlossaryTermCreate) Run() error {
 	params := &cmd.GlossaryTermParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1344,7 +1344,7 @@ func (cmd *GlossaryTermCreate) Run() error {
 }
 
 type GlossaryTermDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID  string `cli:"arg required"`
 	GlossaryID string `cli:"arg required"`
@@ -1353,14 +1353,14 @@ type GlossaryTermDelete struct {
 
 func newGlossaryTermDelete(cfg *phraseapp.Config) *GlossaryTermDelete {
 
-	actionGlossaryTermDelete := &GlossaryTermDelete{Config: cfg}
+	actionGlossaryTermDelete := &GlossaryTermDelete{Config: *cfg}
 
 	return actionGlossaryTermDelete
 }
 
 func (cmd *GlossaryTermDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1375,7 +1375,7 @@ func (cmd *GlossaryTermDelete) Run() error {
 }
 
 type GlossaryTermShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID  string `cli:"arg required"`
 	GlossaryID string `cli:"arg required"`
@@ -1384,14 +1384,14 @@ type GlossaryTermShow struct {
 
 func newGlossaryTermShow(cfg *phraseapp.Config) *GlossaryTermShow {
 
-	actionGlossaryTermShow := &GlossaryTermShow{Config: cfg}
+	actionGlossaryTermShow := &GlossaryTermShow{Config: *cfg}
 
 	return actionGlossaryTermShow
 }
 
 func (cmd *GlossaryTermShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1406,7 +1406,7 @@ func (cmd *GlossaryTermShow) Run() error {
 }
 
 type GlossaryTermUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryTermParams
 
@@ -1417,7 +1417,7 @@ type GlossaryTermUpdate struct {
 
 func newGlossaryTermUpdate(cfg *phraseapp.Config) (*GlossaryTermUpdate, error) {
 
-	actionGlossaryTermUpdate := &GlossaryTermUpdate{Config: cfg}
+	actionGlossaryTermUpdate := &GlossaryTermUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryTermUpdate.Config.Defaults["glossary_term/update"]
 	if defaultsPresent {
@@ -1431,7 +1431,7 @@ func newGlossaryTermUpdate(cfg *phraseapp.Config) (*GlossaryTermUpdate, error) {
 func (cmd *GlossaryTermUpdate) Run() error {
 	params := &cmd.GlossaryTermParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1446,7 +1446,7 @@ func (cmd *GlossaryTermUpdate) Run() error {
 }
 
 type GlossaryTermTranslationCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryTermTranslationParams
 
@@ -1457,7 +1457,7 @@ type GlossaryTermTranslationCreate struct {
 
 func newGlossaryTermTranslationCreate(cfg *phraseapp.Config) (*GlossaryTermTranslationCreate, error) {
 
-	actionGlossaryTermTranslationCreate := &GlossaryTermTranslationCreate{Config: cfg}
+	actionGlossaryTermTranslationCreate := &GlossaryTermTranslationCreate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryTermTranslationCreate.Config.Defaults["glossary_term_translation/create"]
 	if defaultsPresent {
@@ -1471,7 +1471,7 @@ func newGlossaryTermTranslationCreate(cfg *phraseapp.Config) (*GlossaryTermTrans
 func (cmd *GlossaryTermTranslationCreate) Run() error {
 	params := &cmd.GlossaryTermTranslationParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1486,7 +1486,7 @@ func (cmd *GlossaryTermTranslationCreate) Run() error {
 }
 
 type GlossaryTermTranslationDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID  string `cli:"arg required"`
 	GlossaryID string `cli:"arg required"`
@@ -1496,14 +1496,14 @@ type GlossaryTermTranslationDelete struct {
 
 func newGlossaryTermTranslationDelete(cfg *phraseapp.Config) *GlossaryTermTranslationDelete {
 
-	actionGlossaryTermTranslationDelete := &GlossaryTermTranslationDelete{Config: cfg}
+	actionGlossaryTermTranslationDelete := &GlossaryTermTranslationDelete{Config: *cfg}
 
 	return actionGlossaryTermTranslationDelete
 }
 
 func (cmd *GlossaryTermTranslationDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1518,7 +1518,7 @@ func (cmd *GlossaryTermTranslationDelete) Run() error {
 }
 
 type GlossaryTermTranslationUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.GlossaryTermTranslationParams
 
@@ -1530,7 +1530,7 @@ type GlossaryTermTranslationUpdate struct {
 
 func newGlossaryTermTranslationUpdate(cfg *phraseapp.Config) (*GlossaryTermTranslationUpdate, error) {
 
-	actionGlossaryTermTranslationUpdate := &GlossaryTermTranslationUpdate{Config: cfg}
+	actionGlossaryTermTranslationUpdate := &GlossaryTermTranslationUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionGlossaryTermTranslationUpdate.Config.Defaults["glossary_term_translation/update"]
 	if defaultsPresent {
@@ -1544,7 +1544,7 @@ func newGlossaryTermTranslationUpdate(cfg *phraseapp.Config) (*GlossaryTermTrans
 func (cmd *GlossaryTermTranslationUpdate) Run() error {
 	params := &cmd.GlossaryTermTranslationParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1559,7 +1559,7 @@ func (cmd *GlossaryTermTranslationUpdate) Run() error {
 }
 
 type GlossaryTermsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1570,7 +1570,7 @@ type GlossaryTermsList struct {
 
 func newGlossaryTermsList(cfg *phraseapp.Config) *GlossaryTermsList {
 
-	actionGlossaryTermsList := &GlossaryTermsList{Config: cfg}
+	actionGlossaryTermsList := &GlossaryTermsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionGlossaryTermsList.Page = *cfg.Page
 	}
@@ -1583,7 +1583,7 @@ func newGlossaryTermsList(cfg *phraseapp.Config) *GlossaryTermsList {
 
 func (cmd *GlossaryTermsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1598,7 +1598,7 @@ func (cmd *GlossaryTermsList) Run() error {
 }
 
 type InvitationCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.InvitationCreateParams
 
@@ -1607,7 +1607,7 @@ type InvitationCreate struct {
 
 func newInvitationCreate(cfg *phraseapp.Config) (*InvitationCreate, error) {
 
-	actionInvitationCreate := &InvitationCreate{Config: cfg}
+	actionInvitationCreate := &InvitationCreate{Config: *cfg}
 
 	val, defaultsPresent := actionInvitationCreate.Config.Defaults["invitation/create"]
 	if defaultsPresent {
@@ -1621,7 +1621,7 @@ func newInvitationCreate(cfg *phraseapp.Config) (*InvitationCreate, error) {
 func (cmd *InvitationCreate) Run() error {
 	params := &cmd.InvitationCreateParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1636,7 +1636,7 @@ func (cmd *InvitationCreate) Run() error {
 }
 
 type InvitationDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1644,14 +1644,14 @@ type InvitationDelete struct {
 
 func newInvitationDelete(cfg *phraseapp.Config) *InvitationDelete {
 
-	actionInvitationDelete := &InvitationDelete{Config: cfg}
+	actionInvitationDelete := &InvitationDelete{Config: *cfg}
 
 	return actionInvitationDelete
 }
 
 func (cmd *InvitationDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1666,7 +1666,7 @@ func (cmd *InvitationDelete) Run() error {
 }
 
 type InvitationResend struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1674,14 +1674,14 @@ type InvitationResend struct {
 
 func newInvitationResend(cfg *phraseapp.Config) *InvitationResend {
 
-	actionInvitationResend := &InvitationResend{Config: cfg}
+	actionInvitationResend := &InvitationResend{Config: *cfg}
 
 	return actionInvitationResend
 }
 
 func (cmd *InvitationResend) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1696,7 +1696,7 @@ func (cmd *InvitationResend) Run() error {
 }
 
 type InvitationShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1704,14 +1704,14 @@ type InvitationShow struct {
 
 func newInvitationShow(cfg *phraseapp.Config) *InvitationShow {
 
-	actionInvitationShow := &InvitationShow{Config: cfg}
+	actionInvitationShow := &InvitationShow{Config: *cfg}
 
 	return actionInvitationShow
 }
 
 func (cmd *InvitationShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1726,7 +1726,7 @@ func (cmd *InvitationShow) Run() error {
 }
 
 type InvitationUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.InvitationUpdateParams
 
@@ -1736,7 +1736,7 @@ type InvitationUpdate struct {
 
 func newInvitationUpdate(cfg *phraseapp.Config) (*InvitationUpdate, error) {
 
-	actionInvitationUpdate := &InvitationUpdate{Config: cfg}
+	actionInvitationUpdate := &InvitationUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionInvitationUpdate.Config.Defaults["invitation/update"]
 	if defaultsPresent {
@@ -1750,7 +1750,7 @@ func newInvitationUpdate(cfg *phraseapp.Config) (*InvitationUpdate, error) {
 func (cmd *InvitationUpdate) Run() error {
 	params := &cmd.InvitationUpdateParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1765,7 +1765,7 @@ func (cmd *InvitationUpdate) Run() error {
 }
 
 type InvitationsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -1775,7 +1775,7 @@ type InvitationsList struct {
 
 func newInvitationsList(cfg *phraseapp.Config) *InvitationsList {
 
-	actionInvitationsList := &InvitationsList{Config: cfg}
+	actionInvitationsList := &InvitationsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionInvitationsList.Page = *cfg.Page
 	}
@@ -1788,7 +1788,7 @@ func newInvitationsList(cfg *phraseapp.Config) *InvitationsList {
 
 func (cmd *InvitationsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1803,7 +1803,7 @@ func (cmd *InvitationsList) Run() error {
 }
 
 type KeyCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationKeyParams
 
@@ -1812,7 +1812,7 @@ type KeyCreate struct {
 
 func newKeyCreate(cfg *phraseapp.Config) (*KeyCreate, error) {
 
-	actionKeyCreate := &KeyCreate{Config: cfg}
+	actionKeyCreate := &KeyCreate{Config: *cfg}
 	actionKeyCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionKeyCreate.Config.Defaults["key/create"]
@@ -1827,7 +1827,7 @@ func newKeyCreate(cfg *phraseapp.Config) (*KeyCreate, error) {
 func (cmd *KeyCreate) Run() error {
 	params := &cmd.TranslationKeyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1842,7 +1842,7 @@ func (cmd *KeyCreate) Run() error {
 }
 
 type KeyDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1850,7 +1850,7 @@ type KeyDelete struct {
 
 func newKeyDelete(cfg *phraseapp.Config) *KeyDelete {
 
-	actionKeyDelete := &KeyDelete{Config: cfg}
+	actionKeyDelete := &KeyDelete{Config: *cfg}
 	actionKeyDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionKeyDelete
@@ -1858,7 +1858,7 @@ func newKeyDelete(cfg *phraseapp.Config) *KeyDelete {
 
 func (cmd *KeyDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1873,7 +1873,7 @@ func (cmd *KeyDelete) Run() error {
 }
 
 type KeyShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -1881,7 +1881,7 @@ type KeyShow struct {
 
 func newKeyShow(cfg *phraseapp.Config) *KeyShow {
 
-	actionKeyShow := &KeyShow{Config: cfg}
+	actionKeyShow := &KeyShow{Config: *cfg}
 	actionKeyShow.ProjectID = cfg.DefaultProjectID
 
 	return actionKeyShow
@@ -1889,7 +1889,7 @@ func newKeyShow(cfg *phraseapp.Config) *KeyShow {
 
 func (cmd *KeyShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1904,7 +1904,7 @@ func (cmd *KeyShow) Run() error {
 }
 
 type KeyUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationKeyParams
 
@@ -1914,7 +1914,7 @@ type KeyUpdate struct {
 
 func newKeyUpdate(cfg *phraseapp.Config) (*KeyUpdate, error) {
 
-	actionKeyUpdate := &KeyUpdate{Config: cfg}
+	actionKeyUpdate := &KeyUpdate{Config: *cfg}
 	actionKeyUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionKeyUpdate.Config.Defaults["key/update"]
@@ -1929,7 +1929,7 @@ func newKeyUpdate(cfg *phraseapp.Config) (*KeyUpdate, error) {
 func (cmd *KeyUpdate) Run() error {
 	params := &cmd.TranslationKeyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1944,7 +1944,7 @@ func (cmd *KeyUpdate) Run() error {
 }
 
 type KeysDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.KeysDeleteParams
 
@@ -1953,7 +1953,7 @@ type KeysDelete struct {
 
 func newKeysDelete(cfg *phraseapp.Config) (*KeysDelete, error) {
 
-	actionKeysDelete := &KeysDelete{Config: cfg}
+	actionKeysDelete := &KeysDelete{Config: *cfg}
 	actionKeysDelete.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionKeysDelete.Config.Defaults["keys/delete"]
@@ -1968,7 +1968,7 @@ func newKeysDelete(cfg *phraseapp.Config) (*KeysDelete, error) {
 func (cmd *KeysDelete) Run() error {
 	params := &cmd.KeysDeleteParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -1983,7 +1983,7 @@ func (cmd *KeysDelete) Run() error {
 }
 
 type KeysList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.KeysListParams
 
@@ -1995,7 +1995,7 @@ type KeysList struct {
 
 func newKeysList(cfg *phraseapp.Config) (*KeysList, error) {
 
-	actionKeysList := &KeysList{Config: cfg}
+	actionKeysList := &KeysList{Config: *cfg}
 	actionKeysList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionKeysList.Page = *cfg.Page
@@ -2016,7 +2016,7 @@ func newKeysList(cfg *phraseapp.Config) (*KeysList, error) {
 func (cmd *KeysList) Run() error {
 	params := &cmd.KeysListParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2031,7 +2031,7 @@ func (cmd *KeysList) Run() error {
 }
 
 type KeysSearch struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.KeysSearchParams
 
@@ -2043,7 +2043,7 @@ type KeysSearch struct {
 
 func newKeysSearch(cfg *phraseapp.Config) (*KeysSearch, error) {
 
-	actionKeysSearch := &KeysSearch{Config: cfg}
+	actionKeysSearch := &KeysSearch{Config: *cfg}
 	actionKeysSearch.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionKeysSearch.Page = *cfg.Page
@@ -2064,7 +2064,7 @@ func newKeysSearch(cfg *phraseapp.Config) (*KeysSearch, error) {
 func (cmd *KeysSearch) Run() error {
 	params := &cmd.KeysSearchParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2079,7 +2079,7 @@ func (cmd *KeysSearch) Run() error {
 }
 
 type KeysTag struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.KeysTagParams
 
@@ -2088,7 +2088,7 @@ type KeysTag struct {
 
 func newKeysTag(cfg *phraseapp.Config) (*KeysTag, error) {
 
-	actionKeysTag := &KeysTag{Config: cfg}
+	actionKeysTag := &KeysTag{Config: *cfg}
 	actionKeysTag.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionKeysTag.Config.Defaults["keys/tag"]
@@ -2103,7 +2103,7 @@ func newKeysTag(cfg *phraseapp.Config) (*KeysTag, error) {
 func (cmd *KeysTag) Run() error {
 	params := &cmd.KeysTagParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2118,7 +2118,7 @@ func (cmd *KeysTag) Run() error {
 }
 
 type KeysUntag struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.KeysUntagParams
 
@@ -2127,7 +2127,7 @@ type KeysUntag struct {
 
 func newKeysUntag(cfg *phraseapp.Config) (*KeysUntag, error) {
 
-	actionKeysUntag := &KeysUntag{Config: cfg}
+	actionKeysUntag := &KeysUntag{Config: *cfg}
 	actionKeysUntag.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionKeysUntag.Config.Defaults["keys/untag"]
@@ -2142,7 +2142,7 @@ func newKeysUntag(cfg *phraseapp.Config) (*KeysUntag, error) {
 func (cmd *KeysUntag) Run() error {
 	params := &cmd.KeysUntagParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2157,7 +2157,7 @@ func (cmd *KeysUntag) Run() error {
 }
 
 type LocaleCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.LocaleParams
 
@@ -2166,7 +2166,7 @@ type LocaleCreate struct {
 
 func newLocaleCreate(cfg *phraseapp.Config) (*LocaleCreate, error) {
 
-	actionLocaleCreate := &LocaleCreate{Config: cfg}
+	actionLocaleCreate := &LocaleCreate{Config: *cfg}
 	actionLocaleCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionLocaleCreate.Config.Defaults["locale/create"]
@@ -2181,7 +2181,7 @@ func newLocaleCreate(cfg *phraseapp.Config) (*LocaleCreate, error) {
 func (cmd *LocaleCreate) Run() error {
 	params := &cmd.LocaleParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2196,7 +2196,7 @@ func (cmd *LocaleCreate) Run() error {
 }
 
 type LocaleDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2204,7 +2204,7 @@ type LocaleDelete struct {
 
 func newLocaleDelete(cfg *phraseapp.Config) *LocaleDelete {
 
-	actionLocaleDelete := &LocaleDelete{Config: cfg}
+	actionLocaleDelete := &LocaleDelete{Config: *cfg}
 	actionLocaleDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionLocaleDelete
@@ -2212,7 +2212,7 @@ func newLocaleDelete(cfg *phraseapp.Config) *LocaleDelete {
 
 func (cmd *LocaleDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2227,7 +2227,7 @@ func (cmd *LocaleDelete) Run() error {
 }
 
 type LocaleDownload struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.LocaleDownloadParams
 
@@ -2237,7 +2237,7 @@ type LocaleDownload struct {
 
 func newLocaleDownload(cfg *phraseapp.Config) (*LocaleDownload, error) {
 
-	actionLocaleDownload := &LocaleDownload{Config: cfg}
+	actionLocaleDownload := &LocaleDownload{Config: *cfg}
 	actionLocaleDownload.ProjectID = cfg.DefaultProjectID
 	if cfg.DefaultFileFormat != "" {
 		actionLocaleDownload.FileFormat = &cfg.DefaultFileFormat
@@ -2255,7 +2255,7 @@ func newLocaleDownload(cfg *phraseapp.Config) (*LocaleDownload, error) {
 func (cmd *LocaleDownload) Run() error {
 	params := &cmd.LocaleDownloadParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2271,7 +2271,7 @@ func (cmd *LocaleDownload) Run() error {
 }
 
 type LocaleShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2279,7 +2279,7 @@ type LocaleShow struct {
 
 func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
 
-	actionLocaleShow := &LocaleShow{Config: cfg}
+	actionLocaleShow := &LocaleShow{Config: *cfg}
 	actionLocaleShow.ProjectID = cfg.DefaultProjectID
 
 	return actionLocaleShow
@@ -2287,7 +2287,7 @@ func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
 
 func (cmd *LocaleShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2302,7 +2302,7 @@ func (cmd *LocaleShow) Run() error {
 }
 
 type LocaleUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.LocaleParams
 
@@ -2312,7 +2312,7 @@ type LocaleUpdate struct {
 
 func newLocaleUpdate(cfg *phraseapp.Config) (*LocaleUpdate, error) {
 
-	actionLocaleUpdate := &LocaleUpdate{Config: cfg}
+	actionLocaleUpdate := &LocaleUpdate{Config: *cfg}
 	actionLocaleUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionLocaleUpdate.Config.Defaults["locale/update"]
@@ -2327,7 +2327,7 @@ func newLocaleUpdate(cfg *phraseapp.Config) (*LocaleUpdate, error) {
 func (cmd *LocaleUpdate) Run() error {
 	params := &cmd.LocaleParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2342,7 +2342,7 @@ func (cmd *LocaleUpdate) Run() error {
 }
 
 type LocalesList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2352,7 +2352,7 @@ type LocalesList struct {
 
 func newLocalesList(cfg *phraseapp.Config) *LocalesList {
 
-	actionLocalesList := &LocalesList{Config: cfg}
+	actionLocalesList := &LocalesList{Config: *cfg}
 	actionLocalesList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionLocalesList.Page = *cfg.Page
@@ -2366,7 +2366,7 @@ func newLocalesList(cfg *phraseapp.Config) *LocalesList {
 
 func (cmd *LocalesList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2381,7 +2381,7 @@ func (cmd *LocalesList) Run() error {
 }
 
 type MemberDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2389,14 +2389,14 @@ type MemberDelete struct {
 
 func newMemberDelete(cfg *phraseapp.Config) *MemberDelete {
 
-	actionMemberDelete := &MemberDelete{Config: cfg}
+	actionMemberDelete := &MemberDelete{Config: *cfg}
 
 	return actionMemberDelete
 }
 
 func (cmd *MemberDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2411,7 +2411,7 @@ func (cmd *MemberDelete) Run() error {
 }
 
 type MemberShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	AccountID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2419,14 +2419,14 @@ type MemberShow struct {
 
 func newMemberShow(cfg *phraseapp.Config) *MemberShow {
 
-	actionMemberShow := &MemberShow{Config: cfg}
+	actionMemberShow := &MemberShow{Config: *cfg}
 
 	return actionMemberShow
 }
 
 func (cmd *MemberShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2441,7 +2441,7 @@ func (cmd *MemberShow) Run() error {
 }
 
 type MemberUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.MemberUpdateParams
 
@@ -2451,7 +2451,7 @@ type MemberUpdate struct {
 
 func newMemberUpdate(cfg *phraseapp.Config) (*MemberUpdate, error) {
 
-	actionMemberUpdate := &MemberUpdate{Config: cfg}
+	actionMemberUpdate := &MemberUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionMemberUpdate.Config.Defaults["member/update"]
 	if defaultsPresent {
@@ -2465,7 +2465,7 @@ func newMemberUpdate(cfg *phraseapp.Config) (*MemberUpdate, error) {
 func (cmd *MemberUpdate) Run() error {
 	params := &cmd.MemberUpdateParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2480,7 +2480,7 @@ func (cmd *MemberUpdate) Run() error {
 }
 
 type MembersList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2490,7 +2490,7 @@ type MembersList struct {
 
 func newMembersList(cfg *phraseapp.Config) *MembersList {
 
-	actionMembersList := &MembersList{Config: cfg}
+	actionMembersList := &MembersList{Config: *cfg}
 	if cfg.Page != nil {
 		actionMembersList.Page = *cfg.Page
 	}
@@ -2503,7 +2503,7 @@ func newMembersList(cfg *phraseapp.Config) *MembersList {
 
 func (cmd *MembersList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2518,7 +2518,7 @@ func (cmd *MembersList) Run() error {
 }
 
 type OrderConfirm struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2526,7 +2526,7 @@ type OrderConfirm struct {
 
 func newOrderConfirm(cfg *phraseapp.Config) *OrderConfirm {
 
-	actionOrderConfirm := &OrderConfirm{Config: cfg}
+	actionOrderConfirm := &OrderConfirm{Config: *cfg}
 	actionOrderConfirm.ProjectID = cfg.DefaultProjectID
 
 	return actionOrderConfirm
@@ -2534,7 +2534,7 @@ func newOrderConfirm(cfg *phraseapp.Config) *OrderConfirm {
 
 func (cmd *OrderConfirm) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2549,7 +2549,7 @@ func (cmd *OrderConfirm) Run() error {
 }
 
 type OrderCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationOrderParams
 
@@ -2558,7 +2558,7 @@ type OrderCreate struct {
 
 func newOrderCreate(cfg *phraseapp.Config) (*OrderCreate, error) {
 
-	actionOrderCreate := &OrderCreate{Config: cfg}
+	actionOrderCreate := &OrderCreate{Config: *cfg}
 	actionOrderCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionOrderCreate.Config.Defaults["order/create"]
@@ -2573,7 +2573,7 @@ func newOrderCreate(cfg *phraseapp.Config) (*OrderCreate, error) {
 func (cmd *OrderCreate) Run() error {
 	params := &cmd.TranslationOrderParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2588,7 +2588,7 @@ func (cmd *OrderCreate) Run() error {
 }
 
 type OrderDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2596,7 +2596,7 @@ type OrderDelete struct {
 
 func newOrderDelete(cfg *phraseapp.Config) *OrderDelete {
 
-	actionOrderDelete := &OrderDelete{Config: cfg}
+	actionOrderDelete := &OrderDelete{Config: *cfg}
 	actionOrderDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionOrderDelete
@@ -2604,7 +2604,7 @@ func newOrderDelete(cfg *phraseapp.Config) *OrderDelete {
 
 func (cmd *OrderDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2619,7 +2619,7 @@ func (cmd *OrderDelete) Run() error {
 }
 
 type OrderShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2627,7 +2627,7 @@ type OrderShow struct {
 
 func newOrderShow(cfg *phraseapp.Config) *OrderShow {
 
-	actionOrderShow := &OrderShow{Config: cfg}
+	actionOrderShow := &OrderShow{Config: *cfg}
 	actionOrderShow.ProjectID = cfg.DefaultProjectID
 
 	return actionOrderShow
@@ -2635,7 +2635,7 @@ func newOrderShow(cfg *phraseapp.Config) *OrderShow {
 
 func (cmd *OrderShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2650,7 +2650,7 @@ func (cmd *OrderShow) Run() error {
 }
 
 type OrdersList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2660,7 +2660,7 @@ type OrdersList struct {
 
 func newOrdersList(cfg *phraseapp.Config) *OrdersList {
 
-	actionOrdersList := &OrdersList{Config: cfg}
+	actionOrdersList := &OrdersList{Config: *cfg}
 	actionOrdersList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionOrdersList.Page = *cfg.Page
@@ -2674,7 +2674,7 @@ func newOrdersList(cfg *phraseapp.Config) *OrdersList {
 
 func (cmd *OrdersList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2689,14 +2689,14 @@ func (cmd *OrdersList) Run() error {
 }
 
 type ProjectCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.ProjectParams
 }
 
 func newProjectCreate(cfg *phraseapp.Config) (*ProjectCreate, error) {
 
-	actionProjectCreate := &ProjectCreate{Config: cfg}
+	actionProjectCreate := &ProjectCreate{Config: *cfg}
 
 	val, defaultsPresent := actionProjectCreate.Config.Defaults["project/create"]
 	if defaultsPresent {
@@ -2710,7 +2710,7 @@ func newProjectCreate(cfg *phraseapp.Config) (*ProjectCreate, error) {
 func (cmd *ProjectCreate) Run() error {
 	params := &cmd.ProjectParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2725,21 +2725,21 @@ func (cmd *ProjectCreate) Run() error {
 }
 
 type ProjectDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ID string `cli:"arg required"`
 }
 
 func newProjectDelete(cfg *phraseapp.Config) *ProjectDelete {
 
-	actionProjectDelete := &ProjectDelete{Config: cfg}
+	actionProjectDelete := &ProjectDelete{Config: *cfg}
 
 	return actionProjectDelete
 }
 
 func (cmd *ProjectDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2754,21 +2754,21 @@ func (cmd *ProjectDelete) Run() error {
 }
 
 type ProjectShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ID string `cli:"arg required"`
 }
 
 func newProjectShow(cfg *phraseapp.Config) *ProjectShow {
 
-	actionProjectShow := &ProjectShow{Config: cfg}
+	actionProjectShow := &ProjectShow{Config: *cfg}
 
 	return actionProjectShow
 }
 
 func (cmd *ProjectShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2783,7 +2783,7 @@ func (cmd *ProjectShow) Run() error {
 }
 
 type ProjectUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.ProjectParams
 
@@ -2792,7 +2792,7 @@ type ProjectUpdate struct {
 
 func newProjectUpdate(cfg *phraseapp.Config) (*ProjectUpdate, error) {
 
-	actionProjectUpdate := &ProjectUpdate{Config: cfg}
+	actionProjectUpdate := &ProjectUpdate{Config: *cfg}
 
 	val, defaultsPresent := actionProjectUpdate.Config.Defaults["project/update"]
 	if defaultsPresent {
@@ -2806,7 +2806,7 @@ func newProjectUpdate(cfg *phraseapp.Config) (*ProjectUpdate, error) {
 func (cmd *ProjectUpdate) Run() error {
 	params := &cmd.ProjectParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2821,7 +2821,7 @@ func (cmd *ProjectUpdate) Run() error {
 }
 
 type ProjectsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -2829,7 +2829,7 @@ type ProjectsList struct {
 
 func newProjectsList(cfg *phraseapp.Config) *ProjectsList {
 
-	actionProjectsList := &ProjectsList{Config: cfg}
+	actionProjectsList := &ProjectsList{Config: *cfg}
 	if cfg.Page != nil {
 		actionProjectsList.Page = *cfg.Page
 	}
@@ -2842,7 +2842,7 @@ func newProjectsList(cfg *phraseapp.Config) *ProjectsList {
 
 func (cmd *ProjectsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2857,19 +2857,19 @@ func (cmd *ProjectsList) Run() error {
 }
 
 type ShowUser struct {
-	*phraseapp.Config
+	phraseapp.Config
 }
 
 func newShowUser(cfg *phraseapp.Config) *ShowUser {
 
-	actionShowUser := &ShowUser{Config: cfg}
+	actionShowUser := &ShowUser{Config: *cfg}
 
 	return actionShowUser
 }
 
 func (cmd *ShowUser) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2884,7 +2884,7 @@ func (cmd *ShowUser) Run() error {
 }
 
 type StyleguideCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.StyleguideParams
 
@@ -2893,7 +2893,7 @@ type StyleguideCreate struct {
 
 func newStyleguideCreate(cfg *phraseapp.Config) (*StyleguideCreate, error) {
 
-	actionStyleguideCreate := &StyleguideCreate{Config: cfg}
+	actionStyleguideCreate := &StyleguideCreate{Config: *cfg}
 	actionStyleguideCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionStyleguideCreate.Config.Defaults["styleguide/create"]
@@ -2908,7 +2908,7 @@ func newStyleguideCreate(cfg *phraseapp.Config) (*StyleguideCreate, error) {
 func (cmd *StyleguideCreate) Run() error {
 	params := &cmd.StyleguideParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2923,7 +2923,7 @@ func (cmd *StyleguideCreate) Run() error {
 }
 
 type StyleguideDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2931,7 +2931,7 @@ type StyleguideDelete struct {
 
 func newStyleguideDelete(cfg *phraseapp.Config) *StyleguideDelete {
 
-	actionStyleguideDelete := &StyleguideDelete{Config: cfg}
+	actionStyleguideDelete := &StyleguideDelete{Config: *cfg}
 	actionStyleguideDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionStyleguideDelete
@@ -2939,7 +2939,7 @@ func newStyleguideDelete(cfg *phraseapp.Config) *StyleguideDelete {
 
 func (cmd *StyleguideDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2954,7 +2954,7 @@ func (cmd *StyleguideDelete) Run() error {
 }
 
 type StyleguideShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -2962,7 +2962,7 @@ type StyleguideShow struct {
 
 func newStyleguideShow(cfg *phraseapp.Config) *StyleguideShow {
 
-	actionStyleguideShow := &StyleguideShow{Config: cfg}
+	actionStyleguideShow := &StyleguideShow{Config: *cfg}
 	actionStyleguideShow.ProjectID = cfg.DefaultProjectID
 
 	return actionStyleguideShow
@@ -2970,7 +2970,7 @@ func newStyleguideShow(cfg *phraseapp.Config) *StyleguideShow {
 
 func (cmd *StyleguideShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -2985,7 +2985,7 @@ func (cmd *StyleguideShow) Run() error {
 }
 
 type StyleguideUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.StyleguideParams
 
@@ -2995,7 +2995,7 @@ type StyleguideUpdate struct {
 
 func newStyleguideUpdate(cfg *phraseapp.Config) (*StyleguideUpdate, error) {
 
-	actionStyleguideUpdate := &StyleguideUpdate{Config: cfg}
+	actionStyleguideUpdate := &StyleguideUpdate{Config: *cfg}
 	actionStyleguideUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionStyleguideUpdate.Config.Defaults["styleguide/update"]
@@ -3010,7 +3010,7 @@ func newStyleguideUpdate(cfg *phraseapp.Config) (*StyleguideUpdate, error) {
 func (cmd *StyleguideUpdate) Run() error {
 	params := &cmd.StyleguideParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3025,7 +3025,7 @@ func (cmd *StyleguideUpdate) Run() error {
 }
 
 type StyleguidesList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -3035,7 +3035,7 @@ type StyleguidesList struct {
 
 func newStyleguidesList(cfg *phraseapp.Config) *StyleguidesList {
 
-	actionStyleguidesList := &StyleguidesList{Config: cfg}
+	actionStyleguidesList := &StyleguidesList{Config: *cfg}
 	actionStyleguidesList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionStyleguidesList.Page = *cfg.Page
@@ -3049,7 +3049,7 @@ func newStyleguidesList(cfg *phraseapp.Config) *StyleguidesList {
 
 func (cmd *StyleguidesList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3064,7 +3064,7 @@ func (cmd *StyleguidesList) Run() error {
 }
 
 type TagCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TagParams
 
@@ -3073,7 +3073,7 @@ type TagCreate struct {
 
 func newTagCreate(cfg *phraseapp.Config) (*TagCreate, error) {
 
-	actionTagCreate := &TagCreate{Config: cfg}
+	actionTagCreate := &TagCreate{Config: *cfg}
 	actionTagCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTagCreate.Config.Defaults["tag/create"]
@@ -3088,7 +3088,7 @@ func newTagCreate(cfg *phraseapp.Config) (*TagCreate, error) {
 func (cmd *TagCreate) Run() error {
 	params := &cmd.TagParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3103,7 +3103,7 @@ func (cmd *TagCreate) Run() error {
 }
 
 type TagDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -3111,7 +3111,7 @@ type TagDelete struct {
 
 func newTagDelete(cfg *phraseapp.Config) *TagDelete {
 
-	actionTagDelete := &TagDelete{Config: cfg}
+	actionTagDelete := &TagDelete{Config: *cfg}
 	actionTagDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionTagDelete
@@ -3119,7 +3119,7 @@ func newTagDelete(cfg *phraseapp.Config) *TagDelete {
 
 func (cmd *TagDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3134,7 +3134,7 @@ func (cmd *TagDelete) Run() error {
 }
 
 type TagShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
@@ -3142,7 +3142,7 @@ type TagShow struct {
 
 func newTagShow(cfg *phraseapp.Config) *TagShow {
 
-	actionTagShow := &TagShow{Config: cfg}
+	actionTagShow := &TagShow{Config: *cfg}
 	actionTagShow.ProjectID = cfg.DefaultProjectID
 
 	return actionTagShow
@@ -3150,7 +3150,7 @@ func newTagShow(cfg *phraseapp.Config) *TagShow {
 
 func (cmd *TagShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3165,7 +3165,7 @@ func (cmd *TagShow) Run() error {
 }
 
 type TagsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -3175,7 +3175,7 @@ type TagsList struct {
 
 func newTagsList(cfg *phraseapp.Config) *TagsList {
 
-	actionTagsList := &TagsList{Config: cfg}
+	actionTagsList := &TagsList{Config: *cfg}
 	actionTagsList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionTagsList.Page = *cfg.Page
@@ -3189,7 +3189,7 @@ func newTagsList(cfg *phraseapp.Config) *TagsList {
 
 func (cmd *TagsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3204,7 +3204,7 @@ func (cmd *TagsList) Run() error {
 }
 
 type TranslationCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationParams
 
@@ -3213,7 +3213,7 @@ type TranslationCreate struct {
 
 func newTranslationCreate(cfg *phraseapp.Config) (*TranslationCreate, error) {
 
-	actionTranslationCreate := &TranslationCreate{Config: cfg}
+	actionTranslationCreate := &TranslationCreate{Config: *cfg}
 	actionTranslationCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationCreate.Config.Defaults["translation/create"]
@@ -3228,7 +3228,7 @@ func newTranslationCreate(cfg *phraseapp.Config) (*TranslationCreate, error) {
 func (cmd *TranslationCreate) Run() error {
 	params := &cmd.TranslationParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3243,7 +3243,7 @@ func (cmd *TranslationCreate) Run() error {
 }
 
 type TranslationShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3251,7 +3251,7 @@ type TranslationShow struct {
 
 func newTranslationShow(cfg *phraseapp.Config) *TranslationShow {
 
-	actionTranslationShow := &TranslationShow{Config: cfg}
+	actionTranslationShow := &TranslationShow{Config: *cfg}
 	actionTranslationShow.ProjectID = cfg.DefaultProjectID
 
 	return actionTranslationShow
@@ -3259,7 +3259,7 @@ func newTranslationShow(cfg *phraseapp.Config) *TranslationShow {
 
 func (cmd *TranslationShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3274,7 +3274,7 @@ func (cmd *TranslationShow) Run() error {
 }
 
 type TranslationUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationUpdateParams
 
@@ -3284,7 +3284,7 @@ type TranslationUpdate struct {
 
 func newTranslationUpdate(cfg *phraseapp.Config) (*TranslationUpdate, error) {
 
-	actionTranslationUpdate := &TranslationUpdate{Config: cfg}
+	actionTranslationUpdate := &TranslationUpdate{Config: *cfg}
 	actionTranslationUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationUpdate.Config.Defaults["translation/update"]
@@ -3299,7 +3299,7 @@ func newTranslationUpdate(cfg *phraseapp.Config) (*TranslationUpdate, error) {
 func (cmd *TranslationUpdate) Run() error {
 	params := &cmd.TranslationUpdateParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3314,7 +3314,7 @@ func (cmd *TranslationUpdate) Run() error {
 }
 
 type TranslationsByKey struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsByKeyParams
 
@@ -3327,7 +3327,7 @@ type TranslationsByKey struct {
 
 func newTranslationsByKey(cfg *phraseapp.Config) (*TranslationsByKey, error) {
 
-	actionTranslationsByKey := &TranslationsByKey{Config: cfg}
+	actionTranslationsByKey := &TranslationsByKey{Config: *cfg}
 	actionTranslationsByKey.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionTranslationsByKey.Page = *cfg.Page
@@ -3348,7 +3348,7 @@ func newTranslationsByKey(cfg *phraseapp.Config) (*TranslationsByKey, error) {
 func (cmd *TranslationsByKey) Run() error {
 	params := &cmd.TranslationsByKeyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3363,7 +3363,7 @@ func (cmd *TranslationsByKey) Run() error {
 }
 
 type TranslationsByLocale struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsByLocaleParams
 
@@ -3376,7 +3376,7 @@ type TranslationsByLocale struct {
 
 func newTranslationsByLocale(cfg *phraseapp.Config) (*TranslationsByLocale, error) {
 
-	actionTranslationsByLocale := &TranslationsByLocale{Config: cfg}
+	actionTranslationsByLocale := &TranslationsByLocale{Config: *cfg}
 	actionTranslationsByLocale.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionTranslationsByLocale.Page = *cfg.Page
@@ -3397,7 +3397,7 @@ func newTranslationsByLocale(cfg *phraseapp.Config) (*TranslationsByLocale, erro
 func (cmd *TranslationsByLocale) Run() error {
 	params := &cmd.TranslationsByLocaleParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3412,7 +3412,7 @@ func (cmd *TranslationsByLocale) Run() error {
 }
 
 type TranslationsExclude struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsExcludeParams
 
@@ -3421,7 +3421,7 @@ type TranslationsExclude struct {
 
 func newTranslationsExclude(cfg *phraseapp.Config) (*TranslationsExclude, error) {
 
-	actionTranslationsExclude := &TranslationsExclude{Config: cfg}
+	actionTranslationsExclude := &TranslationsExclude{Config: *cfg}
 	actionTranslationsExclude.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationsExclude.Config.Defaults["translations/exclude"]
@@ -3436,7 +3436,7 @@ func newTranslationsExclude(cfg *phraseapp.Config) (*TranslationsExclude, error)
 func (cmd *TranslationsExclude) Run() error {
 	params := &cmd.TranslationsExcludeParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3451,7 +3451,7 @@ func (cmd *TranslationsExclude) Run() error {
 }
 
 type TranslationsInclude struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsIncludeParams
 
@@ -3460,7 +3460,7 @@ type TranslationsInclude struct {
 
 func newTranslationsInclude(cfg *phraseapp.Config) (*TranslationsInclude, error) {
 
-	actionTranslationsInclude := &TranslationsInclude{Config: cfg}
+	actionTranslationsInclude := &TranslationsInclude{Config: *cfg}
 	actionTranslationsInclude.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationsInclude.Config.Defaults["translations/include"]
@@ -3475,7 +3475,7 @@ func newTranslationsInclude(cfg *phraseapp.Config) (*TranslationsInclude, error)
 func (cmd *TranslationsInclude) Run() error {
 	params := &cmd.TranslationsIncludeParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3490,7 +3490,7 @@ func (cmd *TranslationsInclude) Run() error {
 }
 
 type TranslationsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsListParams
 
@@ -3502,7 +3502,7 @@ type TranslationsList struct {
 
 func newTranslationsList(cfg *phraseapp.Config) (*TranslationsList, error) {
 
-	actionTranslationsList := &TranslationsList{Config: cfg}
+	actionTranslationsList := &TranslationsList{Config: *cfg}
 	actionTranslationsList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionTranslationsList.Page = *cfg.Page
@@ -3523,7 +3523,7 @@ func newTranslationsList(cfg *phraseapp.Config) (*TranslationsList, error) {
 func (cmd *TranslationsList) Run() error {
 	params := &cmd.TranslationsListParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3538,7 +3538,7 @@ func (cmd *TranslationsList) Run() error {
 }
 
 type TranslationsSearch struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsSearchParams
 
@@ -3550,7 +3550,7 @@ type TranslationsSearch struct {
 
 func newTranslationsSearch(cfg *phraseapp.Config) (*TranslationsSearch, error) {
 
-	actionTranslationsSearch := &TranslationsSearch{Config: cfg}
+	actionTranslationsSearch := &TranslationsSearch{Config: *cfg}
 	actionTranslationsSearch.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionTranslationsSearch.Page = *cfg.Page
@@ -3571,7 +3571,7 @@ func newTranslationsSearch(cfg *phraseapp.Config) (*TranslationsSearch, error) {
 func (cmd *TranslationsSearch) Run() error {
 	params := &cmd.TranslationsSearchParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3586,7 +3586,7 @@ func (cmd *TranslationsSearch) Run() error {
 }
 
 type TranslationsUnverify struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsUnverifyParams
 
@@ -3595,7 +3595,7 @@ type TranslationsUnverify struct {
 
 func newTranslationsUnverify(cfg *phraseapp.Config) (*TranslationsUnverify, error) {
 
-	actionTranslationsUnverify := &TranslationsUnverify{Config: cfg}
+	actionTranslationsUnverify := &TranslationsUnverify{Config: *cfg}
 	actionTranslationsUnverify.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationsUnverify.Config.Defaults["translations/unverify"]
@@ -3610,7 +3610,7 @@ func newTranslationsUnverify(cfg *phraseapp.Config) (*TranslationsUnverify, erro
 func (cmd *TranslationsUnverify) Run() error {
 	params := &cmd.TranslationsUnverifyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3625,7 +3625,7 @@ func (cmd *TranslationsUnverify) Run() error {
 }
 
 type TranslationsVerify struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.TranslationsVerifyParams
 
@@ -3634,7 +3634,7 @@ type TranslationsVerify struct {
 
 func newTranslationsVerify(cfg *phraseapp.Config) (*TranslationsVerify, error) {
 
-	actionTranslationsVerify := &TranslationsVerify{Config: cfg}
+	actionTranslationsVerify := &TranslationsVerify{Config: *cfg}
 	actionTranslationsVerify.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionTranslationsVerify.Config.Defaults["translations/verify"]
@@ -3649,7 +3649,7 @@ func newTranslationsVerify(cfg *phraseapp.Config) (*TranslationsVerify, error) {
 func (cmd *TranslationsVerify) Run() error {
 	params := &cmd.TranslationsVerifyParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3664,7 +3664,7 @@ func (cmd *TranslationsVerify) Run() error {
 }
 
 type UploadCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.UploadParams
 
@@ -3673,7 +3673,7 @@ type UploadCreate struct {
 
 func newUploadCreate(cfg *phraseapp.Config) (*UploadCreate, error) {
 
-	actionUploadCreate := &UploadCreate{Config: cfg}
+	actionUploadCreate := &UploadCreate{Config: *cfg}
 	actionUploadCreate.ProjectID = cfg.DefaultProjectID
 	if cfg.DefaultFileFormat != "" {
 		actionUploadCreate.FileFormat = &cfg.DefaultFileFormat
@@ -3691,7 +3691,7 @@ func newUploadCreate(cfg *phraseapp.Config) (*UploadCreate, error) {
 func (cmd *UploadCreate) Run() error {
 	params := &cmd.UploadParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3706,7 +3706,7 @@ func (cmd *UploadCreate) Run() error {
 }
 
 type UploadShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3714,7 +3714,7 @@ type UploadShow struct {
 
 func newUploadShow(cfg *phraseapp.Config) *UploadShow {
 
-	actionUploadShow := &UploadShow{Config: cfg}
+	actionUploadShow := &UploadShow{Config: *cfg}
 	actionUploadShow.ProjectID = cfg.DefaultProjectID
 
 	return actionUploadShow
@@ -3722,7 +3722,7 @@ func newUploadShow(cfg *phraseapp.Config) *UploadShow {
 
 func (cmd *UploadShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3737,7 +3737,7 @@ func (cmd *UploadShow) Run() error {
 }
 
 type UploadsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -3747,7 +3747,7 @@ type UploadsList struct {
 
 func newUploadsList(cfg *phraseapp.Config) *UploadsList {
 
-	actionUploadsList := &UploadsList{Config: cfg}
+	actionUploadsList := &UploadsList{Config: *cfg}
 	actionUploadsList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionUploadsList.Page = *cfg.Page
@@ -3761,7 +3761,7 @@ func newUploadsList(cfg *phraseapp.Config) *UploadsList {
 
 func (cmd *UploadsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3776,7 +3776,7 @@ func (cmd *UploadsList) Run() error {
 }
 
 type VersionShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID     string `cli:"arg required"`
 	TranslationID string `cli:"arg required"`
@@ -3785,7 +3785,7 @@ type VersionShow struct {
 
 func newVersionShow(cfg *phraseapp.Config) *VersionShow {
 
-	actionVersionShow := &VersionShow{Config: cfg}
+	actionVersionShow := &VersionShow{Config: *cfg}
 	actionVersionShow.ProjectID = cfg.DefaultProjectID
 
 	return actionVersionShow
@@ -3793,7 +3793,7 @@ func newVersionShow(cfg *phraseapp.Config) *VersionShow {
 
 func (cmd *VersionShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3808,7 +3808,7 @@ func (cmd *VersionShow) Run() error {
 }
 
 type VersionsList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -3819,7 +3819,7 @@ type VersionsList struct {
 
 func newVersionsList(cfg *phraseapp.Config) *VersionsList {
 
-	actionVersionsList := &VersionsList{Config: cfg}
+	actionVersionsList := &VersionsList{Config: *cfg}
 	actionVersionsList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionVersionsList.Page = *cfg.Page
@@ -3833,7 +3833,7 @@ func newVersionsList(cfg *phraseapp.Config) *VersionsList {
 
 func (cmd *VersionsList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3848,7 +3848,7 @@ func (cmd *VersionsList) Run() error {
 }
 
 type WebhookCreate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.WebhookParams
 
@@ -3857,7 +3857,7 @@ type WebhookCreate struct {
 
 func newWebhookCreate(cfg *phraseapp.Config) (*WebhookCreate, error) {
 
-	actionWebhookCreate := &WebhookCreate{Config: cfg}
+	actionWebhookCreate := &WebhookCreate{Config: *cfg}
 	actionWebhookCreate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionWebhookCreate.Config.Defaults["webhook/create"]
@@ -3872,7 +3872,7 @@ func newWebhookCreate(cfg *phraseapp.Config) (*WebhookCreate, error) {
 func (cmd *WebhookCreate) Run() error {
 	params := &cmd.WebhookParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3887,7 +3887,7 @@ func (cmd *WebhookCreate) Run() error {
 }
 
 type WebhookDelete struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3895,7 +3895,7 @@ type WebhookDelete struct {
 
 func newWebhookDelete(cfg *phraseapp.Config) *WebhookDelete {
 
-	actionWebhookDelete := &WebhookDelete{Config: cfg}
+	actionWebhookDelete := &WebhookDelete{Config: *cfg}
 	actionWebhookDelete.ProjectID = cfg.DefaultProjectID
 
 	return actionWebhookDelete
@@ -3903,7 +3903,7 @@ func newWebhookDelete(cfg *phraseapp.Config) *WebhookDelete {
 
 func (cmd *WebhookDelete) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3918,7 +3918,7 @@ func (cmd *WebhookDelete) Run() error {
 }
 
 type WebhookShow struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3926,7 +3926,7 @@ type WebhookShow struct {
 
 func newWebhookShow(cfg *phraseapp.Config) *WebhookShow {
 
-	actionWebhookShow := &WebhookShow{Config: cfg}
+	actionWebhookShow := &WebhookShow{Config: *cfg}
 	actionWebhookShow.ProjectID = cfg.DefaultProjectID
 
 	return actionWebhookShow
@@ -3934,7 +3934,7 @@ func newWebhookShow(cfg *phraseapp.Config) *WebhookShow {
 
 func (cmd *WebhookShow) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3949,7 +3949,7 @@ func (cmd *WebhookShow) Run() error {
 }
 
 type WebhookTest struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
@@ -3957,7 +3957,7 @@ type WebhookTest struct {
 
 func newWebhookTest(cfg *phraseapp.Config) *WebhookTest {
 
-	actionWebhookTest := &WebhookTest{Config: cfg}
+	actionWebhookTest := &WebhookTest{Config: *cfg}
 	actionWebhookTest.ProjectID = cfg.DefaultProjectID
 
 	return actionWebhookTest
@@ -3965,7 +3965,7 @@ func newWebhookTest(cfg *phraseapp.Config) *WebhookTest {
 
 func (cmd *WebhookTest) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -3980,7 +3980,7 @@ func (cmd *WebhookTest) Run() error {
 }
 
 type WebhookUpdate struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	phraseapp.WebhookParams
 
@@ -3990,7 +3990,7 @@ type WebhookUpdate struct {
 
 func newWebhookUpdate(cfg *phraseapp.Config) (*WebhookUpdate, error) {
 
-	actionWebhookUpdate := &WebhookUpdate{Config: cfg}
+	actionWebhookUpdate := &WebhookUpdate{Config: *cfg}
 	actionWebhookUpdate.ProjectID = cfg.DefaultProjectID
 
 	val, defaultsPresent := actionWebhookUpdate.Config.Defaults["webhook/update"]
@@ -4005,7 +4005,7 @@ func newWebhookUpdate(cfg *phraseapp.Config) (*WebhookUpdate, error) {
 func (cmd *WebhookUpdate) Run() error {
 	params := &cmd.WebhookParams
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -4020,7 +4020,7 @@ func (cmd *WebhookUpdate) Run() error {
 }
 
 type WebhooksList struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
@@ -4030,7 +4030,7 @@ type WebhooksList struct {
 
 func newWebhooksList(cfg *phraseapp.Config) *WebhooksList {
 
-	actionWebhooksList := &WebhooksList{Config: cfg}
+	actionWebhooksList := &WebhooksList{Config: *cfg}
 	actionWebhooksList.ProjectID = cfg.DefaultProjectID
 	if cfg.Page != nil {
 		actionWebhooksList.Page = *cfg.Page
@@ -4044,7 +4044,7 @@ func newWebhooksList(cfg *phraseapp.Config) *WebhooksList {
 
 func (cmd *WebhooksList) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}

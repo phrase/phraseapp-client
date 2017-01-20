@@ -10,7 +10,8 @@ import (
 )
 
 type Config struct {
-	Credentials Credentials
+	Credentials
+	Debug bool `cli:"opt --verbose -v desc='Verbose output'"`
 
 	Page    *int
 	PerPage *int
@@ -90,7 +91,7 @@ func (cfg *Config) UnmarshalYAML(unmarshal func(i interface{}) error) error {
 	err := ParseYAMLToMap(unmarshal, map[string]interface{}{
 		"access_token": &cfg.Credentials.Token,
 		"host":         &cfg.Credentials.Host,
-		"debug":        &cfg.Credentials.Debug,
+		"debug":        &cfg.Debug,
 		"page":         &cfg.Page,
 		"perpage":      &cfg.PerPage,
 		"project_id":   &cfg.DefaultProjectID,

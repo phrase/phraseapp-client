@@ -14,18 +14,18 @@ import (
 )
 
 type PushCommand struct {
-	*phraseapp.Config
+	phraseapp.Config
 	Wait bool `cli:"opt --wait desc='Wait for files to be processed'"`
 }
 
 func (cmd *PushCommand) Run() error {
-	if cmd.Credentials.Debug {
+	if cmd.Config.Debug {
 		// suppresses content output
-		cmd.Credentials.Debug = false
+		cmd.Config.Debug = false
 		Debug = true
 	}
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}

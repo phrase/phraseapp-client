@@ -13,15 +13,10 @@ import (
 	"github.com/bgentry/speakeasy"
 )
 
-var Debug bool
-
-func EnableDebug() {
-	Debug = true
-}
-
 type Client struct {
 	http.Client
 	Credentials Credentials
+	debug       bool
 }
 
 type Credentials struct {
@@ -29,19 +24,17 @@ type Credentials struct {
 	Token    string `cli:"opt --access-token -t desc='access token used for authentication'"`
 	TFA      bool   `cli:"opt --tfa desc='use Two-Factor Authentication'"`
 	Host     string `cli:"opt --host desc='Host to send Request to'"`
-	Debug    bool   `cli:"opt --verbose -v desc='Verbose output'"`
 }
 
-func NewClient(credentials Credentials) (*Client, error) {
-	client := &Client{Credentials: credentials}
+func NewClient(credentials Credentials, debug bool) (*Client, error) {
+	client := &Client{
+		Credentials: credentials,
+		debug:       debug,
+	}
 
 	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
 	if envToken != "" && credentials.Token == "" && credentials.Username == "" {
 		client.Credentials.Token = envToken
-	}
-
-	if credentials.Debug == true {
-		EnableDebug()
 	}
 
 	if client.Credentials.Host == "" {
@@ -90,7 +83,7 @@ func (client *Client) sendRequestPaginated(method, urlPath, contentType string, 
 
 	addPagination(endpointURL, page, perPage)
 
-	req, err := buildRequest(method, endpointURL, body, contentType)
+	req, err := client.buildRequest(method, endpointURL, body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +102,7 @@ func (client *Client) sendRequest(method, urlPath, contentType string, body io.R
 		return nil, err
 	}
 
-	req, err := buildRequest(method, endpointURL, body, contentType)
+	req, err := client.buildRequest(method, endpointURL, body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +120,7 @@ func (client *Client) send(req *http.Request, expectedStatus int) (*http.Respons
 		return nil, err
 	}
 
-	if Debug {
+	if client.debug {
 		b := new(bytes.Buffer)
 		err = req.Header.Write(b)
 		if err != nil {
@@ -142,7 +135,7 @@ func (client *Client) send(req *http.Request, expectedStatus int) (*http.Respons
 		return nil, err
 	}
 
-	if Debug {
+	if client.debug {
 		fmt.Fprintf(os.Stderr, "\nResponse HTTP Status Code: %s\n", resp.Status)
 	}
 
@@ -161,8 +154,8 @@ func addPagination(u *url.URL, page, perPage int) {
 	u.RawQuery = query.Encode()
 }
 
-func buildRequest(method string, u *url.URL, body io.Reader, contentType string) (*http.Request, error) {
-	if Debug {
+func (client *Client) buildRequest(method string, u *url.URL, body io.Reader, contentType string) (*http.Request, error) {
+	if client.debug {
 		fmt.Fprintln(os.Stderr, "Method:", method)
 		fmt.Fprintln(os.Stderr, "URL:", u)
 

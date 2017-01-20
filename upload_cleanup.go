@@ -9,14 +9,14 @@ import (
 )
 
 type UploadCleanupCommand struct {
-	*phraseapp.Config
+	phraseapp.Config
 	ID      string `cli:"arg required"`
 	Confirm bool   `cli:"opt --confirm desc='Don’t ask for confirmation'"`
 }
 
 func (cmd *UploadCleanupCommand) Run() error {
 
-	client, err := newClient(cmd.Config.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}

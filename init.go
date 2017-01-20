@@ -74,7 +74,7 @@ type TargetsYAML SourcesYAML
 // the actual command
 
 type InitCommand struct {
-	*phraseapp.Config
+	phraseapp.Config
 
 	client     *phraseapp.Client
 	YAML       ConfigYAML
@@ -124,7 +124,7 @@ func (cmd *InitCommand) askForToken() error {
 	cmd.YAML.AccessToken = token
 
 	cmd.Credentials.Token = token
-	client, err := newClient(cmd.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (cmd *InitCommand) selectProject() error {
 	taskResult := make(chan []*phraseapp.Project, 1)
 	taskErr := make(chan error, 1)
 
-	client, err := newClient(cmd.Credentials)
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
@@ -383,6 +383,6 @@ func firstPush() error {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(2)
 	}
-	cmd := &PushCommand{Config: cfg}
+	cmd := &PushCommand{Config: *cfg}
 	return cmd.Run()
 }

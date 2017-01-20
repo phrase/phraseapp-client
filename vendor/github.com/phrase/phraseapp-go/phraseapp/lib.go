@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "4a96ca8f890ec8b312c09b087a621bd61a2ec123"
-	RevisionGenerator = "81a8d6648577481425c6d3d10fe6e2162d7addd9"
+	RevisionDocs      = "ae7df97629e13d98990793ba65bfd94f6a50cda8"
+	RevisionGenerator = "4b761c876a388e244383b8a2218aca140d23fe12"
 )
 
 type Account struct {
@@ -1298,7 +1298,7 @@ func (client *Client) AccountShow(id string) (*Account, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1323,7 +1323,7 @@ func (client *Client) AccountsList(page, perPage int) ([]*Account, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1354,7 +1354,7 @@ func (client *Client) AuthorizationCreate(params *AuthorizationParams) (*Authori
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1396,7 +1396,7 @@ func (client *Client) AuthorizationShow(id string) (*Authorization, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1427,7 +1427,7 @@ func (client *Client) AuthorizationUpdate(id string, params *AuthorizationParams
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1452,7 +1452,7 @@ func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, e
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1483,7 +1483,7 @@ func (client *Client) BlacklistedKeyCreate(project_id string, params *Blackliste
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1525,7 +1525,7 @@ func (client *Client) BlacklistedKeyShow(project_id, id string) (*BlacklistedKey
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1556,7 +1556,7 @@ func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *Blackl
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1581,7 +1581,7 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1612,7 +1612,7 @@ func (client *Client) CommentCreate(project_id, key_id string, params *CommentPa
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1705,7 +1705,7 @@ func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, erro
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1736,7 +1736,7 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1761,7 +1761,7 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int)
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1786,7 +1786,7 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1811,7 +1811,7 @@ func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*G
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1842,7 +1842,7 @@ func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) 
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1884,7 +1884,7 @@ func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1915,7 +1915,7 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1946,7 +1946,7 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -1988,7 +1988,7 @@ func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*Glo
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2019,7 +2019,7 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2050,7 +2050,7 @@ func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, ter
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2098,7 +2098,7 @@ func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, ter
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2123,7 +2123,7 @@ func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, pe
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2200,7 +2200,7 @@ func (client *Client) InvitationCreate(account_id string, params *InvitationCrea
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2242,7 +2242,7 @@ func (client *Client) InvitationResend(account_id, id string) (*Invitation, erro
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2267,7 +2267,7 @@ func (client *Client) InvitationShow(account_id, id string) (*Invitation, error)
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2336,7 +2336,7 @@ func (client *Client) InvitationUpdate(account_id, id string, params *Invitation
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2361,7 +2361,7 @@ func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2502,7 +2502,7 @@ func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams)
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2544,7 +2544,7 @@ func (client *Client) KeyShow(project_id, id string) (*TranslationKeyDetails, er
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2685,7 +2685,7 @@ func (client *Client) KeyUpdate(project_id, id string, params *TranslationKeyPar
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2746,7 +2746,7 @@ func (client *Client) KeysDelete(project_id string, params *KeysDeleteParams) (*
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2823,7 +2823,7 @@ func (client *Client) KeysList(project_id string, page, perPage int, params *Key
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2900,7 +2900,7 @@ func (client *Client) KeysSearch(project_id string, page, perPage int, params *K
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -2969,7 +2969,7 @@ func (client *Client) KeysTag(project_id string, params *KeysTagParams) (*Affect
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3038,7 +3038,7 @@ func (client *Client) KeysUntag(project_id string, params *KeysUntagParams) (*Af
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3069,7 +3069,7 @@ func (client *Client) LocaleCreate(project_id string, params *LocaleParams) (*Lo
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3203,7 +3203,7 @@ func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownlo
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3229,7 +3229,7 @@ func (client *Client) LocaleShow(project_id, id string) (*LocaleDetails, error) 
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3260,7 +3260,7 @@ func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) 
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3285,7 +3285,7 @@ func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Loca
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3327,7 +3327,7 @@ func (client *Client) MemberShow(account_id, id string) (*Member, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3396,7 +3396,7 @@ func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdatePa
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3421,7 +3421,7 @@ func (client *Client) MembersList(account_id string, page, perPage int) ([]*Memb
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3446,7 +3446,7 @@ func (client *Client) OrderConfirm(project_id, id string) (*TranslationOrder, er
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3477,7 +3477,7 @@ func (client *Client) OrderCreate(project_id string, params *TranslationOrderPar
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3519,7 +3519,7 @@ func (client *Client) OrderShow(project_id, id string) (*TranslationOrder, error
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3544,7 +3544,7 @@ func (client *Client) OrdersList(project_id string, page, perPage int) ([]*Trans
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3575,7 +3575,7 @@ func (client *Client) ProjectCreate(params *ProjectParams) (*ProjectDetails, err
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3617,7 +3617,7 @@ func (client *Client) ProjectShow(id string) (*ProjectDetails, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3648,7 +3648,7 @@ func (client *Client) ProjectUpdate(id string, params *ProjectParams) (*ProjectD
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3673,7 +3673,7 @@ func (client *Client) ProjectsList(page, perPage int) ([]*Project, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3698,7 +3698,7 @@ func (client *Client) ShowUser() (*User, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3729,7 +3729,7 @@ func (client *Client) StyleguideCreate(project_id string, params *StyleguidePara
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3771,7 +3771,7 @@ func (client *Client) StyleguideShow(project_id, id string) (*StyleguideDetails,
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3802,7 +3802,7 @@ func (client *Client) StyleguideUpdate(project_id, id string, params *Styleguide
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3827,7 +3827,7 @@ func (client *Client) StyleguidesList(project_id string, page, perPage int) ([]*
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3858,7 +3858,7 @@ func (client *Client) TagCreate(project_id string, params *TagParams) (*TagWithS
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3900,7 +3900,7 @@ func (client *Client) TagShow(project_id, name string) (*TagWithStats, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3925,7 +3925,7 @@ func (client *Client) TagsList(project_id string, page, perPage int) ([]*Tag, er
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3956,7 +3956,7 @@ func (client *Client) TranslationCreate(project_id string, params *TranslationPa
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -3981,7 +3981,7 @@ func (client *Client) TranslationShow(project_id, id string) (*TranslationDetail
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4058,7 +4058,7 @@ func (client *Client) TranslationUpdate(project_id, id string, params *Translati
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4127,7 +4127,7 @@ func (client *Client) TranslationsByKey(project_id, key_id string, page, perPage
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4196,7 +4196,7 @@ func (client *Client) TranslationsByLocale(project_id, locale_id string, page, p
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4265,7 +4265,7 @@ func (client *Client) TranslationsExclude(project_id string, params *Translation
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4334,7 +4334,7 @@ func (client *Client) TranslationsInclude(project_id string, params *Translation
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4403,7 +4403,7 @@ func (client *Client) TranslationsList(project_id string, page, perPage int, par
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4472,7 +4472,7 @@ func (client *Client) TranslationsSearch(project_id string, page, perPage int, p
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4541,7 +4541,7 @@ func (client *Client) TranslationsUnverify(project_id string, params *Translatio
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4610,7 +4610,7 @@ func (client *Client) TranslationsVerify(project_id string, params *Translations
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4732,7 +4732,7 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4757,7 +4757,7 @@ func (client *Client) UploadShow(project_id, id string) (*Upload, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4782,7 +4782,7 @@ func (client *Client) UploadsList(project_id string, page, perPage int) ([]*Uplo
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4807,7 +4807,7 @@ func (client *Client) VersionShow(project_id, translation_id, id string) (*Trans
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4832,7 +4832,7 @@ func (client *Client) VersionsList(project_id, translation_id string, page, perP
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4863,7 +4863,7 @@ func (client *Client) WebhookCreate(project_id string, params *WebhookParams) (*
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4905,7 +4905,7 @@ func (client *Client) WebhookShow(project_id, id string) (*Webhook, error) {
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4953,7 +4953,7 @@ func (client *Client) WebhookUpdate(project_id, id string, params *WebhookParams
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
@@ -4978,7 +4978,7 @@ func (client *Client) WebhooksList(project_id string, page, perPage int) ([]*Web
 		defer rc.Close()
 
 		var reader io.Reader
-		if Debug {
+		if client.debug {
 			reader = io.TeeReader(rc, os.Stderr)
 		} else {
 			reader = rc
