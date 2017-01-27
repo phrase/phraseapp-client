@@ -11,6 +11,7 @@ import (
 
 	"github.com/jpillora/backoff"
 	"github.com/phrase/phraseapp-client/internal/print"
+	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-client/internal/stringz"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
@@ -109,12 +110,13 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 			taskResult := make(chan string, 1)
 			taskErr := make(chan error, 1)
 
-			withSpinner("Waiting for your file to be processed... ", func(taskFinished chan<- struct{}) {
+			fmt.Print("Waiting for your file to be processed... ")
+			spinner.While(func() {
 				result, err := getUploadResult(client, source.ProjectID, upload)
 				taskResult <- result
 				taskErr <- err
-				taskFinished <- struct{}{}
 			})
+			fmt.Println()
 
 			if err := <-taskErr; err != nil {
 				return err

@@ -9,6 +9,7 @@ import (
 
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/prompt"
+	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"gopkg.in/yaml.v2"
 )
@@ -151,12 +152,13 @@ func (cmd *InitCommand) selectProject() error {
 		return err
 	}
 
-	withSpinner("Loading projects... ", func(taskFinished chan<- struct{}) {
+	fmt.Print("Loading projects... ")
+	spinner.While(func() {
 		projects, err := client.ProjectsList(1, 25)
 		taskResult <- projects
 		taskErr <- err
-		taskFinished <- struct{}{}
 	})
+	fmt.Println()
 
 	projects := <-taskResult
 	if err := <-taskErr; err != nil {
