@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/phrase/phraseapp-client/internal/print"
+	"github.com/phrase/phraseapp-client/internal/prompt"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"gopkg.in/yaml.v2"
 )
@@ -110,7 +111,7 @@ func (cmd *InitCommand) askForToken() error {
 
 	token := ""
 	for {
-		err := prompt("Please enter your API access token (you can generate one in your profile at phraseapp.com): ", &token)
+		err := prompt.P("Please enter your API access token (you can generate one in your profile at phraseapp.com):", &token)
 		if err != nil {
 			continue
 		}
@@ -177,7 +178,7 @@ func (cmd *InitCommand) selectProject() error {
 
 	selection := 0
 	for {
-		err = prompt(fmt.Sprintf("Select project: (%v-%v) ", 1, len(projects)+1), &selection)
+		err = prompt.P(fmt.Sprintf("Select project: (%v-%v)", 1, len(projects)+1), &selection)
 		if err != nil {
 			continue
 		}
@@ -208,7 +209,7 @@ func (cmd *InitCommand) newProject() error {
 	}
 
 	for {
-		err := prompt("Enter the name of the new project: ", params.Name)
+		err := prompt.P("Enter the name of the new project:", params.Name)
 		if err == nil {
 			break
 		}
@@ -253,11 +254,11 @@ func (cmd *InitCommand) selectFormat() error {
 	if cmd.FileFormat != nil && cmd.FileFormat.Name != "" {
 		promptText += fmt.Sprintf(" or leave blank to use the default, %s)", cmd.FileFormat.Name)
 	}
-	promptText += "): "
+	promptText += "):"
 
 	selection := 0
 	for {
-		err = prompt(promptText, &selection)
+		err = prompt.P(promptText, &selection)
 		if err != nil {
 			if cmd.FileFormat != nil && cmd.FileFormat.Name != "" {
 				break
@@ -286,7 +287,7 @@ func (cmd *InitCommand) configureSources() error {
 
 	pushPath := ""
 	for {
-		err := promptWithDefault("Source file path: ", &pushPath, cmd.FileFormat.DefaultFile)
+		err := prompt.WithDefault("Source file path:", &pushPath, cmd.FileFormat.DefaultFile)
 		if err != nil {
 			return err
 		}
@@ -317,7 +318,7 @@ func (cmd *InitCommand) configureTargets() error {
 
 	pullPath := ""
 	for {
-		err := promptWithDefault("Target file path: ", &pullPath, cmd.FileFormat.DefaultFile)
+		err := prompt.WithDefault("Target file path:", &pullPath, cmd.FileFormat.DefaultFile)
 		if err != nil {
 			return err
 		}
@@ -373,7 +374,7 @@ func (cmd *InitCommand) writeConfig() error {
 	fmt.Println()
 
 	pushNow := ""
-	err = promptWithDefault("Do you want to upload your locales now for the first time? (y/n) ", &pushNow, "y")
+	err = prompt.WithDefault("Do you want to upload your locales now for the first time? (y/n)", &pushNow, "y")
 	if pushNow == "y" {
 		err = firstPush()
 		if err != nil {

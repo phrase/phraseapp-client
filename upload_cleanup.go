@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/prompt"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -55,7 +56,7 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 			fmt.Println(strings.Join(names, "\n"))
 
 			confirmation := ""
-			err := promptWithDefault("Are you sure you want to continue? (y/n) ", &confirmation, "n")
+			err := prompt.WithDefault("Are you sure you want to continue? (y/n)", &confirmation, "n")
 			if err != nil {
 				return err
 			}
