@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"gopkg.in/yaml.v2"
 )
@@ -103,7 +104,7 @@ func (cmd *InitCommand) Run() error {
 }
 
 func (cmd *InitCommand) askForToken() error {
-	printParrot()
+	print.Parrot()
 	fmt.Println("PhraseApp.com API Client Setup")
 	fmt.Println()
 
@@ -121,7 +122,7 @@ func (cmd *InitCommand) askForToken() error {
 		}
 
 		if !success {
-			printFailure("Invalid access token! A valid access token is 64 characters long and contains only a-f, 0-9.")
+			print.Failure("Invalid access token! A valid access token is 64 characters long and contains only a-f, 0-9.")
 			continue
 		}
 
@@ -182,7 +183,7 @@ func (cmd *InitCommand) selectProject() error {
 		}
 
 		if selection < 1 || selection > len(projects)+1 {
-			printFailure("Please select a project from the list by specifying its position in the list, e.g. 2 for the second project.")
+			print.Failure("Please select a project from the list by specifying its position in the list, e.g. 2 for the second project.")
 			continue
 		}
 
@@ -193,7 +194,7 @@ func (cmd *InitCommand) selectProject() error {
 		return cmd.newProject()
 	}
 
-	printSuccess("Using project %v", projects[selection-1].Name)
+	print.Success("Using project %v", projects[selection-1].Name)
 
 	cmd.YAML.ProjectID = projects[selection-1].ID
 	cmd.DefaultFileFormat = projects[selection-1].MainFormat
@@ -223,7 +224,7 @@ func (cmd *InitCommand) newProject() error {
 		return err
 	}
 
-	printSuccess("Using project %v", details.Name)
+	print.Success("Using project %v", details.Name)
 
 	cmd.YAML.ProjectID = details.ID
 
@@ -266,7 +267,7 @@ func (cmd *InitCommand) selectFormat() error {
 		}
 
 		if selection < 1 || selection > len(formats) {
-			printFailure("Please select a format from the list by specifying the number in front of it.")
+			print.Failure("Please select a format from the list by specifying the number in front of it.")
 			continue
 		}
 
@@ -274,7 +275,7 @@ func (cmd *InitCommand) selectFormat() error {
 		break
 	}
 
-	printSuccess("Using format %v", cmd.FileFormat.Name)
+	print.Success("Using format %v", cmd.FileFormat.Name)
 
 	return nil
 }
@@ -292,7 +293,7 @@ func (cmd *InitCommand) configureSources() error {
 
 		err = ValidPath(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
-			printFailure(err.Error())
+			print.Failure(err.Error())
 		} else {
 			break
 		}
@@ -323,7 +324,7 @@ func (cmd *InitCommand) configureTargets() error {
 
 		err = ValidPath(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
-			printFailure(err.Error())
+			print.Failure(err.Error())
 		} else {
 			break
 		}
@@ -359,13 +360,13 @@ func (cmd *InitCommand) writeConfig() error {
 		return err
 	}
 
-	printSuccess("We created the following configuration file for you: " + filename)
+	print.Success("We created the following configuration file for you: " + filename)
 
 	fmt.Println()
 	fmt.Println(string(yamlBytes))
 
-	printSuccess("For advanced configuration options, take a look at the documentation: " + docsConfigUrl)
-	printSuccess("You can now use the push & pull commands in your workflow:")
+	print.Success("For advanced configuration options, take a look at the documentation: " + docsConfigUrl)
+	print.Success("You can now use the push & pull commands in your workflow:")
 	fmt.Println()
 	fmt.Println("$ phraseapp push")
 	fmt.Println("$ phraseapp pull")
@@ -380,7 +381,7 @@ func (cmd *InitCommand) writeConfig() error {
 		}
 	}
 
-	printSuccess("Project initialization completed!")
+	print.Success("Project initialization completed!")
 
 	return nil
 }
