@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -95,6 +94,8 @@ func (cmd *InitCommand) Run() error {
 			return err
 		}
 
+		fmt.Println()
+
 		step = nextStep[step]
 	}
 
@@ -107,18 +108,24 @@ func (cmd *InitCommand) askForToken() error {
 	fmt.Println()
 
 	token := ""
-	err := prompt("Please enter your API Access Token (you can generate one in your profile at phraseapp.com): ", &token)
-	if err != nil {
-		return err
-	}
+	for {
+		err := prompt("Please enter your API access token (you can generate one in your profile at phraseapp.com): ", &token)
+		if err != nil {
+			continue
+		}
 
-	token = strings.ToLower(token)
-	success, err := regexp.MatchString("^[0-9a-f]{64}$", token)
-	if err != nil {
-		return err
-	}
-	if !success {
-		return fmt.Errorf("A valid Access Token is 64 characters long and contains only a-f, 0-9")
+		token = strings.ToLower(token)
+		success, err := regexp.MatchString("^[0-9a-f]{64}$", token)
+		if err != nil {
+			continue
+		}
+
+		if !success {
+			printFailure("Invalid access token! A valid access token is 64 characters long and contains only a-f, 0-9.")
+			continue
+		}
+
+		break
 	}
 
 	cmd.YAML.AccessToken = token
@@ -152,28 +159,13 @@ func (cmd *InitCommand) selectProject() error {
 	projects := <-taskResult
 	if err := <-taskErr; err != nil {
 		if strings.Contains(err.Error(), "401") {
-			return fmt.Errorf("%s is not a valid Access Token. It may be revoked. Please create a new Token.", cmd.Credentials.Token)
+			return fmt.Errorf("%s is not a valid access token. It may be revoked or missing the read or write scope. Please create a new token and try again.", cmd.Credentials.Token)
 		}
 		return err
 	}
 
 	if len(projects) == 0 {
 		fmt.Println("Since you don't have any projects yet, a new one will be created.")
-		return cmd.newProject()
-	}
-
-	if len(projects) == 1 {
-		answer := ""
-		err := promptWithDefault(fmt.Sprintf("You have only one project. Answer 'y' to use '%s' or 'n' to create a new project: ", projects[0].Name), &answer, "n")
-		if err != nil {
-			return err
-		}
-
-		if answer == "y" {
-			cmd.YAML.ProjectID = projects[0].ID
-			return nil
-		}
-
 		return cmd.newProject()
 	}
 
@@ -184,21 +176,24 @@ func (cmd *InitCommand) selectProject() error {
 
 	selection := 0
 	for {
-		err = prompt("Select project: ", &selection)
+		err = prompt(fmt.Sprintf("Select project: (%v-%v) ", 1, len(projects)+1), &selection)
 		if err != nil {
-			return err
+			continue
 		}
 
 		if selection < 1 || selection > len(projects)+1 {
-			fmt.Println("Please select a project from the list by specifying its position in the list, e.g. 2 for the second project.")
-		} else {
-			break
+			printFailure("Please select a project from the list by specifying its position in the list, e.g. 2 for the second project.")
+			continue
 		}
+
+		break
 	}
 
 	if selection == len(projects)+1 {
 		return cmd.newProject()
 	}
+
+	printSuccess("Using project %v", projects[selection-1].Name)
 
 	cmd.YAML.ProjectID = projects[selection-1].ID
 	cmd.DefaultFileFormat = projects[selection-1].MainFormat
@@ -210,9 +205,12 @@ func (cmd *InitCommand) newProject() error {
 	params := &phraseapp.ProjectParams{
 		Name: new(string),
 	}
-	err := prompt("Enter the name of the new project: ", params.Name)
-	if err != nil {
-		return err
+
+	for {
+		err := prompt("Enter the name of the new project: ", params.Name)
+		if err == nil {
+			break
+		}
 	}
 
 	details, err := cmd.client.ProjectCreate(params)
@@ -220,12 +218,12 @@ func (cmd *InitCommand) newProject() error {
 		if strings.Contains(err.Error(), "401") {
 			return fmt.Errorf("Your access token %s is not valid for the 'write' scope. Please create a new Access Token with read and write scope.", cmd.Credentials.Token)
 		} else if strings.Contains(err.Error(), "Validation failed") {
-			// TODO: really retry?
 			return fmt.Errorf("Validation failed. Please try a different token.")
 		}
-		println(err)
 		return err
 	}
+
+	printSuccess("Using project %v", details.Name)
 
 	cmd.YAML.ProjectID = details.ID
 
@@ -250,22 +248,34 @@ func (cmd *InitCommand) selectFormat() error {
 		fmt.Printf("%2d: %s - %s, file extension: %s\n", i+1, format.ApiName, format.Name, format.Extension)
 	}
 
-	promptText := "Select the format to use for language files you download from PhraseApp"
-	if cmd.FileFormat != nil {
-		promptText += fmt.Sprintf(" (or leave blank to use the default, %s)", cmd.FileFormat.Name)
+	promptText := fmt.Sprintf("Select the format to use for language files you download from PhraseApp (%v-%v", 1, len(formats))
+	if cmd.FileFormat != nil && cmd.FileFormat.Name != "" {
+		promptText += fmt.Sprintf(" or leave blank to use the default, %s)", cmd.FileFormat.Name)
 	}
-	promptText += ": "
+	promptText += "): "
 
 	selection := 0
-	err = prompt(promptText, &selection)
+	for {
+		err = prompt(promptText, &selection)
+		if err != nil {
+			if cmd.FileFormat != nil && cmd.FileFormat.Name != "" {
+				break
+			}
 
-	if err != nil {
-		if (err == io.EOF && cmd.FileFormat == nil) && (selection < 1 || selection > len(formats)+1) {
-			return fmt.Errorf("Please select a format from the list by specifying its position in the list.")
+			continue
 		}
+
+		if selection < 1 || selection > len(formats) {
+			printFailure("Please select a format from the list by specifying the number in front of it.")
+			continue
+		}
+
+		cmd.FileFormat = formats[selection-1]
+		break
 	}
 
-	cmd.FileFormat = formats[selection-1]
+	printSuccess("Using format %v", cmd.FileFormat.Name)
+
 	return nil
 }
 
@@ -280,11 +290,9 @@ func (cmd *InitCommand) configureSources() error {
 			return err
 		}
 
-		println(pushPath)
-
 		err = ValidPath(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
-			fmt.Println(err)
+			printFailure(err.Error())
 		} else {
 			break
 		}
@@ -315,7 +323,7 @@ func (cmd *InitCommand) configureTargets() error {
 
 		err = ValidPath(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
-			fmt.Println(err)
+			printFailure(err.Error())
 		} else {
 			break
 		}
