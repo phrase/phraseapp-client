@@ -50,9 +50,10 @@ func getLatestVersion() (*semver.Version, error) {
 	if err != nil || time.Since(modified) > 24*time.Hour {
 		versionOnline, err := getLatestVersionFromURL()
 		if err == nil {
-			version = versionOnline
-			ioutil.WriteFile(versionCacheFilename, []byte(version.String()), 0600)
+			ioutil.WriteFile(versionCacheFilename, []byte(versionOnline.String()), 0600)
 		}
+
+		return versionOnline, err
 	}
 
 	return version, nil
