@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,7 +25,9 @@ var (
 func CheckForUpdate(w io.Writer) {
 	latestVersion, err := getLatestVersion()
 	if err != nil {
-		printError(err)
+		if Debug {
+			printFailure("error getting latest version: %v", err)
+		}
 		return
 	}
 
@@ -86,6 +89,11 @@ func getLatestVersionFromURL() (*semver.Version, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	req = req.WithContext(ctx)
+
+	time.AfterFunc(3*time.Second, cancel)
 
 	transport := http.Transport{}
 	resp, err := transport.RoundTrip(req)

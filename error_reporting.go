@@ -7,6 +7,8 @@ import (
 	"os"
 	"runtime"
 
+	"time"
+
 	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/phrase/client-error-proxy/errors"
 	"github.com/phrase/phraseapp-go/phraseapp"
@@ -51,8 +53,14 @@ func reportError(cliErr *bserrors.Error, cfg *phraseapp.Config) {
 		endpoint = DefaultErrorReportingEndpoint
 	}
 
-	response, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonErr))
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+	response, err := client.Post(endpoint, "application/json", bytes.NewBuffer(jsonErr))
 	if err != nil {
+		if Debug {
+			printFailure("couldn't report error: %v", err)
+		}
 		return
 	}
 
