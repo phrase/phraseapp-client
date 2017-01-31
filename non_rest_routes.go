@@ -14,5 +14,5 @@ func ApplyNonRestRoutes(r *cli.Router, cfg *phraseapp.Config) {
 
 	r.Register("upload/cleanup", &UploadCleanupCommand{Config: *cfg}, "Delete unmentioned keys for given upload")
 
-	r.RegisterFunc("info", infoCommand, "Info about version and revision of this client")
+	r.Register("info", &InfoCommand{Config: *cfg}, "Info about version and revision of this client")
 }

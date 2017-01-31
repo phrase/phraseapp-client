@@ -47,8 +47,17 @@ func GetInfo() string {
 	return fmt.Sprintf("%s\n", strings.Join(info, "\n"))
 }
 
-func infoCommand() error {
+type InfoCommand struct {
+	phraseapp.Config
+}
+
+func (cmd *InfoCommand) Run() error {
+	if cmd.Config.Debug {
+		Debug = true
+	}
+
 	fmt.Print(GetInfo())
+
 	return nil
 }
 
