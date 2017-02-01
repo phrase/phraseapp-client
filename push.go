@@ -10,8 +10,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/jpillora/backoff"
-	"github.com/phrase/phraseapp-client/internal/helpers"
 	"github.com/phrase/phraseapp-client/internal/print"
+	"github.com/phrase/phraseapp-client/internal/stringz"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -420,7 +420,7 @@ func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile
 		localeFile.extractParamFromPathToken(patternToken, pathToken)
 	}
 
-	if helpers.Contains(patternTokens, "**") {
+	if stringz.Contains(patternTokens, "**") {
 		offset := 1
 		for idx := len(patternTokens) - 1; idx >= 0; idx-- {
 			patternToken := patternTokens[idx]

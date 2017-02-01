@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/phrase/phraseapp-client/internal/helpers"
 	"github.com/phrase/phraseapp-client/internal/print"
+	"github.com/phrase/phraseapp-client/internal/stringz"
 )
 
 const downloadPageURL = "https://phraseapp.com/en/cli"
@@ -40,7 +40,7 @@ func (uc *Checker) Check() {
 		return
 	}
 
-	if helpers.ContainsAnySub(strings.ToLower(uc.version), []string{"dev", "test"}) {
+	if stringz.ContainsAnySub(strings.ToLower(uc.version), []string{"dev", "test"}) {
 		fmt.Fprintf(uc.output, "You're running a development version (%s) of the PhraseApp client! Latest version is %s.\n", uc.version, latestVersion)
 		return
 	}
