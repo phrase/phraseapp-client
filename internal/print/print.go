@@ -1,4 +1,4 @@
-package main
+package print
 
 import (
 	"fmt"
@@ -48,23 +48,23 @@ const parrot = `
 
 `
 
-func printParrot() {
-	printWithColor(ct.Cyan, parrot)
+func Parrot() {
+	WithColor(ct.Cyan, parrot)
 }
 
-func printSuccess(msg string, args ...interface{}) {
-	printWithColor(ct.Green, msg, args...)
+func Success(msg string, args ...interface{}) {
+	WithColor(ct.Green, msg, args...)
 }
 
-func printFailure(msg string, args ...interface{}) {
-	printWithColor(ct.Red, msg, args...)
+func Failure(msg string, args ...interface{}) {
+	WithColor(ct.Red, msg, args...)
 }
 
-func printWithColor(color ct.Color, msg string, args ...interface{}) {
+func WithColor(color ct.Color, msg string, args ...interface{}) {
 	fprintWithColor(os.Stdout, color, msg, args...)
 }
 
-func printError(err error) {
+func Error(err error) {
 	fprintWithColor(os.Stderr, ct.Red, "ERROR: %s", err)
 }
 

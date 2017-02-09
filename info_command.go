@@ -53,23 +53,8 @@ func infoCommand() error {
 }
 
 var (
-	REVISION                 string
-	LIBRARY_REVISION         string
-	BUILT_AT                 string
-	PHRASEAPP_CLIENT_VERSION string
+	REVISION                 = "DEV"
+	LIBRARY_REVISION         = "DEV"
+	BUILT_AT                 = "LIVE"
+	PHRASEAPP_CLIENT_VERSION = "DEV"
 )
-
-func init() {
-	if PHRASEAPP_CLIENT_VERSION == "" {
-		PHRASEAPP_CLIENT_VERSION = "DEV"
-	}
-	if REVISION == "" {
-		REVISION = "DEV"
-	}
-	if LIBRARY_REVISION == "" {
-		LIBRARY_REVISION = "DEV"
-	}
-	if BUILT_AT == "" {
-		BUILT_AT = "LIVE"
-	}
-}

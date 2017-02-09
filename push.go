@@ -10,6 +10,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/jpillora/backoff"
+	"github.com/phrase/phraseapp-client/internal/print"
+	"github.com/phrase/phraseapp-client/internal/stringz"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -120,9 +122,9 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 
 			switch <-taskResult {
 			case "success":
-				printSuccess("Successfully uploaded and processed %s.", localeFile.RelPath())
+				print.Success("Successfully uploaded and processed %s.", localeFile.RelPath())
 			case "error":
-				printFailure("There was an error processing %s. Your changes were not saved online.", localeFile.RelPath())
+				print.Failure("There was an error processing %s. Your changes were not saved online.", localeFile.RelPath())
 			}
 		} else {
 			fmt.Println("done!")
@@ -418,7 +420,7 @@ func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile
 		localeFile.extractParamFromPathToken(patternToken, pathToken)
 	}
 
-	if Contains(patternTokens, "**") {
+	if stringz.Contains(patternTokens, "**") {
 		offset := 1
 		for idx := len(patternTokens) - 1; idx >= 0; idx-- {
 			patternToken := patternTokens[idx]
