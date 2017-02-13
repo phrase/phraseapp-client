@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	ct "github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -118,26 +117,22 @@ func isDir(path string) bool {
 	return stat.IsDir()
 }
 
-func sharedMessage(method string, localeFile *LocaleFile) {
-	local := localeFile.RelPath()
+func createFile(path string) error {
+	err := Exists(path)
+	if err != nil {
+		absDir := filepath.Dir(path)
+		err := Exists(absDir)
+		if err != nil {
+			os.MkdirAll(absDir, 0700)
+		}
 
-	if method == "pull" {
-		remote := localeFile.Message()
-		fmt.Print("Downloaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(remote)
-		ct.ResetColor()
-		fmt.Print(" to ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local, "\n")
-		ct.ResetColor()
-	} else {
-		fmt.Print("Uploaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local)
-		ct.ResetColor()
-		fmt.Println(" successfully.")
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 	}
+	return nil
 }
 
 func isNotFound(err error) bool {

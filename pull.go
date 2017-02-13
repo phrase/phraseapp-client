@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	ct "github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"gopkg.in/yaml.v2"
 )
 
 type PullCommand struct {
@@ -26,7 +26,7 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	targets, err := TargetsFromConfig(cmd)
+	targets, err := TargetsFromConfig(cmd.Config)
 	if err != nil {
 		return err
 	}
@@ -52,84 +52,9 @@ func (cmd *PullCommand) Run() error {
 	return nil
 }
 
-type Targets []*Target
-
-func (targets Targets) ProjectIds() []string {
-	projectIds := []string{}
-	for _, target := range targets {
-		projectIds = append(projectIds, target.ProjectID)
-	}
-	return projectIds
-}
-
-type Target struct {
-	File          string
-	ProjectID     string
-	AccessToken   string
-	FileFormat    string
-	Params        *PullParams
-	RemoteLocales []*phraseapp.Locale
-}
-
 type PullParams struct {
 	phraseapp.LocaleDownloadParams
 	LocaleID string
-}
-
-func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	m := map[string]interface{}{}
-	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
-		"file":         &tgt.File,
-		"project_id":   &tgt.ProjectID,
-		"access_token": &tgt.AccessToken,
-		"file_format":  &tgt.FileFormat,
-		"params":       &m,
-	})
-	if err != nil {
-		return err
-	}
-
-	tgt.Params = new(PullParams)
-	if v, found := m["locale_id"]; found {
-		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
-			return err
-		}
-		// Must delete the param from the map as the LocaleDownloadParams type
-		// doesn't support this one and the apply method would return an error.
-		delete(m, "locale_id")
-	}
-	return tgt.Params.ApplyValuesFromMap(m)
-
-}
-
-func (target *Target) CheckPreconditions() error {
-	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
-		return err
-	}
-
-	if strings.Count(target.File, "*") > 0 {
-		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl,
-		)
-	}
-
-	duplicatedPlaceholders := []string{}
-	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
-		if strings.Count(target.File, name) > 1 {
-			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
-		}
-	}
-
-	if len(duplicatedPlaceholders) > 0 {
-		dups := strings.Join(duplicatedPlaceholders, ", ")
-		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
-	}
-
-	if target.GetLocaleID() == "" && !containsAnyPlaceholders(target.File) {
-		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder!")
-	}
-
-	return nil
 }
 
 func (target *Target) Pull(client *phraseapp.Client) error {
@@ -160,7 +85,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
-			sharedMessage("pull", localeFile)
+			pullMessage(localeFile)
 		}
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -263,86 +188,15 @@ func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error
 	return path, nil
 }
 
-func (t *Target) GetFormat() string {
-	if t.Params != nil && t.Params.FileFormat != nil {
-		return *t.Params.FileFormat
-	}
-	if t.FileFormat != "" {
-		return t.FileFormat
-	}
-	return ""
-}
-
-func (t *Target) GetLocaleID() string {
-	if t.Params != nil {
-		return t.Params.LocaleID
-	}
-	return ""
-}
-
-func (t *Target) GetTag() string {
-	if t.Params != nil && t.Params.Tag != nil {
-		return *t.Params.Tag
-	}
-	return ""
-}
-
-func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
-	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
-		return nil, fmt.Errorf("no targets for download specified")
-	}
-
-	tmp := struct {
-		Targets Targets
-	}{}
-	err := yaml.Unmarshal(cmd.Config.Targets, &tmp)
-	if err != nil {
-		return nil, err
-	}
-	tgts := tmp.Targets
-
-	token := cmd.Credentials.Token
-	projectId := cmd.Config.DefaultProjectID
-	fileFormat := cmd.Config.DefaultFileFormat
-
-	validTargets := []*Target{}
-	for _, target := range tgts {
-		if target == nil {
-			continue
-		}
-		if target.ProjectID == "" {
-			target.ProjectID = projectId
-		}
-		if target.AccessToken == "" {
-			target.AccessToken = token
-		}
-		if target.FileFormat == "" {
-			target.FileFormat = fileFormat
-		}
-		validTargets = append(validTargets, target)
-	}
-
-	if len(validTargets) <= 0 {
-		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
-	}
-
-	return validTargets, nil
-}
-
-func createFile(path string) error {
-	err := Exists(path)
-	if err != nil {
-		absDir := filepath.Dir(path)
-		err := Exists(absDir)
-		if err != nil {
-			os.MkdirAll(absDir, 0700)
-		}
-
-		f, err := os.Create(path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-	}
-	return nil
+func pullMessage(localeFile *LocaleFile) {
+	local := localeFile.RelPath()
+	remote := localeFile.Message()
+	fmt.Print("Downloaded ")
+	ct.Foreground(ct.Green, true)
+	fmt.Print(remote)
+	ct.ResetColor()
+	fmt.Print(" to ")
+	ct.Foreground(ct.Green, true)
+	fmt.Print(local, "\n")
+	ct.ResetColor()
 }
