@@ -1,6 +1,11 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/phrase/phraseapp-go/phraseapp"
+)
 
 func getBaseTarget() *Target {
 	target := &Target{
@@ -35,6 +40,75 @@ func TestTargetFields(t *testing.T) {
 }
 
 func TestPreconditions(t *testing.T) {
+	target := &Target{
+		File:        "./tests/en.yml",
+		ProjectID:   "project-id",
+		AccessToken: "access-token",
+		FileFormat:  "yml",
+		Params:      new(PullParams),
+		RemoteLocales: []*phraseapp.Locale{
+			&phraseapp.Locale{
+				Code: "en",
+				ID:   "en-locale-id",
+				Name: "english",
+			},
+			&phraseapp.Locale{
+				Code: "de",
+				ID:   "de-locale-id",
+				Name: "german",
+			},
+		},
+	}
+
+	// no information given
+	expect := "Could not find any locale information."
+	err := target.CheckPreconditions()
+	if err == nil {
+		t.Errorf("Expected to fail for pattern %q. Did not fail.", target.File)
+	} else if !strings.Contains(err.Error(), expect) {
+		t.Errorf("Expected to fail with %q got %q", expect, err)
+	}
+
+	// placeholder used
+	target.File = "some/path/<locale_code>.yml"
+	err = target.CheckPreconditions()
+	if err != nil {
+		t.Errorf("Should not have failed for pattern %q. Error was: %q", target.File, err)
+	}
+
+	// locale_id set
+	target.File = "some/path/en.yml"
+	target.Params.LocaleID = "en"
+	err = target.CheckPreconditions()
+	if err != nil {
+		t.Errorf("Should not have failed for pattern %q. Error was: %q", target.File, err)
+	}
+
+	// locale_id and placeholder set
+	expect = "Found 'locale_id' in params and a (<locale_code|locale_name>) placeholder."
+	target.File = "some/path/<locale_code>.yml"
+	target.Params.LocaleID = "en"
+	err = target.CheckPreconditions()
+	if err == nil {
+		t.Errorf("Expected to fail for pattern %q. Did not fail.", target.File)
+	} else if !strings.Contains(err.Error(), expect) {
+		t.Errorf("Expected to fail with %q got %q", expect, err)
+	}
+
+	// tag in placeholder but no tag provided
+	target.File = "some/path/en.yml"
+	target.Params.LocaleID = "en"
+	target.File = "some/<tag>/en.yml"
+	expect = "Using <tag> placeholder but no tags were provided."
+	err = target.CheckPreconditions()
+	if err == nil {
+		t.Errorf("Expected to fail for pattern %q. Did not fail.", target.File)
+	} else if !strings.Contains(err.Error(), expect) {
+		t.Errorf("Expected to fail with %q got %q", expect, err)
+	}
+}
+
+func TestPlaceholderPreconditions(t *testing.T) {
 	target := getBaseTarget()
 	for _, file := range []string{
 		"",
@@ -57,8 +131,13 @@ func TestPreconditions(t *testing.T) {
 		"./<locale_name>/<locale_code>/<tag>.yml",
 	} {
 		target.File = file
+		target.Params.Tag = sPt("any tag")
 		if err := target.CheckPreconditions(); err != nil {
 			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
 		}
 	}
+}
+
+func sPt(s string) *string {
+	return &s
 }

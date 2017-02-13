@@ -14,13 +14,23 @@ var Debug bool
 
 var separator = string(os.PathSeparator)
 
-var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
+var placeholderRegexp = regexp.MustCompile("<(locale_name|locale_code|tag)>")
+var localePlaceholder = regexp.MustCompile("<(locale_name|locale_code)>")
+var tagPlaceholder = regexp.MustCompile("<(tag)>")
 
 const docsBaseUrl = "https://phraseapp.com/docs"
 const docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
 
 func containsAnyPlaceholders(s string) bool {
-	return placeholderRegexp.MatchString(s)
+	return (localePlaceholder.MatchString(s) || tagPlaceholder.MatchString(s))
+}
+
+func containsLocalePlaceholder(s string) bool {
+	return localePlaceholder.MatchString(s)
+}
+
+func containsTagPlaceholder(s string) bool {
+	return tagPlaceholder.MatchString(s)
 }
 
 func docsFormatsUrl(formatName string) string {
@@ -29,9 +39,7 @@ func docsFormatsUrl(formatName string) string {
 
 func ValidPath(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
-		return fmt.Errorf(
-			"File patterns may not be empty!\nFor more information see %s", docsConfigUrl,
-		)
+		return fmt.Errorf("File patterns may not be empty!\nFor more information see %s", docsConfigUrl)
 	}
 
 	fileExtension := strings.Trim(filepath.Ext(file), ".")
@@ -66,6 +74,7 @@ func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales)
 			if err != nil {
 				return nil, err
 			}
+
 			projectIdToLocales[pid] = remoteLocales
 		}
 	}

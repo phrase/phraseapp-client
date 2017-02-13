@@ -28,43 +28,35 @@ type Target struct {
 	RemoteLocales []*phraseapp.Locale
 }
 
-func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	m := map[string]interface{}{}
-	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
-		"file":         &tgt.File,
-		"project_id":   &tgt.ProjectID,
-		"access_token": &tgt.AccessToken,
-		"file_format":  &tgt.FileFormat,
-		"params":       &m,
-	})
-	if err != nil {
-		return err
-	}
-
-	tgt.Params = new(PullParams)
-	if v, found := m["locale_id"]; found {
-		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
-			return err
-		}
-		// Must delete the param from the map as the LocaleDownloadParams type
-		// doesn't support this one and the apply method would return an error.
-		delete(m, "locale_id")
-	}
-	return tgt.Params.ApplyValuesFromMap(m)
-
-}
-
 func (target *Target) CheckPreconditions() error {
 	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
 		return err
 	}
 
-	if strings.Count(target.File, "*") > 0 {
-		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl,
-		)
+	preconditions := []func(*Target) error{
+		containsStars,
+		containsDuplicatePlaceholders,
+		containsAmbiguousLocaleInformation,
+		containsInvalidTagInformation,
 	}
 
+	for _, precondition := range preconditions {
+		if err := precondition(target); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func containsStars(target *Target) error {
+	if strings.Count(target.File, "*") > 0 {
+		return fmt.Errorf("File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl)
+	}
+	return nil
+}
+
+func containsDuplicatePlaceholders(target *Target) error {
 	duplicatedPlaceholders := []string{}
 	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
 		if strings.Count(target.File, name) > 1 {
@@ -77,13 +69,30 @@ func (target *Target) CheckPreconditions() error {
 		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
 	}
 
-	if target.GetLocaleID() == "" && !containsAnyPlaceholders(target.File) {
-		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder!")
+	return nil
+}
+
+func containsAmbiguousLocaleInformation(target *Target) error {
+	if target.GetLocaleID() == "" && !containsLocalePlaceholder(target.File) {
+		// need more locale information
+		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder (<locale_code|locale_name>)")
+	} else if target.GetLocaleID() != "" && containsLocalePlaceholder(target.File) {
+		// ambiguous (too many information)
+		return fmt.Errorf("Found 'locale_id' in params and a (<locale_code|locale_name>) placeholder. Please only select one per file pattern.")
 	}
 
 	return nil
 }
 
+func containsInvalidTagInformation(target *Target) error {
+	if target.GetTag() == "" && containsTagPlaceholder(target.File) {
+		// tag provided but no params
+		return fmt.Errorf("Using <tag> placeholder but no tags were provided. Please specify a 'tag: \"my_tag\"' in the params section.")
+	}
+	return nil
+}
+
+//
 func (target *Target) localeForRemote() (*phraseapp.Locale, error) {
 	for _, locale := range target.RemoteLocales {
 		if locale.ID == target.GetLocaleID() || locale.Name == target.GetLocaleID() {
@@ -153,4 +162,29 @@ func TargetsFromConfig(config phraseapp.Config) (Targets, error) {
 	}
 
 	return validTargets, nil
+}
+
+func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	m := map[string]interface{}{}
+	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
+		"file":         &tgt.File,
+		"project_id":   &tgt.ProjectID,
+		"access_token": &tgt.AccessToken,
+		"file_format":  &tgt.FileFormat,
+		"params":       &m,
+	})
+	if err != nil {
+		return err
+	}
+
+	tgt.Params = new(PullParams)
+	if v, found := m["locale_id"]; found {
+		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
+			return err
+		}
+		// Must delete the param from the map as the LocaleDownloadParams type
+		// doesn't support this one and the apply method would return an error.
+		delete(m, "locale_id")
+	}
+	return tgt.Params.ApplyValuesFromMap(m)
 }

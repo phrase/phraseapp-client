@@ -35,11 +35,13 @@ func (cmd *PullCommand) Run() error {
 	if err != nil {
 		return err
 	}
+
 	for _, target := range targets {
 		val, ok := projectIdToLocales[target.ProjectID]
-		if ok {
-			target.RemoteLocales = val
+		if !ok || len(val) == 0 {
+			return fmt.Errorf("Could not find any locales for project %q", target.ProjectID)
 		}
+		target.RemoteLocales = val
 	}
 
 	for _, target := range targets {
@@ -125,10 +127,7 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
 	files := []*LocaleFile{}
 
-	// a specific locale was requested but the path contains placeholders
-	if target.GetLocaleID() != "" && placeholderRegexp.MatchString(target.File) {
-		return nil, fmt.Errorf("You provided a locale_id and a placeholder in your file. Please only use one.")
-	} else if target.GetLocaleID() != "" {
+	if target.GetLocaleID() != "" {
 		// a specific locale was requested
 		remoteLocale, err := target.localeForRemote()
 		if err != nil {
@@ -142,12 +141,9 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 
 		files = append(files, localeFile)
 
-	} else if placeholderRegexp.MatchString(target.File) {
+	} else if containsLocalePlaceholder(target.File) {
 		// multiple locales were requested
 		for _, remoteLocale := range target.RemoteLocales {
-			if remoteLocale == nil {
-				return nil, fmt.Errorf("Remote locale could not be downloaded correctly!")
-			}
 			localeFile, err := createLocaleFile(target, remoteLocale)
 			if err != nil {
 				return nil, err
@@ -155,10 +151,9 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 
 			files = append(files, localeFile)
 		}
-
 	} else {
-		// no specific id and no placeholder (cannot proceed)
-		return nil, fmt.Errorf("No locale_id in params provided and no placeholder used in the file")
+		// no local files match remote locale
+		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q.", target.ProjectID)
 	}
 
 	return files, nil
