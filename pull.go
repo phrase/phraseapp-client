@@ -67,18 +67,10 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		return err
 	}
 
-	localeIdToFileIsDistinct := (target.GetLocaleID() != "" && len(localeFiles) == 1)
-
 	for _, localeFile := range localeFiles {
 		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
-		}
-
-		if localeIdToFileIsDistinct {
-			if target.GetLocaleID() != "" {
-				localeFile.ID = target.GetLocaleID()
-			}
 		}
 
 		err = target.DownloadAndWriteToFile(client, localeFile)
@@ -131,52 +123,68 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 }
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
-	localeID := target.GetLocaleID()
-
 	files := []*LocaleFile{}
-	for _, remoteLocale := range target.RemoteLocales {
-		if localeID != "" && !(remoteLocale.ID == localeID || remoteLocale.Name == localeID) {
-			continue
-		}
-		err := target.IsValidLocale(remoteLocale, target.File)
+
+	// a specific locale was requested but the path contains placeholders
+	if target.GetLocaleID() != "" && placeholderRegexp.MatchString(target.File) {
+		return nil, fmt.Errorf("You provided a locale_id and a placeholder in your file. Please only use one.")
+	} else if target.GetLocaleID() != "" {
+		// a specific locale was requested
+		remoteLocale, err := target.localeForRemote()
 		if err != nil {
 			return nil, err
 		}
 
-		localeFile := &LocaleFile{
-			Name:       remoteLocale.Name,
-			ID:         remoteLocale.ID,
-			Code:       remoteLocale.Code,
-			Tag:        target.GetTag(),
-			FileFormat: target.GetFormat(),
-			Path:       target.File,
-		}
-
-		absPath, err := target.ReplacePlaceholders(localeFile)
+		localeFile, err := createLocaleFile(target, remoteLocale)
 		if err != nil {
 			return nil, err
 		}
-		localeFile.Path = absPath
 
 		files = append(files, localeFile)
+
+	} else if placeholderRegexp.MatchString(target.File) {
+		// multiple locales were requested
+		for _, remoteLocale := range target.RemoteLocales {
+			if remoteLocale == nil {
+				return nil, fmt.Errorf("Remote locale could not be downloaded correctly!")
+			}
+			localeFile, err := createLocaleFile(target, remoteLocale)
+			if err != nil {
+				return nil, err
+			}
+
+			files = append(files, localeFile)
+		}
+
+	} else {
+		// no specific id and no placeholder (cannot proceed)
+		return nil, fmt.Errorf("No locale_id in params provided and no placeholder used in the file")
 	}
 
 	return files, nil
 }
 
-func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
-	if locale == nil {
-		return fmt.Errorf("Remote locale could not be downloaded correctly!")
+func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFile, error) {
+	localeFile := &LocaleFile{
+		Name:       remoteLocale.Name,
+		ID:         remoteLocale.ID,
+		Code:       remoteLocale.Code,
+		Tag:        target.GetTag(),
+		FileFormat: target.GetFormat(),
+		Path:       target.File,
 	}
 
-	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {
-		return fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
+	absPath, err := resolvedPath(localeFile)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	localeFile.Path = absPath
+	return localeFile, nil
 }
 
-func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error) {
-	absPath, err := filepath.Abs(target.File)
+func resolvedPath(localeFile *LocaleFile) (string, error) {
+	absPath, err := filepath.Abs(localeFile.Path)
 	if err != nil {
 		return "", err
 	}
