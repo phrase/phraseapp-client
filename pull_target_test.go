@@ -96,7 +96,6 @@ func TestPreconditions(t *testing.T) {
 	}
 
 	// tag in placeholder but no tag provided
-	target.File = "some/path/en.yml"
 	target.Params.LocaleID = "en"
 	target.File = "some/<tag>/en.yml"
 	expect = "Using <tag> placeholder but no tags were provided."
