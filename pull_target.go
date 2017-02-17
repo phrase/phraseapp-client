@@ -50,7 +50,7 @@ func (target *Target) CheckPreconditions() error {
 }
 
 func containsStars(target *Target) error {
-	if strings.Count(target.File, "*") > 0 {
+	if strings.Contains(target.File, "*") {
 		return fmt.Errorf("File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl)
 	}
 	return nil
@@ -66,7 +66,7 @@ func containsDuplicatePlaceholders(target *Target) error {
 
 	if len(duplicatedPlaceholders) > 0 {
 		dups := strings.Join(duplicatedPlaceholders, ", ")
-		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
+		return fmt.Errorf("The following placeholders occur more than once (no duplicates allowed):\n%s", dups)
 	}
 
 	return nil

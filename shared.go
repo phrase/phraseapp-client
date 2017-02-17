@@ -10,16 +10,18 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-var Debug bool
+var (
+	Debug             bool
+	separator         = string(os.PathSeparator)
+	placeholderRegexp = regexp.MustCompile("<(locale_name|locale_code|tag)>")
+	localePlaceholder = regexp.MustCompile("<(locale_name|locale_code)>")
+	tagPlaceholder    = regexp.MustCompile("<(tag)>")
+)
 
-var separator = string(os.PathSeparator)
-
-var placeholderRegexp = regexp.MustCompile("<(locale_name|locale_code|tag)>")
-var localePlaceholder = regexp.MustCompile("<(locale_name|locale_code)>")
-var tagPlaceholder = regexp.MustCompile("<(tag)>")
-
-const docsBaseUrl = "https://phraseapp.com/docs"
-const docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
+const (
+	docsBaseUrl   = "https://phraseapp.com/docs"
+	docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
+)
 
 func containsAnyPlaceholders(s string) bool {
 	return (localePlaceholder.MatchString(s) || tagPlaceholder.MatchString(s))

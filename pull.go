@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	ct "github.com/daviddengcn/go-colortext"
+	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -79,7 +79,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
-			pullMessage(localeFile)
+			print.Success("Downloaded %s to %s", localeFile.Message(), localeFile.RelPath())
 		}
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -189,17 +189,4 @@ func resolvedPath(localeFile *LocaleFile) (string, error) {
 	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
 
 	return path, nil
-}
-
-func pullMessage(localeFile *LocaleFile) {
-	local := localeFile.RelPath()
-	remote := localeFile.Message()
-	fmt.Print("Downloaded ")
-	ct.Foreground(ct.Green, true)
-	fmt.Print(remote)
-	ct.ResetColor()
-	fmt.Print(" to ")
-	ct.Foreground(ct.Green, true)
-	fmt.Print(local, "\n")
-	ct.ResetColor()
 }
