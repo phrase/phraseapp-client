@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"gopkg.in/yaml.v2"
 )
 
 type PullCommand struct {
@@ -26,7 +26,7 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	targets, err := TargetsFromConfig(cmd)
+	targets, err := TargetsFromConfig(cmd.Config)
 	if err != nil {
 		return err
 	}
@@ -35,11 +35,13 @@ func (cmd *PullCommand) Run() error {
 	if err != nil {
 		return err
 	}
+
 	for _, target := range targets {
 		val, ok := projectIdToLocales[target.ProjectID]
-		if ok {
-			target.RemoteLocales = val
+		if !ok || len(val) == 0 {
+			return fmt.Errorf("Could not find any locales for project %q", target.ProjectID)
 		}
+		target.RemoteLocales = val
 	}
 
 	for _, target := range targets {
@@ -52,84 +54,9 @@ func (cmd *PullCommand) Run() error {
 	return nil
 }
 
-type Targets []*Target
-
-func (targets Targets) ProjectIds() []string {
-	projectIds := []string{}
-	for _, target := range targets {
-		projectIds = append(projectIds, target.ProjectID)
-	}
-	return projectIds
-}
-
-type Target struct {
-	File          string
-	ProjectID     string
-	AccessToken   string
-	FileFormat    string
-	Params        *PullParams
-	RemoteLocales []*phraseapp.Locale
-}
-
 type PullParams struct {
 	phraseapp.LocaleDownloadParams
 	LocaleID string
-}
-
-func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	m := map[string]interface{}{}
-	err := phraseapp.ParseYAMLToMap(unmarshal, map[string]interface{}{
-		"file":         &tgt.File,
-		"project_id":   &tgt.ProjectID,
-		"access_token": &tgt.AccessToken,
-		"file_format":  &tgt.FileFormat,
-		"params":       &m,
-	})
-	if err != nil {
-		return err
-	}
-
-	tgt.Params = new(PullParams)
-	if v, found := m["locale_id"]; found {
-		if tgt.Params.LocaleID, err = phraseapp.ValidateIsString("params.locale_id", v); err != nil {
-			return err
-		}
-		// Must delete the param from the map as the LocaleDownloadParams type
-		// doesn't support this one and the apply method would return an error.
-		delete(m, "locale_id")
-	}
-	return tgt.Params.ApplyValuesFromMap(m)
-
-}
-
-func (target *Target) CheckPreconditions() error {
-	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
-		return err
-	}
-
-	if strings.Count(target.File, "*") > 0 {
-		return fmt.Errorf(
-			"File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl,
-		)
-	}
-
-	duplicatedPlaceholders := []string{}
-	for _, name := range []string{"<locale_name>", "<locale_code>", "<tag>"} {
-		if strings.Count(target.File, name) > 1 {
-			duplicatedPlaceholders = append(duplicatedPlaceholders, name)
-		}
-	}
-
-	if len(duplicatedPlaceholders) > 0 {
-		dups := strings.Join(duplicatedPlaceholders, ", ")
-		return fmt.Errorf(fmt.Sprintf("%s can only occur once in a file pattern!", dups))
-	}
-
-	if target.GetLocaleID() == "" && !containsAnyPlaceholders(target.File) {
-		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder!")
-	}
-
-	return nil
 }
 
 func (target *Target) Pull(client *phraseapp.Client) error {
@@ -142,25 +69,17 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 		return err
 	}
 
-	localeIdToFileIsDistinct := (target.GetLocaleID() != "" && len(localeFiles) == 1)
-
 	for _, localeFile := range localeFiles {
 		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
 		}
 
-		if localeIdToFileIsDistinct {
-			if target.GetLocaleID() != "" {
-				localeFile.ID = target.GetLocaleID()
-			}
-		}
-
 		err = target.DownloadAndWriteToFile(client, localeFile)
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
-			sharedMessage("pull", localeFile)
+			print.Success("Downloaded %s to %s", localeFile.Message(), localeFile.RelPath())
 		}
 		if Debug {
 			fmt.Fprintln(os.Stderr, strings.Repeat("-", 10))
@@ -206,52 +125,61 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 }
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
-	localeID := target.GetLocaleID()
-
 	files := []*LocaleFile{}
-	for _, remoteLocale := range target.RemoteLocales {
-		if localeID != "" && !(remoteLocale.ID == localeID || remoteLocale.Name == localeID) {
-			continue
-		}
-		err := target.IsValidLocale(remoteLocale, target.File)
+
+	if target.GetLocaleID() != "" {
+		// a specific locale was requested
+		remoteLocale, err := target.localeForRemote()
 		if err != nil {
 			return nil, err
 		}
 
-		localeFile := &LocaleFile{
-			Name:       remoteLocale.Name,
-			ID:         remoteLocale.ID,
-			Code:       remoteLocale.Code,
-			Tag:        target.GetTag(),
-			FileFormat: target.GetFormat(),
-			Path:       target.File,
-		}
-
-		absPath, err := target.ReplacePlaceholders(localeFile)
+		localeFile, err := createLocaleFile(target, remoteLocale)
 		if err != nil {
 			return nil, err
 		}
-		localeFile.Path = absPath
 
 		files = append(files, localeFile)
+
+	} else if containsLocalePlaceholder(target.File) {
+		// multiple locales were requested
+		for _, remoteLocale := range target.RemoteLocales {
+			localeFile, err := createLocaleFile(target, remoteLocale)
+			if err != nil {
+				return nil, err
+			}
+
+			files = append(files, localeFile)
+		}
+	} else {
+		// no local files match remote locale
+		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q.", target.ProjectID)
 	}
 
 	return files, nil
 }
 
-func (target *Target) IsValidLocale(locale *phraseapp.Locale, localPath string) error {
-	if locale == nil {
-		return fmt.Errorf("Remote locale could not be downloaded correctly!")
+func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFile, error) {
+	localeFile := &LocaleFile{
+		Name:       remoteLocale.Name,
+		ID:         remoteLocale.ID,
+		Code:       remoteLocale.Code,
+		Tag:        target.GetTag(),
+		FileFormat: target.GetFormat(),
+		Path:       target.File,
 	}
 
-	if strings.Contains(localPath, "<locale_code>") && locale.Code == "" {
-		return fmt.Errorf("Locale code is not set for Locale with ID: %s but locale_code is used in file name", locale.ID)
+	absPath, err := resolvedPath(localeFile)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	localeFile.Path = absPath
+	return localeFile, nil
 }
 
-func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error) {
-	absPath, err := filepath.Abs(target.File)
+func resolvedPath(localeFile *LocaleFile) (string, error) {
+	absPath, err := filepath.Abs(localeFile.Path)
 	if err != nil {
 		return "", err
 	}
@@ -261,88 +189,4 @@ func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error
 	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
 
 	return path, nil
-}
-
-func (t *Target) GetFormat() string {
-	if t.Params != nil && t.Params.FileFormat != nil {
-		return *t.Params.FileFormat
-	}
-	if t.FileFormat != "" {
-		return t.FileFormat
-	}
-	return ""
-}
-
-func (t *Target) GetLocaleID() string {
-	if t.Params != nil {
-		return t.Params.LocaleID
-	}
-	return ""
-}
-
-func (t *Target) GetTag() string {
-	if t.Params != nil && t.Params.Tag != nil {
-		return *t.Params.Tag
-	}
-	return ""
-}
-
-func TargetsFromConfig(cmd *PullCommand) (Targets, error) {
-	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
-		return nil, fmt.Errorf("no targets for download specified")
-	}
-
-	tmp := struct {
-		Targets Targets
-	}{}
-	err := yaml.Unmarshal(cmd.Config.Targets, &tmp)
-	if err != nil {
-		return nil, err
-	}
-	tgts := tmp.Targets
-
-	token := cmd.Credentials.Token
-	projectId := cmd.Config.DefaultProjectID
-	fileFormat := cmd.Config.DefaultFileFormat
-
-	validTargets := []*Target{}
-	for _, target := range tgts {
-		if target == nil {
-			continue
-		}
-		if target.ProjectID == "" {
-			target.ProjectID = projectId
-		}
-		if target.AccessToken == "" {
-			target.AccessToken = token
-		}
-		if target.FileFormat == "" {
-			target.FileFormat = fileFormat
-		}
-		validTargets = append(validTargets, target)
-	}
-
-	if len(validTargets) <= 0 {
-		return nil, fmt.Errorf("no targets could be identified! Refine the targets list in your config")
-	}
-
-	return validTargets, nil
-}
-
-func createFile(path string) error {
-	err := Exists(path)
-	if err != nil {
-		absDir := filepath.Dir(path)
-		err := Exists(absDir)
-		if err != nil {
-			os.MkdirAll(absDir, 0700)
-		}
-
-		f, err := os.Create(path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-	}
-	return nil
 }

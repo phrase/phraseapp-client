@@ -28,7 +28,12 @@ func handleResponseStatus(resp *http.Response, expectedStatus int) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("%d - %s\nYou are not authorized to perform the requested action on the requested resource. Check if your provided access_token has the correct scope.%s", status, http.StatusText(status), further())
 	case http.StatusNotFound:
-		return fmt.Errorf("%d - Resource Not Found\nThe resource you requested or referenced resources you required do either not exist or you do not have the authorization to request this resource.", status)
+		var err *ErrorResponse
+		decodeErr := json.NewDecoder(resp.Body).Decode(&err)
+		if decodeErr != nil {
+			return fmt.Errorf("%d - Resource Not Found\nThe resource you requested or referenced resources you required do either not exist or you do not have the authorization to request this resource.", status)
+		}
+		return err
 	case 422:
 		e := new(ValidationErrorResponse)
 		err := json.NewDecoder(resp.Body).Decode(&e)

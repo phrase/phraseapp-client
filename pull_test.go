@@ -6,69 +6,7 @@ import (
 	"testing"
 )
 
-func getBaseTarget() *Target {
-	target := &Target{
-		File:          "./tests/<locale_code>.yml",
-		ProjectID:     "project-id",
-		AccessToken:   "access-token",
-		FileFormat:    "yml",
-		Params:        new(PullParams),
-		RemoteLocales: getBaseLocales(),
-	}
-	return target
-}
-
-func TestPullPreconditions(t *testing.T) {
-	target := getBaseTarget()
-	for _, file := range []string{
-		"",
-		"no_extension",
-		"./<locale_code>/<locale_code>.yml",
-		"./**/**/en.yml",
-		"./**/*/*/en.yml",
-		"./**/*/en.yml",
-		"./en.yml",
-		"./**/*/<locale_name>/<locale_code>/<tag>.yml",
-	} {
-		target.File = file
-		if err := target.CheckPreconditions(); err == nil {
-			t.Errorf("CheckPrecondition did not fail for pattern: '%s'", file)
-		}
-	}
-
-	for _, file := range []string{
-		"./<tag>/<locale_code>.yml",
-		"./<locale_name>/<locale_code>/<tag>.yml",
-	} {
-		target.File = file
-		if err := target.CheckPreconditions(); err != nil {
-			t.Errorf("CheckPrecondition should not fail with: %s", err.Error())
-		}
-	}
-}
-
-func TestTargetFields(t *testing.T) {
-	target := getBaseTarget()
-
-	if target.File != "./tests/<locale_code>.yml" {
-		t.Errorf("Expected File to be %s and not %s", "./tests/<locale_code>.yml", target.File)
-	}
-
-	if target.AccessToken != "access-token" {
-		t.Errorf("Expected AccesToken to be %s and not %s", "access-token", target.AccessToken)
-	}
-
-	if target.ProjectID != "project-id" {
-		t.Errorf("Expected ProjectID to be %s and not %s", "project-id", target.ProjectID)
-	}
-
-	if target.FileFormat != "yml" {
-		t.Errorf("Expected FileFormat to be %s and not %s", "yml", target.FileFormat)
-	}
-
-}
-
-func TestTargetLocaleFiles(t *testing.T) {
+func TestPullLocaleFiles(t *testing.T) {
 	target := getBaseTarget()
 	localeFiles, err := target.LocaleFiles()
 
@@ -102,7 +40,7 @@ func TestTargetLocaleFiles(t *testing.T) {
 	}
 }
 
-func TestReplacePlaceholders(t *testing.T) {
+func TestResolvedPath(t *testing.T) {
 	target := getBaseTarget()
 	target.File = "./<locale_code>/<tag>/<locale_name>.yml"
 	localeFile := &LocaleFile{
@@ -110,9 +48,9 @@ func TestReplacePlaceholders(t *testing.T) {
 		Code: "en",
 		ID:   "en-locale-id",
 		Tag:  "abc",
-		Path: "",
+		Path: target.File,
 	}
-	newPath, err := target.ReplacePlaceholders(localeFile)
+	newPath, err := resolvedPath(localeFile)
 	if err != nil {
 		t.Errorf(err.Error())
 		t.Fail()

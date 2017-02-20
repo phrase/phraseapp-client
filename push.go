@@ -32,7 +32,7 @@ func (cmd *PushCommand) Run() error {
 		return err
 	}
 
-	sources, err := SourcesFromConfig(cmd)
+	sources, err := SourcesFromConfig(cmd.Config)
 	if err != nil {
 		return err
 	}

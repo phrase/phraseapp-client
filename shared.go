@@ -7,21 +7,32 @@ import (
 	"regexp"
 	"strings"
 
-	ct "github.com/daviddengcn/go-colortext"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-var Debug bool
+var (
+	Debug             bool
+	separator         = string(os.PathSeparator)
+	placeholderRegexp = regexp.MustCompile("<(locale_name|locale_code|tag)>")
+	localePlaceholder = regexp.MustCompile("<(locale_name|locale_code)>")
+	tagPlaceholder    = regexp.MustCompile("<(tag)>")
+)
 
-var separator = string(os.PathSeparator)
-
-var placeholderRegexp = regexp.MustCompile("<(locale_name|tag|locale_code)>")
-
-const docsBaseUrl = "https://phraseapp.com/docs"
-const docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
+const (
+	docsBaseUrl   = "https://phraseapp.com/docs"
+	docsConfigUrl = docsBaseUrl + "/developers/cli/configuration"
+)
 
 func containsAnyPlaceholders(s string) bool {
-	return placeholderRegexp.MatchString(s)
+	return (localePlaceholder.MatchString(s) || tagPlaceholder.MatchString(s))
+}
+
+func containsLocalePlaceholder(s string) bool {
+	return localePlaceholder.MatchString(s)
+}
+
+func containsTagPlaceholder(s string) bool {
+	return tagPlaceholder.MatchString(s)
 }
 
 func docsFormatsUrl(formatName string) string {
@@ -30,9 +41,7 @@ func docsFormatsUrl(formatName string) string {
 
 func ValidPath(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
-		return fmt.Errorf(
-			"File patterns may not be empty!\nFor more information see %s", docsConfigUrl,
-		)
+		return fmt.Errorf("File patterns may not be empty!\nFor more information see %s", docsConfigUrl)
 	}
 
 	fileExtension := strings.Trim(filepath.Ext(file), ".")
@@ -67,6 +76,7 @@ func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales)
 			if err != nil {
 				return nil, err
 			}
+
 			projectIdToLocales[pid] = remoteLocales
 		}
 	}
@@ -118,26 +128,22 @@ func isDir(path string) bool {
 	return stat.IsDir()
 }
 
-func sharedMessage(method string, localeFile *LocaleFile) {
-	local := localeFile.RelPath()
+func createFile(path string) error {
+	err := Exists(path)
+	if err != nil {
+		absDir := filepath.Dir(path)
+		err := Exists(absDir)
+		if err != nil {
+			os.MkdirAll(absDir, 0700)
+		}
 
-	if method == "pull" {
-		remote := localeFile.Message()
-		fmt.Print("Downloaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(remote)
-		ct.ResetColor()
-		fmt.Print(" to ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local, "\n")
-		ct.ResetColor()
-	} else {
-		fmt.Print("Uploaded ")
-		ct.Foreground(ct.Green, true)
-		fmt.Print(local)
-		ct.ResetColor()
-		fmt.Println(" successfully.")
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 	}
+	return nil
 }
 
 func isNotFound(err error) bool {

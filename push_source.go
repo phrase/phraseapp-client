@@ -9,23 +9,22 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
-	if cmd.Config.Sources == nil || len(cmd.Config.Sources) == 0 {
+func SourcesFromConfig(config phraseapp.Config) (Sources, error) {
+	if config.Sources == nil || len(config.Sources) == 0 {
 		return nil, fmt.Errorf("no sources for upload specified")
 	}
 
 	tmp := struct {
 		Sources Sources
 	}{}
-	err := yaml.Unmarshal(cmd.Config.Sources, &tmp)
+	err := yaml.Unmarshal(config.Sources, &tmp)
 	if err != nil {
 		return nil, err
 	}
 	srcs := tmp.Sources
 
-	token := cmd.Credentials.Token
-	projectId := cmd.Config.DefaultProjectID
-	fileFormat := cmd.Config.DefaultFileFormat
+	projectId := config.DefaultProjectID
+	fileFormat := config.DefaultFileFormat
 
 	validSources := []*Source{}
 	for _, source := range srcs {
@@ -34,9 +33,6 @@ func SourcesFromConfig(cmd *PushCommand) (Sources, error) {
 		}
 		if source.ProjectID == "" {
 			source.ProjectID = projectId
-		}
-		if source.AccessToken == "" {
-			source.AccessToken = token
 		}
 		if source.Params == nil {
 			source.Params = new(phraseapp.UploadParams)
