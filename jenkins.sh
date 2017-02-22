@@ -4,7 +4,7 @@ set -e
 export BUILD_DIR=$(dirname $0)
 pushd $BUILD_DIR > /dev/null
 
-export GOVERSION=${GOVERSION:-1.7.1}
+export GOVERSION=${GOVERSION:-1.8}
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 export REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
 export LIBRARY_REVISION=$(cat Godeps/Godeps.json | grep github.com/phrase/phraseapp-go -A 1 | tail -n 1 | cut -d '"' -f 4)
