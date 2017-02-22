@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+func IsErrNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(ErrNotFound)
+	return ok
+}
+
+type ErrNotFound struct {
+	Message string
+}
+
+func (e ErrNotFound) Error() string {
+	return e.Message
+}
+
 type ErrorResponse struct {
 	Message string
 }

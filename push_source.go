@@ -226,7 +226,7 @@ func (source *Source) getLocaleIfExist(client *phraseapp.Client, localeFile *Loc
 	}
 
 	localeDetail, err := client.LocaleShow(source.ProjectID, identifier)
-	if isNotFound(err) {
+	if phraseapp.IsErrNotFound(err) {
 		return nil, false, nil
 	} else if err != nil {
 		return nil, false, err
