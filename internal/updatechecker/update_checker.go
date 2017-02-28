@@ -99,7 +99,9 @@ func (uc *Checker) getLatestVersionFromURL() (*semver.Version, error) {
 		return nil, err
 	}
 
-	transport := http.Transport{}
+	transport := http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+	}
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
 		return nil, err
