@@ -29,15 +29,14 @@ func getBaseLocales() []*phraseapp.Locale {
 	}
 }
 
-type ByPath []*LocaleFile
-
-func (a ByPath) Len() int           { return len(a) }
-func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByPath) Less(i, j int) bool { return a[i].Path < a[j].Path }
+func sortByPath(files LocaleFiles) {
+	sort.Slice(files, func(i, j int) bool { return strings.Compare(files[i].Path, files[j].Path) < 0 })
+}
 
 func compareLocaleFiles(actualFiles LocaleFiles, expectedFiles LocaleFiles) error {
-	sort.Sort(ByPath(actualFiles))
-	sort.Sort(ByPath(expectedFiles))
+	sortByPath(actualFiles)
+	sortByPath(expectedFiles)
+
 	for idx, actualFile := range actualFiles {
 		expected := expectedFiles[idx]
 		actual := actualFile
@@ -183,7 +182,7 @@ func matchDefaultExpectations(t *testing.T, got, exp map[string]string) {
 		delete(got, k)
 	}
 
-	for k, _ := range got {
+	for k := range got {
 		t.Errorf("%s: is present, but wasn't expected", k)
 	}
 }
