@@ -3,7 +3,7 @@ set -e
 
 export BUILD_DIR=$(realpath $(dirname $0)/..)
 pushd $BUILD_DIR > /dev/null
-export GOVERSION=${GOVERSION:-1.7.1}
+export GOVERSION=${GOVERSION:-1.8}
 export REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
 export LIBRARY_REVISION=$(cat Godeps/Godeps.json | grep github.com/phrase/phraseapp-go -A 1 | tail -n 1 | cut -d '"' -f 4)
 export PROJ_DIR=/go/src/github.com/phrase/phraseapp-client
