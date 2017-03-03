@@ -110,6 +110,16 @@ func TestUpdateChecker_GetLatestVersion_withInvalidCache(t *testing.T) {
 	}
 }
 
+func TestUpdateChecker_GetLatestVersion_withError(t *testing.T) {
+	tuc, _, cleanup := newTestUpateChecker("", "", "", t)
+	defer cleanup()
+
+	_, err := tuc.getLatestVersion()
+	if err == nil {
+		t.Errorf("expected an error, but got nil")
+	}
+}
+
 func TestUpdateChecker_CheckForUpdate_withUpdateAvailable(t *testing.T) {
 	tuc, out, cleanup := newTestUpateChecker("1.1.3", "2.0.0", "", t)
 	defer cleanup()
