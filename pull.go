@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/paths"
+	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
@@ -141,7 +143,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 
 		files = append(files, localeFile)
 
-	} else if containsLocalePlaceholder(target.File) {
+	} else if placeholders.ContainsLocalePlaceholder(target.File) {
 		// multiple locales were requested
 		for _, remoteLocale := range target.RemoteLocales {
 			localeFile, err := createLocaleFile(target, remoteLocale)
@@ -169,7 +171,7 @@ func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFi
 		Path:       target.File,
 	}
 
-	absPath, err := resolvedPath(localeFile)
+	absPath, err := target.ReplacePlaceholders(localeFile)
 	if err != nil {
 		return nil, err
 	}
@@ -178,15 +180,21 @@ func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFi
 	return localeFile, nil
 }
 
-func resolvedPath(localeFile *LocaleFile) (string, error) {
-	absPath, err := filepath.Abs(localeFile.Path)
+func createFile(path string) error {
+	err := paths.Exists(path)
 	if err != nil {
-		return "", err
+		absDir := filepath.Dir(path)
+		err := paths.Exists(absDir)
+		if err != nil {
+			os.MkdirAll(absDir, 0700)
+		}
+
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 	}
 
-	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
-	path = strings.Replace(path, "<locale_code>", localeFile.Code, -1)
-	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
-
-	return path, nil
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -96,7 +97,7 @@ func (source *Source) GetFileFormat() string {
 }
 
 func (source *Source) CheckPreconditions() error {
-	if err := ValidPath(source.File, source.FileFormat, ""); err != nil {
+	if err := paths.Validate(source.File, source.FileFormat, ""); err != nil {
 		return err
 	}
 

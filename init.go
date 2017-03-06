@@ -7,8 +7,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/prompt"
+	"github.com/phrase/phraseapp-client/internal/shared"
 	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-go/phraseapp"
 	"gopkg.in/yaml.v2"
@@ -285,7 +287,7 @@ func (cmd *InitCommand) selectFormat() error {
 
 func (cmd *InitCommand) configureSources() error {
 	fmt.Println("Enter the path to the language file you want to upload to PhraseApp.")
-	fmt.Printf("For documentation, see %s#push\n", docsConfigUrl)
+	fmt.Printf("For documentation, see %s#push\n", shared.DocsConfigUrl)
 
 	pushPath := ""
 	for {
@@ -294,7 +296,7 @@ func (cmd *InitCommand) configureSources() error {
 			return err
 		}
 
-		err = ValidPath(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
+		err = paths.Validate(pushPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
 			print.Failure(err.Error())
 		} else {
@@ -316,7 +318,7 @@ func (cmd *InitCommand) configureSources() error {
 
 func (cmd *InitCommand) configureTargets() error {
 	fmt.Println("Enter the path to which to download language files from PhraseApp.")
-	fmt.Printf("For documentation, see %s#pull\n", docsConfigUrl)
+	fmt.Printf("For documentation, see %s#pull\n", shared.DocsConfigUrl)
 
 	pullPath := ""
 	for {
@@ -325,7 +327,7 @@ func (cmd *InitCommand) configureTargets() error {
 			return err
 		}
 
-		err = ValidPath(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
+		err = paths.Validate(pullPath, cmd.FileFormat.ApiName, cmd.FileFormat.Extension)
 		if err != nil {
 			print.Failure(err.Error())
 		} else {
@@ -368,7 +370,7 @@ func (cmd *InitCommand) writeConfig() error {
 	fmt.Println()
 	fmt.Println(string(yamlBytes))
 
-	print.Success("For advanced configuration options, take a look at the documentation: " + docsConfigUrl)
+	print.Success("For advanced configuration options, take a look at the documentation: " + shared.DocsConfigUrl)
 	print.Success("You can now use the push & pull commands in your workflow:")
 	fmt.Println()
 	fmt.Println("$ phraseapp push")

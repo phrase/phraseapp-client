@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/phrase/phraseapp-client/internal/paths"
+)
 
 type Patterns []*Pattern
 
@@ -338,8 +342,8 @@ func (patterns Patterns) TestPatterns(t *testing.T) {
 }
 
 func (pattern *Pattern) TestPattern(t *testing.T, idx int) {
-	tokens := splitPathToTokens(pattern.File)
-	pathTokens := splitPathToTokens(pattern.TestPath)
+	tokens := paths.Segments(pattern.File)
+	pathTokens := paths.Segments(pattern.TestPath)
 
 	localeFile := extractParamsFromPathTokens(tokens, pathTokens)
 

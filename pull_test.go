@@ -50,7 +50,7 @@ func TestResolvedPath(t *testing.T) {
 		Tag:  "abc",
 		Path: target.File,
 	}
-	newPath, err := resolvedPath(localeFile)
+	newPath, err := target.ReplacePlaceholders(localeFile)
 	if err != nil {
 		t.Errorf(err.Error())
 		t.Fail()

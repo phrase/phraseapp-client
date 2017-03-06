@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/phrase/phraseapp-client/internal/paths"
+	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -163,27 +165,6 @@ func TestGetRemoteLocaleForLocaleFile(t *testing.T) {
 	}
 }
 
-func TestSplitString(t *testing.T) {
-	tt := []struct {
-		str string
-		cut string
-		exp []string
-	}{
-		{"a/b/c/d", "/\\", []string{"a", "b", "c", "d"}},
-		{"a/b\\c/d", "/\\", []string{"a", "b", "c", "d"}},
-		{"/a/b/c/d/", "/\\", []string{"", "a", "b", "c", "d"}},
-		{"a/b/日\\本/語/d", "/\\", []string{"a", "b", "日", "本", "語", "d"}},
-		{"a/b/日\\c本c/語/d", "/\\本", []string{"a", "b", "日", "c", "c", "語", "d"}},
-	}
-
-	for i := range tt {
-		got := splitString(tt[i].str, tt[i].cut)
-		if len(got) != len(tt[i].exp) {
-			t.Errorf("expected %d elements for %q, got %d", len(tt[i].exp), tt[i].str, len(got))
-		}
-	}
-}
-
 func TestCheckPreconditions(t *testing.T) {
 	tt := []struct {
 		pattern    string
@@ -273,7 +254,7 @@ func setupLocalesFiles(t *testing.T) (dir string) {
 	}
 	files = append(files, []string{
 		"config/locales/application.en.yml",
-		"config/locales/atrribtues/course.en.yml ",
+		"config/locales/attributes/course.en.yml",
 		"config/locales/devise.en.yml",
 		"config/locales/landing.en.yml",
 		"config/locales/layouts.en.yml",
@@ -304,7 +285,7 @@ func TestSystemFiles(t *testing.T) {
 		{"a/*/**/c/d.txt", []string{"a/b/c/d.txt", "a/y/c/d.txt"}},
 		{"./config/locales/**/*.en.yml", []string{
 			"config/locales/application.en.yml",
-			"config/locales/atrribtues/course.en.yml ",
+			"config/locales/attributes/course.en.yml",
 			"config/locales/devise.en.yml",
 			"config/locales/landing.en.yml",
 			"config/locales/layouts.en.yml",
@@ -315,7 +296,7 @@ func TestSystemFiles(t *testing.T) {
 		src := new(Source)
 		src.File = tti.pattern
 
-		matches, err := src.SystemFiles()
+		matches, err := paths.Glob(placeholders.ToGlobbingPattern(src.File))
 		if err != nil {
 			t.Errorf("%s: didn't expect an error, got: %s", src.File, err)
 			continue

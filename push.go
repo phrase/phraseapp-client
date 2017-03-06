@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/jpillora/backoff"
+	"github.com/phrase/phraseapp-client/internal/paths"
+	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-client/internal/stringz"
@@ -42,7 +42,7 @@ func (cmd *PushCommand) Run() error {
 		return err
 	}
 
-	formatMap, err := GetFormats(client)
+	formatMap, err := formatsByApiName(client)
 	if err != nil {
 		return fmt.Errorf("Error retrieving format list from PhraseApp: %s", err)
 	}
@@ -141,130 +141,30 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 	return nil
 }
 
-func (source *Source) SystemFiles() ([]string, error) {
-	pattern := placeholderRegexp.ReplaceAllString(source.File, "*")
-	parts := strings.SplitN(pattern, "**", 2)
-	var pre, post string
-
-	pre = parts[0]
-	// strip trailing path separators
-	for len(pre) > 0 && os.IsPathSeparator(pre[len(pre)-1]) {
-		pre = pre[0 : len(pre)-1]
-	}
-
-	if len(parts) == 2 {
-		post = parts[1]
-		for len(post) > 0 && os.IsPathSeparator(post[0]) {
-			post = post[1:]
-		}
-	}
-
-	candidates, err := filepath.Glob(pre)
+func formatsByApiName(client *phraseapp.Client) (map[string]*phraseapp.Format, error) {
+	formats, err := client.FormatsList(1, 25)
 	if err != nil {
 		return nil, err
 	}
-
-	prefix := "." + string(os.PathSeparator)
-	if strings.HasPrefix(pre, prefix) {
-		pre = strings.TrimLeft(pre, prefix)
+	formatMap := map[string]*phraseapp.Format{}
+	for _, format := range formats {
+		formatMap[format.ApiName] = format
 	}
-
-	var matches []string
-	if post != "" {
-		tokens := splitPathIntoSegments(strings.Replace(post, "*", ".*", -1))
-		tokenCountPre := len(splitPathIntoSegments(pre))
-
-		for _, cand := range candidates {
-			if !isDir(cand) {
-				continue
-			}
-
-			cands, err := findFilesInPath(cand)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, c := range cands {
-				if validateFileCandidate(tokens, tokenCountPre, c) {
-					matches = append(matches, c)
-				}
-			}
-		}
-	} else {
-		matches = candidates
-	}
-
-	return matches, nil
-}
-
-func validateFileCandidate(tokens []string, ignoreTokenCnt int, cand string) bool {
-	candTokens := splitPathIntoSegments(cand)
-	candTokenCnt := len(candTokens)
-
-	if candTokenCnt < (len(tokens) + ignoreTokenCnt) {
-		return false
-	}
-
-	candTokens = candTokens[ignoreTokenCnt:]
-
-	for i := 1; i <= len(tokens); i++ {
-		expT, gotT := tokens[len(tokens)-i], candTokens[len(candTokens)-i]
-		switch {
-		case strings.Contains(expT, "*"):
-			matched, err := regexp.MatchString(expT, gotT)
-			if err != nil {
-				panic(err)
-			}
-			if !matched {
-				return false
-			}
-		case expT != gotT:
-			return false
-		}
-	}
-
-	return true
-}
-
-func splitPathIntoSegments(path string) []string {
-	segments := []string{}
-	start := 0
-	for i := range path {
-		if os.IsPathSeparator(path[i]) {
-			segments = append(segments, path[start:i])
-			start = i + 1
-		}
-	}
-	return append(segments, path[start:])
-}
-
-func findFilesInPath(root string) ([]string, error) {
-	files := []string{}
-	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !f.Mode().IsDir() {
-			files = append(files, path)
-		}
-		return nil
-	})
-
-	return files, err
+	return formatMap, nil
 }
 
 // Return all locale files from disk that match the source pattern.
 func (source *Source) LocaleFiles() (LocaleFiles, error) {
-	filePaths, err := source.SystemFiles()
+	filePaths, err := paths.Glob(placeholders.ToGlobbingPattern(source.File))
 	if err != nil {
 		return nil, err
 	}
 
-	patternTokens := splitPathToTokens(source.File)
+	patternTokens := paths.Segments(source.File)
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		pathTokens := splitPathToTokens(path)
+		pathTokens := paths.Segments(path)
 		localeFile := extractParamsFromPathTokens(patternTokens, pathTokens)
 
 		absolutePath, err := filepath.Abs(path)
@@ -361,47 +261,6 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	}
 }
 
-func splitString(s string, set string) []string {
-	if len(set) == 1 {
-		return strings.Split(s, set)
-	}
-
-	slist := []string{}
-	charSet := map[rune]bool{}
-
-	for _, r := range set {
-		charSet[r] = true
-	}
-
-	start := 0
-	for i, r := range s {
-		if _, found := charSet[r]; found {
-			slist = append(slist, s[start:i])
-			start = i + utf8.RuneLen(r)
-		}
-	}
-	if start < len(s) {
-		slist = append(slist, s[start:])
-	}
-
-	return slist
-}
-
-func splitPathToTokens(s string) []string {
-	tokens := []string{}
-	splitSet := separator
-	if separator == "\\" {
-		splitSet = "\\/"
-	}
-	for _, token := range splitString(s, splitSet) {
-		if token == "." || token == "" {
-			continue
-		}
-		tokens = append(tokens, token)
-	}
-	return tokens
-}
-
 func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile {
 	localeFile := new(LocaleFile)
 
@@ -443,54 +302,20 @@ func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile
 }
 
 func (localeFile *LocaleFile) extractParamFromPathToken(patternToken, pathToken string) {
-	groups := placeholderRegexp.FindAllString(patternToken, -1)
-	if len(groups) <= 0 {
-		return
-	}
-
-	match := strings.Replace(patternToken, ".", "[.]", -1)
-	if strings.Contains(match, "*") {
-		match = strings.Replace(match, "*", ".*", -1)
-	}
-
-	for _, group := range groups {
-		replacer := fmt.Sprintf("(?P%s.+)", group)
-		match = strings.Replace(match, group, replacer, 1)
-	}
-
-	if Debug {
-		fmt.Println("  expanded: ", match)
-	}
-
-	if match == "" {
-		return
-	}
-
-	tmpRegexp, err := regexp.Compile(match)
+	params, err := placeholders.Resolve(pathToken, patternToken)
 	if err != nil {
+		print.Error(err)
 		return
 	}
 
-	namedMatches := tmpRegexp.SubexpNames()
-	subMatches := tmpRegexp.FindStringSubmatch(pathToken)
-
-	if Debug {
-		fmt.Println("  namedMatches: ", namedMatches)
-		fmt.Println("  subMatches: ", subMatches)
-		fmt.Println()
-	}
-
-	for i, subMatch := range subMatches {
-		value := strings.Trim(subMatch, separator)
-		switch namedMatches[i] {
+	for placeholder, value := range params {
+		switch placeholder {
 		case "locale_code":
 			localeFile.Code = value
 		case "locale_name":
 			localeFile.Name = value
 		case "tag":
 			localeFile.Tag = value
-		default:
-			// ignore
 		}
 	}
 }

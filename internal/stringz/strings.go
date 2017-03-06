@@ -22,3 +22,18 @@ func ContainsAnySub(s string, subs []string) bool {
 
 	return false
 }
+
+// RemoveDuplicates returns s with all duplicate elements removed.
+func RemoveDuplicates(s []string) []string {
+	seen := map[string]bool{}
+	clean := []string{}
+
+	for _, elem := range s {
+		if !seen[elem] {
+			seen[elem] = true
+			clean = append(clean, elem)
+		}
+	}
+
+	return clean
+}

@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v2"
-
+	"github.com/phrase/phraseapp-client/internal/paths"
+	"github.com/phrase/phraseapp-client/internal/placeholders"
+	"github.com/phrase/phraseapp-client/internal/shared"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"gopkg.in/yaml.v2"
 )
 
 type Targets []*Target
@@ -29,7 +32,7 @@ type Target struct {
 }
 
 func (target *Target) CheckPreconditions() error {
-	if err := ValidPath(target.File, target.FileFormat, ""); err != nil {
+	if err := paths.Validate(target.File, target.FileFormat, ""); err != nil {
 		return err
 	}
 
@@ -51,7 +54,7 @@ func (target *Target) CheckPreconditions() error {
 
 func containsStars(target *Target) error {
 	if strings.Contains(target.File, "*") {
-		return fmt.Errorf("File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", docsConfigUrl)
+		return fmt.Errorf("File pattern for 'pull' cannot include any 'stars' *. Please specify direct and valid paths with file name!\n %s#targets", shared.DocsConfigUrl)
 	}
 	return nil
 }
@@ -73,10 +76,10 @@ func containsDuplicatePlaceholders(target *Target) error {
 }
 
 func containsAmbiguousLocaleInformation(target *Target) error {
-	if target.GetLocaleID() == "" && !containsLocalePlaceholder(target.File) {
+	if target.GetLocaleID() == "" && !placeholders.ContainsLocalePlaceholder(target.File) {
 		// need more locale information
 		return fmt.Errorf("Could not find any locale information. Please specify a 'locale_id' in your params or provide a placeholder (<locale_code|locale_name>)")
-	} else if target.GetLocaleID() != "" && containsLocalePlaceholder(target.File) {
+	} else if target.GetLocaleID() != "" && placeholders.ContainsLocalePlaceholder(target.File) {
 		// ambiguous (too many information)
 		return fmt.Errorf("Found 'locale_id' in params and a (<locale_code|locale_name>) placeholder. Please only select one per file pattern.")
 	}
@@ -85,7 +88,7 @@ func containsAmbiguousLocaleInformation(target *Target) error {
 }
 
 func containsInvalidTagInformation(target *Target) error {
-	if target.GetTag() == "" && containsTagPlaceholder(target.File) {
+	if target.GetTag() == "" && placeholders.ContainsTagPlaceholder(target.File) {
 		// tag provided but no params
 		return fmt.Errorf("Using <tag> placeholder but no tags were provided. Please specify a 'tag: \"my_tag\"' in the params section.")
 	}
@@ -100,6 +103,19 @@ func (target *Target) localeForRemote() (*phraseapp.Locale, error) {
 		}
 	}
 	return nil, fmt.Errorf("Provided locale_id %q but did not match any remote locales in project %q", target.GetLocaleID(), target.ProjectID)
+}
+
+func (target *Target) ReplacePlaceholders(localeFile *LocaleFile) (string, error) {
+	absPath, err := filepath.Abs(target.File)
+	if err != nil {
+		return "", err
+	}
+
+	path := strings.Replace(absPath, "<locale_name>", localeFile.Name, -1)
+	path = strings.Replace(path, "<locale_code>", localeFile.Code, -1)
+	path = strings.Replace(path, "<tag>", localeFile.Tag, -1)
+
+	return path, nil
 }
 
 func (t *Target) GetFormat() string {
@@ -186,5 +202,6 @@ func (tgt *Target) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		// doesn't support this one and the apply method would return an error.
 		delete(m, "locale_id")
 	}
+
 	return tgt.Params.ApplyValuesFromMap(m)
 }
