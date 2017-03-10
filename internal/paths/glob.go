@@ -19,6 +19,35 @@ func dirGlobOperatorUseValid(pattern string) bool {
 	return !containsOperator || (operatorIsOwnPathSegment || startsWithOperator)
 }
 
+// SplitAtDirGlobOperator splits pattern at the '**' operator, if it's contained, then splits path accordingly,
+// dropping the segments that the '**' operator would have matched against. The returned paths will match the returned patterns.
+// An error is returned if the '**' operator is incorrectly used in pattern.
+func SplitAtDirGlobOperator(path, pattern string) (pathStart, patternStart, pathEnd, patternEnd string, err error) {
+	if !dirGlobOperatorUseValid(pattern) {
+		return "", "", "", "", fmt.Errorf("invalid pattern '%s': the ** globbing operator may only be used as path segment on its own, i.e. …/**/… or **/…", pattern)
+	}
+
+	parts := strings.Split(pattern, string(filepath.Separator)+dirGlobOperator+string(filepath.Separator))
+	patternStart = parts[0]
+	if len(parts) == 2 {
+		patternEnd = parts[1]
+	}
+
+	numSegmentsStart := len(Segments(patternStart))
+	numSegmentsEnd := len(Segments(patternEnd))
+
+	segments := Segments(path)
+
+	pathStart = filepath.Join(segments[:numSegmentsStart]...)
+	pathEnd = filepath.Join(segments[len(segments)-numSegmentsEnd:]...)
+
+	if strings.HasPrefix(path, "/") && pathStart != "" {
+		pathStart = "/" + pathStart
+	}
+
+	return
+}
+
 // Glob supports * and ** globbing according to https://phraseapp.com/docs/developers/cli/configuration/#globbing
 func Glob(pattern string) (matches []string, err error) {
 	pattern = filepath.Clean(pattern)

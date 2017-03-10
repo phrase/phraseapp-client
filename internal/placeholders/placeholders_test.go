@@ -21,6 +21,47 @@ func TestResolve(t *testing.T) {
 		}: {
 			"tag": "bla",
 		},
+		{
+			"config/locales/en.yml",
+			"config/locales/<locale_code>.yml",
+		}: {
+			"locale_code": "en",
+		},
+		{
+			"abc/defg/en.lproj/Localizable.strings",
+			"./abc/defg/<locale_code>.lproj/Localizable.strings",
+		}: {
+			"locale_code": "en",
+		},
+		{
+			"config/german/de.yml",
+			"config/<locale_name>/<locale_code>.yml",
+		}: {
+			"locale_name": "german",
+			"locale_code": "de",
+		},
+		{
+			"config/german/de/de.yml",
+			"config/<locale_name>/<locale_code>/*.yml",
+		}: {
+			"locale_name": "german",
+			"locale_code": "de",
+		},
+		{
+			"abc/en.lproj/MyStoryboard.strings",
+			"./abc/<locale_code>.lproj/<tag>.strings",
+		}: {
+			"locale_code": "en",
+			"tag":         "MyStoryboard",
+		},
+		{
+			"no_tag/abc/play.en",
+			"*/<tag>/<locale_name>.<locale_code>",
+		}: {
+			"locale_name": "play",
+			"locale_code": "en",
+			"tag":         "abc",
+		},
 	}
 
 	for input, expected := range tests {

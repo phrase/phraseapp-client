@@ -147,3 +147,53 @@ func areEqual(s, t []string) bool {
 
 	return true
 }
+
+func TestSplitAtDirGlobOperator(t *testing.T) {
+	path := "/foo/bla/bar/baz/asd/a/b/c"
+
+	tests := map[string]struct {
+		pathStart, patternStart, pathEnd, patternEnd string
+	}{
+		"/foo/**/asd/a/b/c": {
+			"/foo",
+			"/foo",
+			"asd/a/b/c",
+			"asd/a/b/c",
+		},
+		"/foo/*/bar/**/a/*/c": {
+			"/foo/bla/bar",
+			"/foo/*/bar",
+			"a/b/c",
+			"a/*/c",
+		},
+		"/**/bar/baz/*/a/*/c": {
+			"",
+			"",
+			"bar/baz/asd/a/b/c",
+			"bar/baz/*/a/*/c",
+		},
+	}
+
+	for pattern, expected := range tests {
+		pathStart, patternStart, pathEnd, patternEnd, err := SplitAtDirGlobOperator(path, pattern)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if pathStart != expected.pathStart {
+			t.Errorf("expected path start to be %v, got %v", expected.pathStart, pathStart)
+		}
+
+		if patternStart != expected.patternStart {
+			t.Errorf("expected pattern start to be %v, got %v", expected.patternStart, patternStart)
+		}
+
+		if pathEnd != expected.pathEnd {
+			t.Errorf("expected path end to be %v, got %v", expected.pathEnd, pathEnd)
+		}
+
+		if patternEnd != expected.patternEnd {
+			t.Errorf("expected pattern end to be %v, got %v", expected.patternEnd, patternEnd)
+		}
+	}
+}

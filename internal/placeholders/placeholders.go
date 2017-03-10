@@ -36,6 +36,9 @@ func ToGlobbingPattern(s string) string {
 // Resolve handles '*' wildcards in the pattern, but will return an error
 // if the pattern contains '**'.
 func Resolve(s, pattern string) (map[string]string, error) {
+	s = filepath.Clean(s)
+	pattern = filepath.Clean(pattern)
+
 	if strings.Contains(pattern, "**") {
 		return map[string]string{}, fmt.Errorf("'**' wildcard not allowed in pattern")
 	}
