@@ -9,12 +9,6 @@ import (
 )
 
 func TestGlob(t *testing.T) {
-	base, err := ioutil.TempDir("", "test-glob_")
-	defer os.RemoveAll(base)
-	if err != nil {
-		t.Error(err)
-	}
-
 	directories := []string{
 		"foo/bar/baz/asd",
 		"foo/bar/xyz/asd",
@@ -26,21 +20,6 @@ func TestGlob(t *testing.T) {
 		"en.json",
 		"de.docx",
 		"nanana",
-	}
-
-	for _, dir := range directories {
-		err := os.MkdirAll(filepath.Join(base, dir), 0755)
-		defer os.RemoveAll(filepath.Join(base, dir))
-		if err != nil {
-			t.Error(err)
-		}
-
-		for _, file := range files {
-			_, err := os.Create(filepath.Join(base, dir, file))
-			if err != nil {
-				t.Error(err)
-			}
-		}
 	}
 
 	tests := map[string][]string{
@@ -64,6 +43,80 @@ func TestGlob(t *testing.T) {
 			"foo/bar/baz/xyz/asd/de.docx",
 			"foo/bar/baz/xyz/asd/nanana",
 		},
+	}
+
+	testGlob(directories, files, tests, t)
+}
+
+func TestGlob_specialCharacters(t *testing.T) {
+	directories := []string{
+		"locales",
+		"foo?bar",
+		"bar[a-z]",
+		"bla/*",
+	}
+
+	files := []string{
+		"en.yml",
+		"?",
+		"_[^x]_.yml",
+	}
+
+	tests := map[string][]string{
+		"**/*.yml": {
+			"locales/en.yml",
+			"locales/_[^x]_.yml",
+			"foo?bar/en.yml",
+			"foo?bar/_[^x]_.yml",
+			"bar[a-z]/en.yml",
+			"bar[a-z]/_[^x]_.yml",
+			"bla/*/en.yml",
+			"bla/*/_[^x]_.yml",
+		},
+		"foo?bar/*": {
+			"foo?bar/en.yml",
+			"foo?bar/?",
+			"foo?bar/_[^x]_.yml",
+		},
+		"bar[a*/_[^x*]_.yml": {
+			"bar[a-z]/_[^x]_.yml",
+		},
+		"bla/\\*/*": {
+			"bla/*/en.yml",
+			"bla/*/?",
+			"bla/*/_[^x]_.yml",
+		},
+		"**/?": {
+			"locales/?",
+			"foo?bar/?",
+			"bar[a-z]/?",
+			"bla/*/?",
+		},
+	}
+
+	testGlob(directories, files, tests, t)
+}
+
+func testGlob(directories, files []string, tests map[string][]string, t *testing.T) {
+	base, err := ioutil.TempDir("", "test-glob_")
+	defer os.RemoveAll(base)
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, dir := range directories {
+		err := os.MkdirAll(filepath.Join(base, dir), 0755)
+		defer os.RemoveAll(filepath.Join(base, dir))
+		if err != nil {
+			t.Error(err)
+		}
+
+		for _, file := range files {
+			_, err := os.Create(filepath.Join(base, dir, file))
+			if err != nil {
+				t.Error(err)
+			}
+		}
 	}
 
 	for pattern, expected := range tests {
