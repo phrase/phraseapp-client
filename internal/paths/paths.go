@@ -9,6 +9,8 @@ import (
 	"github.com/phrase/phraseapp-client/internal/shared"
 )
 
+var YamlConfigName = ".phraseapp.yml"
+
 func Validate(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
 		return fmt.Errorf("File patterns may not be empty!\nFor more information see %s", shared.DocsConfigUrl)
@@ -55,4 +57,8 @@ func Segments(s string) []string {
 	}
 
 	return strings.FieldsFunc(filepath.Clean(s), func(c rune) bool { return c == filepath.Separator })
+}
+
+func IsPhraseAppYmlConfig(path string) bool {
+	return strings.Contains(filepath.Base(path), YamlConfigName)
 }
