@@ -76,6 +76,31 @@ func TestResolve(t *testing.T) {
 	}
 }
 
+func TestToGlobbing(t *testing.T) {
+	tests := []struct {
+		path    string
+		pattern string
+	}{
+		{
+			path:    "abc/*.lproj/*.strings",
+			pattern: "abc/<locale_code>.lproj/.strings",
+		}, {
+			path:    "abc/defg/*.lproj/*.strings",
+			pattern: "abc/defg/<locale_code>.lproj/.strings",
+		}, {
+			path:    "abc/defg/*.lproj/Localizable.strings",
+			pattern: "abc/defg/<locale_code>.lproj/Localizable.strings",
+		},
+	}
+	for _, test := range tests {
+		result := ToGlobbingPattern(test.pattern)
+
+		if result != test.path {
+			t.Errorf("expected result to be %q, but got %q", test.path, result)
+		}
+	}
+}
+
 func TestResolve_errorPlaceholderReuse(t *testing.T) {
 	tests := []struct {
 		path    string

@@ -28,7 +28,13 @@ func ContainsTagPlaceholder(s string) bool {
 }
 
 func ToGlobbingPattern(s string) string {
-	return anyPlaceholderRegexp.ReplaceAllString(s, "*")
+	path := anyPlaceholderRegexp.ReplaceAllString(s, "*")
+	baseName := filepath.Base(s)
+	extension := filepath.Ext(s)
+	if baseName == extension {
+		return strings.Replace(path, baseName, "*"+baseName, 1)
+	}
+	return path
 }
 
 // Resolve matches s against pattern and maps placeholders in pattern to
