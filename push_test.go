@@ -251,6 +251,8 @@ func setupLocalesFiles(t *testing.T) (dir string) {
 		"b/YY/c/d.txt",
 		"b/YY/foo.bar.json",
 		"b/YY/foo.json",
+		"b/XX/.phraseapp.yml",
+		"b/XX/en.yml",
 	}
 	files = append(files, []string{
 		"config/locales/application.en.yml",
@@ -356,6 +358,7 @@ func TestLocaleFiles(t *testing.T) {
 			{"b/YY/foo.json", "", "foo", "", false},
 			{"b/YY/foo.bar.json", "", "foo.bar", "", false}, // weird locale!
 		}},
+		{"b/XX/<locale_name>.yml", []localeFile{{"b/XX/en.yml", "", "en", "", false}}},
 	}
 
 	for _, tti := range tt {
