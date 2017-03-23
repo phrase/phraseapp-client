@@ -21,6 +21,47 @@ func TestResolve(t *testing.T) {
 		}: {
 			"tag": "bla",
 		},
+		{
+			"config/locales/en.yml",
+			"config/locales/<locale_code>.yml",
+		}: {
+			"locale_code": "en",
+		},
+		{
+			"abc/defg/en.lproj/Localizable.strings",
+			"./abc/defg/<locale_code>.lproj/Localizable.strings",
+		}: {
+			"locale_code": "en",
+		},
+		{
+			"config/german/de.yml",
+			"config/<locale_name>/<locale_code>.yml",
+		}: {
+			"locale_name": "german",
+			"locale_code": "de",
+		},
+		{
+			"config/german/de/de.yml",
+			"config/<locale_name>/<locale_code>/*.yml",
+		}: {
+			"locale_name": "german",
+			"locale_code": "de",
+		},
+		{
+			"abc/en.lproj/MyStoryboard.strings",
+			"./abc/<locale_code>.lproj/<tag>.strings",
+		}: {
+			"locale_code": "en",
+			"tag":         "MyStoryboard",
+		},
+		{
+			"no_tag/abc/play.en",
+			"*/<tag>/<locale_name>.<locale_code>",
+		}: {
+			"locale_name": "play",
+			"locale_code": "en",
+			"tag":         "abc",
+		},
 	}
 
 	for input, expected := range tests {
@@ -31,6 +72,31 @@ func TestResolve(t *testing.T) {
 
 		if !areEqual(result, expected) {
 			t.Errorf("got %v, but want %v", result, expected)
+		}
+	}
+}
+
+func TestToGlobbing(t *testing.T) {
+	tests := []struct {
+		path    string
+		pattern string
+	}{
+		{
+			path:    "abc/*.lproj/*.strings",
+			pattern: "abc/<locale_code>.lproj/.strings",
+		}, {
+			path:    "abc/defg/*.lproj/*.strings",
+			pattern: "abc/defg/<locale_code>.lproj/.strings",
+		}, {
+			path:    "abc/defg/*.lproj/Localizable.strings",
+			pattern: "abc/defg/<locale_code>.lproj/Localizable.strings",
+		},
+	}
+	for _, test := range tests {
+		result := ToGlobbingPattern(test.pattern)
+
+		if result != test.path {
+			t.Errorf("expected result to be %q, but got %q", test.path, result)
 		}
 	}
 }

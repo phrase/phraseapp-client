@@ -12,7 +12,6 @@ import (
 	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/spinner"
-	"github.com/phrase/phraseapp-client/internal/stringz"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
@@ -160,21 +159,18 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		return nil, err
 	}
 
-	patternTokens := paths.Segments(source.File)
-
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		pathTokens := paths.Segments(path)
-		localeFile := extractParamsFromPathTokens(patternTokens, pathTokens)
+		localeFile := new(LocaleFile)
+		localeFile.fillFromPath(path, source.File)
 
-		absolutePath, err := filepath.Abs(path)
+		localeFile.Path, err = filepath.Abs(path)
 		if err != nil {
 			return nil, err
 		}
 
-		localeFile.Path = absolutePath
-
 		locale := source.getRemoteLocaleForLocaleFile(localeFile)
+		// TODO: sinnvoll?
 		if locale != nil {
 			localeFile.ExistsRemote = true
 			localeFile.Code = locale.Code
@@ -192,13 +188,14 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 		localeFiles = append(localeFiles, localeFile)
 	}
 
-	if len(localeFiles) <= 0 {
+	if len(localeFiles) == 0 {
 		abs, err := filepath.Abs(source.File)
 		if err != nil {
 			abs = source.File
 		}
 		return nil, fmt.Errorf("Could not find any files on your system that matches: '%s'", abs)
 	}
+
 	return localeFiles, nil
 }
 
@@ -261,63 +258,34 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 	}
 }
 
-func extractParamsFromPathTokens(patternTokens, pathTokens []string) *LocaleFile {
-	localeFile := new(LocaleFile)
-
-	if Debug {
-		fmt.Println("pattern:", patternTokens)
-		fmt.Println("path:", pathTokens)
-	}
-
-	for idx, patternToken := range patternTokens {
-		pathToken := pathTokens[idx]
-
-		if patternToken == "*" {
-			continue
-		}
-		if patternToken == "**" {
-			break
-		}
-		localeFile.extractParamFromPathToken(patternToken, pathToken)
-	}
-
-	if stringz.Contains(patternTokens, "**") {
-		offset := 1
-		for idx := len(patternTokens) - 1; idx >= 0; idx-- {
-			patternToken := patternTokens[idx]
-			pathToken := pathTokens[len(pathTokens)-offset]
-			offset += 1
-
-			if patternToken == "*" {
-				continue
-			} else if patternToken == "**" {
-				break
-			}
-
-			localeFile.extractParamFromPathToken(patternToken, pathToken)
-		}
-	}
-
-	return localeFile
-}
-
-func (localeFile *LocaleFile) extractParamFromPathToken(patternToken, pathToken string) {
-	params, err := placeholders.Resolve(pathToken, patternToken)
+func (localeFile *LocaleFile) fillFromPath(path, pattern string) {
+	pathStart, patternStart, pathEnd, patternEnd, err := paths.SplitAtDirGlobOperator(path, pattern)
 	if err != nil {
 		print.Error(err)
 		return
 	}
 
-	for placeholder, value := range params {
-		switch placeholder {
-		case "locale_code":
-			localeFile.Code = value
-		case "locale_name":
-			localeFile.Name = value
-		case "tag":
-			localeFile.Tag = value
+	fillFrom := func(path, pattern string) {
+		params, err := placeholders.Resolve(path, pattern)
+		if err != nil {
+			print.Error(err)
+			return
+		}
+
+		for placeholder, value := range params {
+			switch placeholder {
+			case "locale_code":
+				localeFile.Code = value
+			case "locale_name":
+				localeFile.Name = value
+			case "tag":
+				localeFile.Tag = value
+			}
 		}
 	}
+
+	fillFrom(pathStart, patternStart)
+	fillFrom(pathEnd, patternEnd)
 }
 
 func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {

@@ -50,5 +50,9 @@ func IsDir(path string) bool {
 }
 
 func Segments(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+
 	return strings.FieldsFunc(filepath.Clean(s), func(c rune) bool { return c == filepath.Separator })
 }
