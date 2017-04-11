@@ -223,8 +223,6 @@ func (cmd *InitCommand) newProject() error {
 	if err != nil {
 		if strings.Contains(err.Error(), "401") {
 			return fmt.Errorf("Your access token %s is not valid for the 'write' scope. Please create a new Access Token with read and write scope.", cmd.Credentials.Token)
-		} else if strings.Contains(err.Error(), "Validation failed") {
-			return fmt.Errorf("Validation failed. Please try a different token.")
 		}
 		return err
 	}
