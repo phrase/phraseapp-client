@@ -263,6 +263,7 @@ func (source *Source) getRemoteLocaleForLocaleFile(localeFile *LocaleFile) *phra
 }
 
 func (localeFile *LocaleFile) fillFromPath(path, pattern string) {
+	path = filepath.ToSlash(path)
 	pathStart, patternStart, pathEnd, patternEnd, err := paths.SplitAtDirGlobOperator(path, pattern)
 	if err != nil {
 		print.Error(err)

@@ -59,7 +59,7 @@ func Resolve(s, pattern string) (map[string]string, error) {
 
 	for _, placeholder := range stringz.RemoveDuplicates(placeholders) {
 		placeholder = regexp.QuoteMeta(placeholder)
-		placeholderRE := fmt.Sprintf("(?P%s[^%s]+)", placeholder, string(filepath.Separator)) // build named subexpression (capturing group) from placeholder
+		placeholderRE := fmt.Sprintf("(?P%s[^/]+)", placeholder) // build named subexpression (capturing group) from placeholder
 		patternRE = strings.Replace(patternRE, placeholder, placeholderRE, -1)
 	}
 
