@@ -109,7 +109,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 			taskResult := make(chan string, 1)
 			taskErr := make(chan error, 1)
 
-			fmt.Print("Waiting for your file to be processed... ")
+			fmt.Printf("Upload ID: %s, filename: %s suceeded. Waiting for your file to be processed... ", upload.ID, upload.Filename)
 			spinner.While(func() {
 				result, err := getUploadResult(client, source.ProjectID, upload)
 				taskResult <- result
@@ -129,7 +129,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 			}
 		} else {
 			fmt.Println("done!")
-			fmt.Printf("Check upload %s for information about processing results.\n", upload.ID)
+			fmt.Printf("Check upload ID: %s, filename: %s for information about processing results.\n", upload.ID, upload.Filename)
 		}
 
 		if Debug {
