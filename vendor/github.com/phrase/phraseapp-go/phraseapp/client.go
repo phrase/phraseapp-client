@@ -1,3 +1,4 @@
+// Package phraseapp is a library for easier usage of the PhraseApp API
 package phraseapp
 
 import (
@@ -13,12 +14,14 @@ import (
 	"github.com/bgentry/speakeasy"
 )
 
+// Client is a generic PhraseApp client. It manages a connection to the PhraseApp API
 type Client struct {
 	http.Client
 	Credentials Credentials
 	debug       bool
 }
 
+// Credentials contains all information to authenticate against phraseapp.com or a custom host.
 type Credentials struct {
 	Username string `cli:"opt --username -u desc='username used for authentication'"`
 	Token    string `cli:"opt --access-token -t desc='access token used for authentication'"`
@@ -26,6 +29,8 @@ type Credentials struct {
 	Host     string `cli:"opt --host desc='Host to send Request to'"`
 }
 
+// NewClient initializes a new client.
+// Uses PHRASEAPP_HOST and PHRASEAPP_ACCESS_TOKEN environment variables for host and access token with specified in environment.
 func NewClient(credentials Credentials, debug bool) (*Client, error) {
 	client := &Client{
 		Credentials: credentials,

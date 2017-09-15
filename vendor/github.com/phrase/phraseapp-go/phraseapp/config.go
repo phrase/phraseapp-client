@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Config contains all information from a .phraseapp.yml config file
 type Config struct {
 	Credentials
 	Debug bool `cli:"opt --verbose -v desc='Verbose output'"`
@@ -27,6 +28,7 @@ type Config struct {
 
 const configName = ".phraseapp.yml"
 
+// ReadConfig reads a .phraseapp.yml config file
 func ReadConfig() (*Config, error) {
 	cfg := &Config{}
 	rawCfg := struct{ PhraseApp *Config }{PhraseApp: cfg}

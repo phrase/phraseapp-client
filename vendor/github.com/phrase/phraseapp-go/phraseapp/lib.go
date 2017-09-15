@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "ae7df97629e13d98990793ba65bfd94f6a50cda8"
-	RevisionGenerator = "4b761c876a388e244383b8a2218aca140d23fe12"
+	RevisionDocs      = ""
+	RevisionGenerator = ""
 )
 
 type Account struct {
@@ -116,6 +116,38 @@ type Invitation struct {
 	Role       string           `json:"role"`
 	State      string           `json:"state"`
 	UpdatedAt  *time.Time       `json:"updated_at"`
+}
+
+type Job struct {
+	Briefing  string     `json:"briefing"`
+	CreatedAt *time.Time `json:"created_at"`
+	DueDate   *time.Time `json:"due_date"`
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	State     string     `json:"state"`
+	UpdatedAt *time.Time `json:"updated_at"`
+}
+
+type JobDetails struct {
+	Job
+
+	JobTagName string           `json:"job_tag_name"`
+	Keys       []*KeyPreview    `json:"keys"`
+	Locales    []*LocalePreview `json:"locales"`
+	Owner      *UserPreview     `json:"owner"`
+}
+
+type JobLocale struct {
+	ID     string         `json:"id"`
+	Job    *JobPreview    `json:"job"`
+	Locale *LocalePreview `json:"locale"`
+	Users  []*UserPreview `json:"users"`
+}
+
+type JobPreview struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	State string `json:"state"`
 }
 
 type KeyPreview struct {
@@ -556,6 +588,87 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 			}
 			params.Translatable = &val
 
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type JobLocaleParams struct {
+	LocaleID *string  `json:"locale_id,omitempty"  cli:"opt --locale-id"`
+	UserIDs  []string `json:"user_ids,omitempty"  cli:"opt --user-ids"`
+}
+
+func (params *JobLocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "locale_id":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleID = &val
+
+		case "user_ids":
+			ok := false
+			params.UserIDs, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type JobParams struct {
+	Briefing          *string     `json:"briefing,omitempty"  cli:"opt --briefing"`
+	DueDate           **time.Time `json:"due_date,omitempty"  cli:"opt --due-date"`
+	Name              *string     `json:"name,omitempty"  cli:"opt --name"`
+	Tags              []string    `json:"tags,omitempty"  cli:"opt --tags"`
+	TranslationKeyIDs []string    `json:"translation_key_ids,omitempty"  cli:"opt --translation-key-ids"`
+}
+
+func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "briefing":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Briefing = &val
+
+		case "due_date":
+			val, ok := v.(*time.Time)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.DueDate = &val
+
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		case "tags":
+			ok := false
+			params.Tags, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		case "translation_key_ids":
+			ok := false
+			params.TranslationKeyIDs, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
 		}
@@ -2355,6 +2468,517 @@ func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*
 		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Mark a job as completed.
+func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new job.
+func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing job.
+func (client *Client) JobDelete(project_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+type JobKeysCreateParams struct {
+	TranslationKeyIDs []string `json:"translation_key_ids,omitempty"  cli:"opt --translation-key-ids"`
+}
+
+func (params *JobKeysCreateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "translation_key_ids":
+			ok := false
+			params.TranslationKeyIDs, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Add multiple keys to a existing job.
+func (client *Client) JobKeysCreate(project_id, id string, params *JobKeysCreateParams) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", project_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type JobKeysDeleteParams struct {
+	TranslationKeyIDs []string `json:"translation_key_ids,omitempty"  cli:"opt --translation-key-ids"`
+}
+
+func (params *JobKeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "translation_key_ids":
+			ok := false
+			params.TranslationKeyIDs, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Remove multiple keys from existing job.
+func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDeleteParams) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", project_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single job for a given project.
+func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Starts an existing job in state draft.
+func (client *Client) JobStart(project_id, id string) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/start", project_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type JobUpdateParams struct {
+	Briefing *string     `json:"briefing,omitempty"  cli:"opt --briefing"`
+	DueDate  **time.Time `json:"due_date,omitempty"  cli:"opt --due-date"`
+	Name     *string     `json:"name,omitempty"  cli:"opt --name"`
+}
+
+func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "briefing":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Briefing = &val
+
+		case "due_date":
+			val, ok := v.(*time.Time)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.DueDate = &val
+
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Update an existing job.
+func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Mark a JobLocale as completed.
+func (client *Client) JobLocaleComplete(project_id, id string) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing JobLocale.
+func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", project_id, job_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get a single JobLocale for a given job.
+func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", project_id, job_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing job.
+func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *JobLocaleParams) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new JobLocale.
+func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLocaleParams) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", project_id, job_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all JobLocales for a given job.
+func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int) ([]*JobLocale, error) {
+	retVal := []*JobLocale{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", project_id, job_id)
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type JobsListParams struct {
+	AssignedTo *string `json:"assigned_to,omitempty"  cli:"opt --assigned-to"`
+	OwnedBy    *string `json:"owned_by,omitempty"  cli:"opt --owned-by"`
+	State      *string `json:"state,omitempty"  cli:"opt --state"`
+}
+
+func (params *JobsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "assigned_to":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.AssignedTo = &val
+
+		case "owned_by":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.OwnedBy = &val
+
+		case "state":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.State = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// List all jobs for the given project.
+func (client *Client) JobsList(project_id string, page, perPage int, params *JobsListParams) ([]*Job, error) {
+	retVal := []*Job{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -4522,7 +5146,7 @@ func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string
 	return nil
 }
 
-// Mark translations matching query as unverified.
+// <div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Mark translations matching query as unverified.
 func (client *Client) TranslationsUnverify(project_id string, params *TranslationsUnverifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
@@ -4591,7 +5215,7 @@ func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
-// Verify translations matching query.
+// <div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Verify translations matching query.
 func (client *Client) TranslationsVerify(project_id string, params *TranslationsVerifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
