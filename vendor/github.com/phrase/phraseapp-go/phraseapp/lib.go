@@ -1253,6 +1253,7 @@ type UploadParams struct {
 	FileFormat         *string           `json:"file_format,omitempty"  cli:"opt --file-format"`
 	FormatOptions      map[string]string `json:"format_options,omitempty"  cli:"opt --format-options"`
 	LocaleID           *string           `json:"locale_id,omitempty"  cli:"opt --locale-id"`
+	LocaleMapping      map[string]string `json:"locale_mapping,omitempty"  cli:"opt --locale-mapping"`
 	SkipUnverification *bool             `json:"skip_unverification,omitempty"  cli:"opt --skip-unverification"`
 	SkipUploadTags     *bool             `json:"skip_upload_tags,omitempty"  cli:"opt --skip-upload-tags"`
 	Tags               *string           `json:"tags,omitempty"  cli:"opt --tags"`
@@ -1308,6 +1309,17 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.LocaleID = &val
+
+		case "locale_mapping":
+			rval, err := ValidateIsRawMap(k, v)
+			if err != nil {
+				return err
+			}
+			val, err := ConvertToStringMap(rval)
+			if err != nil {
+				return err
+			}
+			params.LocaleMapping = val
 
 		case "skip_unverification":
 			val, ok := v.(bool)
@@ -5309,6 +5321,15 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 			err := writer.WriteField("locale_id", *params.LocaleID)
 			if err != nil {
 				return err
+			}
+		}
+
+		if params.LocaleMapping != nil {
+			for key, val := range params.LocaleMapping {
+				err := writer.WriteField("locale_mapping["+key+"]", val)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
