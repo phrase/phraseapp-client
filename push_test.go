@@ -18,7 +18,7 @@ import (
 
 func getBaseSource() *Source {
 	source := &Source{
-		File:          "./tests/<locale_code>.yml",
+		File:          "./testdata/<locale_code>.yml",
 		ProjectID:     "project-id",
 		AccessToken:   "access-token",
 		FileFormat:    "yml",
@@ -57,8 +57,8 @@ func TestPushPreconditions(t *testing.T) {
 func TestSourceFields(t *testing.T) {
 	source := getBaseSource()
 
-	if source.File != "./tests/<locale_code>.yml" {
-		t.Errorf("Expected File to be %s and not %s", "./tests/<locale_code>.yml", source.File)
+	if source.File != "./testdata/<locale_code>.yml" {
+		t.Errorf("Expected File to be %s and not %s", "./testdata/<locale_code>.yml", source.File)
 	}
 
 	if source.AccessToken != "access-token" {
@@ -83,7 +83,7 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 		t.Errorf("Should not fail with: %s", err.Error())
 	}
 
-	absPath, _ := filepath.Abs("./tests/en.yml")
+	absPath, _ := filepath.Abs("./testdata/en.yml")
 	expectedFiles := []*LocaleFile{
 		&LocaleFile{
 			Name: "english",
@@ -104,14 +104,14 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 
 func TestSourceLocaleFilesTwo(t *testing.T) {
 	source := getBaseSource()
-	source.File = "./tests/<locale_name>.yml"
+	source.File = "./testdata/<locale_name>.yml"
 	localeFiles, err := source.LocaleFiles()
 
 	if err != nil {
 		t.Errorf("Should not fail with: %s", err.Error())
 	}
 
-	absPath, _ := filepath.Abs("./tests/en.yml")
+	absPath, _ := filepath.Abs("./testdata/en.yml")
 	expectedFiles := []*LocaleFile{
 		&LocaleFile{
 			Name: "en",
