@@ -79,7 +79,7 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 		fmt.Printf("%d key(s) successfully deleted.\n", affected.RecordsAffected)
 
 		page++
-		keys, err = client.KeysList(cmd.Config.DefaultProjectID, page, 25, params)
+		keys, _ = client.KeysList(cmd.Config.DefaultProjectID, page, 25, params)
 	}
 
 	return nil

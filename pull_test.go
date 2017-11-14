@@ -17,13 +17,13 @@ func TestPullLocaleFiles(t *testing.T) {
 	enPath, _ := filepath.Abs("./tests/en.yml")
 	dePath, _ := filepath.Abs("./tests/de.yml")
 	expectedFiles := []*LocaleFile{
-		&LocaleFile{
+		{
 			Name: "english",
 			Code: "en",
 			ID:   "en-locale-id",
 			Path: enPath,
 		},
-		&LocaleFile{
+		{
 			Name: "german",
 			Code: "de",
 			ID:   "de-locale-id",
