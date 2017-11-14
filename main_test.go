@@ -16,12 +16,12 @@ import (
 
 func getBaseLocales() []*phraseapp.Locale {
 	return []*phraseapp.Locale{
-		&phraseapp.Locale{
+		{
 			Code: "en",
 			ID:   "en-locale-id",
 			Name: "english",
 		},
-		&phraseapp.Locale{
+		{
 			Code: "de",
 			ID:   "de-locale-id",
 			Name: "german",

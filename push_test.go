@@ -85,7 +85,7 @@ func TestSourceLocaleFilesOne(t *testing.T) {
 
 	absPath, _ := filepath.Abs("./testdata/en.yml")
 	expectedFiles := []*LocaleFile{
-		&LocaleFile{
+		{
 			Name: "english",
 			Code: "en",
 			ID:   "en-locale-id",
@@ -113,7 +113,7 @@ func TestSourceLocaleFilesTwo(t *testing.T) {
 
 	absPath, _ := filepath.Abs("./testdata/en.yml")
 	expectedFiles := []*LocaleFile{
-		&LocaleFile{
+		{
 			Name: "en",
 			Code: "",
 			ID:   "",
@@ -317,7 +317,7 @@ func TestSystemFiles(t *testing.T) {
 			delete(exp, got)
 		}
 
-		for k, _ := range exp {
+		for k := range exp {
 			t.Errorf("%s: expected to get file %q, but it didn't appear", src.File, k)
 		}
 	}
@@ -411,7 +411,7 @@ func TestLocaleFiles(t *testing.T) {
 			}
 		}
 
-		for k, _ := range pathFileMap {
+		for k := range pathFileMap {
 			t.Errorf("%s: didn't see expected file at %s", src.File, k)
 		}
 	}
