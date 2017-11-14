@@ -12,7 +12,7 @@ var stdin = bufio.NewReader(os.Stdin)
 // P prints msg, then reads a line of user input. The input line is then scanned into the args using fmt.Sscan().
 //
 // This doesn't use fmt.Scanln() because prompt() is often called in a loop (running until user input is valid)
-// and Scanln returns two seperate errors for example when scanning into one integer and "a\n" is read from stdin,
+// and Scanln returns two separate errors for example when scanning into one integer and "a\n" is read from stdin,
 // resulting in the prompt message being printed twice.
 func P(msg string, args ...interface{}) error {
 	fmt.Print(msg + " ")
