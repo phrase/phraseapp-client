@@ -56,6 +56,22 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
 
+	r.Register("branch/compare", newBranchCompare(cfg), "Compare branch to current state of project")
+
+	if cmd, err := newBranchCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/create", cmd, "Create a new branch.")
+	}
+
+	r.Register("branch/merge", newBranchMerge(cfg), "Merge an existing branch.")
+
+	if cmd, err := newBranchUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/update", cmd, "Update an existing branch.")
+	}
+
 	if cmd, err := newCommentCreate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -862,6 +878,147 @@ func (cmd *BlacklistedKeysList) Run() error {
 	}
 
 	res, err := client.BlacklistedKeysList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchCompare struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchCompare(cfg *phraseapp.Config) *BranchCompare {
+
+	actionBranchCompare := &BranchCompare{Config: *cfg}
+	actionBranchCompare.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchCompare
+}
+
+func (cmd *BranchCompare) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchCompare(cmd.ProjectID, cmd.Name)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchCreate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newBranchCreate(cfg *phraseapp.Config) (*BranchCreate, error) {
+
+	actionBranchCreate := &BranchCreate{Config: *cfg}
+	actionBranchCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchCreate.Config.Defaults["branch/create"]
+	if defaultsPresent {
+		if err := actionBranchCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchCreate, nil
+}
+
+func (cmd *BranchCreate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchMerge struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchMerge(cfg *phraseapp.Config) *BranchMerge {
+
+	actionBranchMerge := &BranchMerge{Config: *cfg}
+	actionBranchMerge.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchMerge
+}
+
+func (cmd *BranchMerge) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchMerge(cmd.ProjectID, cmd.Name)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BranchUpdate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchUpdate(cfg *phraseapp.Config) (*BranchUpdate, error) {
+
+	actionBranchUpdate := &BranchUpdate{Config: *cfg}
+	actionBranchUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchUpdate.Config.Defaults["branch/update"]
+	if defaultsPresent {
+		if err := actionBranchUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchUpdate, nil
+}
+
+func (cmd *BranchUpdate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchUpdate(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
