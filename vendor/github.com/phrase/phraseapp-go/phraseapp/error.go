@@ -17,6 +17,7 @@ func IsErrNotFound(err error) bool {
 	return ok
 }
 
+// ErrNotFound represents an error for requests of non existing resources
 type ErrNotFound struct {
 	Message string
 }
@@ -33,6 +34,7 @@ func (err *ErrorResponse) Error() string {
 	return err.Message
 }
 
+// ValidationErrorResponse represents the response for a failed validation of content
 type ValidationErrorResponse struct {
 	ErrorResponse
 
@@ -47,6 +49,7 @@ func (err *ValidationErrorResponse) Error() string {
 	return fmt.Sprintf("%s\n%s", err.Message, strings.Join(msgs, "\n"))
 }
 
+// ValidationErrorMessage represents an error for a failed validation of content
 type ValidationErrorMessage struct {
 	Resource string
 	Field    string
@@ -57,6 +60,7 @@ func (msg *ValidationErrorMessage) String() string {
 	return fmt.Sprintf("\t[%s:%s] %s", msg.Resource, msg.Field, msg.Message)
 }
 
+// RateLimitingError is returned when hitting the API rate limit
 type RateLimitingError struct {
 	Limit           int
 	Remaining       int

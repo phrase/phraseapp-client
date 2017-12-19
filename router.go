@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "ae7df97629e13d98990793ba65bfd94f6a50cda8"
-	RevisionGenerator = "e51df86b2d0cf519540791cefb4f6d24751d38b0"
+	RevisionDocs      = ""
+	RevisionGenerator = ""
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -55,6 +55,22 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	}
 
 	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
+
+	r.Register("branch/compare", newBranchCompare(cfg), "Compare branch to current state of project")
+
+	if cmd, err := newBranchCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/create", cmd, "Create a new branch.")
+	}
+
+	r.Register("branch/merge", newBranchMerge(cfg), "Merge an existing branch.")
+
+	if cmd, err := newBranchUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/update", cmd, "Update an existing branch.")
+	}
 
 	if cmd, err := newCommentCreate(cfg); err != nil {
 		return nil, err
@@ -151,6 +167,64 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	}
 
 	r.Register("invitations/list", newInvitationsList(cfg), "List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.")
+
+	r.Register("job/complete", newJobComplete(cfg), "Mark a job as completed.")
+
+	if cmd, err := newJobCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/create", cmd, "Create a new job.")
+	}
+
+	r.Register("job/delete", newJobDelete(cfg), "Delete an existing job.")
+
+	if cmd, err := newJobKeysCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/keys/create", cmd, "Add multiple keys to a existing job.")
+	}
+
+	if cmd, err := newJobKeysDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/keys/delete", cmd, "Remove multiple keys from existing job.")
+	}
+
+	r.Register("job/show", newJobShow(cfg), "Get details on a single job for a given project.")
+
+	r.Register("job/start", newJobStart(cfg), "Starts an existing job in state draft.")
+
+	if cmd, err := newJobUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/update", cmd, "Update an existing job.")
+	}
+
+	r.Register("job_locale/complete", newJobLocaleComplete(cfg), "Mark a JobLocale as completed.")
+
+	r.Register("job_locale/delete", newJobLocaleDelete(cfg), "Delete an existing JobLocale.")
+
+	r.Register("job_locale/show", newJobLocaleShow(cfg), "Get a single JobLocale for a given job.")
+
+	if cmd, err := newJobLocaleUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locale/update", cmd, "Update an existing job.")
+	}
+
+	if cmd, err := newJobLocalesCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locales/create", cmd, "Create a new JobLocale.")
+	}
+
+	r.Register("job_locales/list", newJobLocalesList(cfg), "List all JobLocales for a given job.")
+
+	if cmd, err := newJobsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("jobs/list", cmd, "List all jobs for the given project.")
+	}
 
 	if cmd, err := newKeyCreate(cfg); err != nil {
 		return nil, err
@@ -351,13 +425,13 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	if cmd, err := newTranslationsUnverify(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("translations/unverify", cmd, "Mark translations matching query as unverified.")
+		r.Register("translations/unverify", cmd, "<div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Mark translations matching query as unverified.")
 	}
 
 	if cmd, err := newTranslationsVerify(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("translations/verify", cmd, "Verify translations matching query.")
+		r.Register("translations/verify", cmd, "<div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Verify translations matching query.")
 	}
 
 	if cmd, err := newUploadCreate(cfg); err != nil {
@@ -804,6 +878,147 @@ func (cmd *BlacklistedKeysList) Run() error {
 	}
 
 	res, err := client.BlacklistedKeysList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchCompare struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchCompare(cfg *phraseapp.Config) *BranchCompare {
+
+	actionBranchCompare := &BranchCompare{Config: *cfg}
+	actionBranchCompare.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchCompare
+}
+
+func (cmd *BranchCompare) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchCompare(cmd.ProjectID, cmd.Name)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchCreate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newBranchCreate(cfg *phraseapp.Config) (*BranchCreate, error) {
+
+	actionBranchCreate := &BranchCreate{Config: *cfg}
+	actionBranchCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchCreate.Config.Defaults["branch/create"]
+	if defaultsPresent {
+		if err := actionBranchCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchCreate, nil
+}
+
+func (cmd *BranchCreate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchMerge struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchMerge(cfg *phraseapp.Config) *BranchMerge {
+
+	actionBranchMerge := &BranchMerge{Config: *cfg}
+	actionBranchMerge.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchMerge
+}
+
+func (cmd *BranchMerge) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchMerge(cmd.ProjectID, cmd.Name)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BranchUpdate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchUpdate(cfg *phraseapp.Config) (*BranchUpdate, error) {
+
+	actionBranchUpdate := &BranchUpdate{Config: *cfg}
+	actionBranchUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchUpdate.Config.Defaults["branch/update"]
+	if defaultsPresent {
+		if err := actionBranchUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchUpdate, nil
+}
+
+func (cmd *BranchUpdate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchUpdate(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
@@ -1794,6 +2009,553 @@ func (cmd *InvitationsList) Run() error {
 	}
 
 	res, err := client.InvitationsList(cmd.AccountID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobComplete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobComplete(cfg *phraseapp.Config) *JobComplete {
+
+	actionJobComplete := &JobComplete{Config: *cfg}
+	actionJobComplete.ProjectID = cfg.DefaultProjectID
+
+	return actionJobComplete
+}
+
+func (cmd *JobComplete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobComplete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobCreate struct {
+	phraseapp.Config
+
+	phraseapp.JobParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newJobCreate(cfg *phraseapp.Config) (*JobCreate, error) {
+
+	actionJobCreate := &JobCreate{Config: *cfg}
+	actionJobCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobCreate.Config.Defaults["job/create"]
+	if defaultsPresent {
+		if err := actionJobCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobCreate, nil
+}
+
+func (cmd *JobCreate) Run() error {
+	params := &cmd.JobParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobDelete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobDelete(cfg *phraseapp.Config) *JobDelete {
+
+	actionJobDelete := &JobDelete{Config: *cfg}
+	actionJobDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionJobDelete
+}
+
+func (cmd *JobDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.JobDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type JobKeysCreate struct {
+	phraseapp.Config
+
+	phraseapp.JobKeysCreateParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobKeysCreate(cfg *phraseapp.Config) (*JobKeysCreate, error) {
+
+	actionJobKeysCreate := &JobKeysCreate{Config: *cfg}
+	actionJobKeysCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobKeysCreate.Config.Defaults["job/keys/create"]
+	if defaultsPresent {
+		if err := actionJobKeysCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobKeysCreate, nil
+}
+
+func (cmd *JobKeysCreate) Run() error {
+	params := &cmd.JobKeysCreateParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobKeysCreate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobKeysDelete struct {
+	phraseapp.Config
+
+	phraseapp.JobKeysDeleteParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobKeysDelete(cfg *phraseapp.Config) (*JobKeysDelete, error) {
+
+	actionJobKeysDelete := &JobKeysDelete{Config: *cfg}
+	actionJobKeysDelete.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobKeysDelete.Config.Defaults["job/keys/delete"]
+	if defaultsPresent {
+		if err := actionJobKeysDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobKeysDelete, nil
+}
+
+func (cmd *JobKeysDelete) Run() error {
+	params := &cmd.JobKeysDeleteParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.JobKeysDelete(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type JobShow struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobShow(cfg *phraseapp.Config) *JobShow {
+
+	actionJobShow := &JobShow{Config: *cfg}
+	actionJobShow.ProjectID = cfg.DefaultProjectID
+
+	return actionJobShow
+}
+
+func (cmd *JobShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobStart struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobStart(cfg *phraseapp.Config) *JobStart {
+
+	actionJobStart := &JobStart{Config: *cfg}
+	actionJobStart.ProjectID = cfg.DefaultProjectID
+
+	return actionJobStart
+}
+
+func (cmd *JobStart) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobStart(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobUpdate struct {
+	phraseapp.Config
+
+	phraseapp.JobUpdateParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobUpdate(cfg *phraseapp.Config) (*JobUpdate, error) {
+
+	actionJobUpdate := &JobUpdate{Config: *cfg}
+	actionJobUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobUpdate.Config.Defaults["job/update"]
+	if defaultsPresent {
+		if err := actionJobUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobUpdate, nil
+}
+
+func (cmd *JobUpdate) Run() error {
+	params := &cmd.JobUpdateParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobLocaleComplete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobLocaleComplete(cfg *phraseapp.Config) *JobLocaleComplete {
+
+	actionJobLocaleComplete := &JobLocaleComplete{Config: *cfg}
+	actionJobLocaleComplete.ProjectID = cfg.DefaultProjectID
+
+	return actionJobLocaleComplete
+}
+
+func (cmd *JobLocaleComplete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocaleComplete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobLocaleDelete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobLocaleDelete(cfg *phraseapp.Config) *JobLocaleDelete {
+
+	actionJobLocaleDelete := &JobLocaleDelete{Config: *cfg}
+	actionJobLocaleDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionJobLocaleDelete
+}
+
+func (cmd *JobLocaleDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.JobLocaleDelete(cmd.ProjectID, cmd.JobID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type JobLocaleShow struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobLocaleShow(cfg *phraseapp.Config) *JobLocaleShow {
+
+	actionJobLocaleShow := &JobLocaleShow{Config: *cfg}
+	actionJobLocaleShow.ProjectID = cfg.DefaultProjectID
+
+	return actionJobLocaleShow
+}
+
+func (cmd *JobLocaleShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocaleShow(cmd.ProjectID, cmd.JobID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobLocaleUpdate struct {
+	phraseapp.Config
+
+	phraseapp.JobLocaleParams
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobLocaleUpdate(cfg *phraseapp.Config) (*JobLocaleUpdate, error) {
+
+	actionJobLocaleUpdate := &JobLocaleUpdate{Config: *cfg}
+	actionJobLocaleUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobLocaleUpdate.Config.Defaults["job_locale/update"]
+	if defaultsPresent {
+		if err := actionJobLocaleUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocaleUpdate, nil
+}
+
+func (cmd *JobLocaleUpdate) Run() error {
+	params := &cmd.JobLocaleParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocaleUpdate(cmd.ProjectID, cmd.JobID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobLocalesCreate struct {
+	phraseapp.Config
+
+	phraseapp.JobLocaleParams
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+}
+
+func newJobLocalesCreate(cfg *phraseapp.Config) (*JobLocalesCreate, error) {
+
+	actionJobLocalesCreate := &JobLocalesCreate{Config: *cfg}
+	actionJobLocalesCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionJobLocalesCreate.Config.Defaults["job_locales/create"]
+	if defaultsPresent {
+		if err := actionJobLocalesCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocalesCreate, nil
+}
+
+func (cmd *JobLocalesCreate) Run() error {
+	params := &cmd.JobLocaleParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocalesCreate(cmd.ProjectID, cmd.JobID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobLocalesList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+}
+
+func newJobLocalesList(cfg *phraseapp.Config) *JobLocalesList {
+
+	actionJobLocalesList := &JobLocalesList{Config: *cfg}
+	actionJobLocalesList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionJobLocalesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionJobLocalesList.PerPage = *cfg.PerPage
+	}
+
+	return actionJobLocalesList
+}
+
+func (cmd *JobLocalesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocalesList(cmd.ProjectID, cmd.JobID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type JobsList struct {
+	phraseapp.Config
+
+	phraseapp.JobsListParams
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newJobsList(cfg *phraseapp.Config) (*JobsList, error) {
+
+	actionJobsList := &JobsList{Config: *cfg}
+	actionJobsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionJobsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionJobsList.PerPage = *cfg.PerPage
+	}
+
+	val, defaultsPresent := actionJobsList.Config.Defaults["jobs/list"]
+	if defaultsPresent {
+		if err := actionJobsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobsList, nil
+}
+
+func (cmd *JobsList) Run() error {
+	params := &cmd.JobsListParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobsList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
