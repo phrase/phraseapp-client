@@ -78,6 +78,10 @@ type BlacklistedKey struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+type Branch struct {
+	Name string `json:"name"`
+}
+
 type Comment struct {
 	CreatedAt *time.Time   `json:"created_at"`
 	ID        string       `json:"id"`
@@ -520,6 +524,28 @@ func (params *BlacklistedKeyParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+type BranchParams struct {
+	Name *string `json:"name,omitempty"  cli:"opt --name"`
+}
+
+func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 type CommentParams struct {
 	Message *string `json:"message,omitempty"  cli:"opt --message"`
 }
@@ -902,7 +928,11 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 }
 
 type LocaleParams struct {
+<<<<<<< HEAD
 	Autotranslate               *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+=======
+	Branch                      *string `json:"branch,omitempty"  cli:"opt --branch"`
+>>>>>>> branching: add basic branching api
 	Code                        *string `json:"code,omitempty"  cli:"opt --code"`
 	Default                     *bool   `json:"default,omitempty"  cli:"opt --default"`
 	Main                        *bool   `json:"main,omitempty"  cli:"opt --main"`
@@ -916,6 +946,7 @@ type LocaleParams struct {
 func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+<<<<<<< HEAD
 		case "autotranslate":
 			val, ok := v.(bool)
 			if !ok {
@@ -923,6 +954,14 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			}
 
 			params.Autotranslate = &val
+=======
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+>>>>>>> branching: add basic branching api
 
 		case "code":
 			val, ok := v.(string)
@@ -1448,7 +1487,11 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 }
 
 type UploadParams struct {
+<<<<<<< HEAD
 	Autotranslate      *bool             `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+=======
+	Branch             *string           `json:"branch,omitempty"  cli:"opt --branch"`
+>>>>>>> branching: add basic branching api
 	ConvertEmoji       *bool             `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	File               *string           `json:"file,omitempty"  cli:"opt --file"`
 	FileEncoding       *string           `json:"file_encoding,omitempty"  cli:"opt --file-encoding"`
@@ -1466,6 +1509,7 @@ type UploadParams struct {
 func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+<<<<<<< HEAD
 		case "autotranslate":
 			val, ok := v.(bool)
 			if !ok {
@@ -1473,6 +1517,14 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			}
 
 			params.Autotranslate = &val
+=======
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+>>>>>>> branching: add basic branching api
 
 		case "convert_emoji":
 			val, ok := v.(bool)
@@ -2049,6 +2101,110 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 	return retVal, err
 }
 
+// Compare branch to current state of project
+func (client *Client) BranchCompare(project_id, name string) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s/compare", project_id, name)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new branch.
+func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Merge an existing branch.
+func (client *Client) BranchMerge(project_id, name string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s/merge", project_id, name)
+
+		rc, err := client.sendRequest("PATCH", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Update an existing branch.
+func (client *Client) BranchUpdate(project_id, name string, params *BranchParams) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s", project_id, name)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 // Create a new comment for a key.
 func (client *Client) CommentCreate(project_id, key_id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
@@ -2157,8 +2313,11 @@ func (client *Client) CommentMarkUnread(project_id, key_id, id string) error {
 func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2183,8 +2342,7 @@ func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, erro
 func (client *Client) CommentUpdate(project_id, key_id, id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2215,8 +2373,7 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 func (client *Client) CommentsList(project_id, key_id string, page, perPage int) ([]*Comment, error) {
 	retVal := []*Comment{}
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", project_id, key_id)
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2241,7 +2398,6 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int)
 func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	retVal := []*Format{}
 	err := func() error {
-
 		url := fmt.Sprintf("/v2/formats")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -2267,8 +2423,7 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*Glossary, error) {
 	retVal := []*Glossary{}
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2293,8 +2448,7 @@ func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*G
 func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2325,8 +2479,7 @@ func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) 
 func (client *Client) GlossaryDelete(account_id, id string) error {
 
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2343,8 +2496,7 @@ func (client *Client) GlossaryDelete(account_id, id string) error {
 func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2369,8 +2521,7 @@ func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryParams) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2401,8 +2552,7 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2433,8 +2583,7 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) error {
 
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2451,8 +2600,8 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+>>>>>>> branching: add basic branching api
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2477,8 +2626,12 @@ func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*Glo
 func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
+<<<<<<< HEAD
 
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+>>>>>>> branching: add basic branching api
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2487,6 +2640,465 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new glossary term translation.
+func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, term_id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
+	retVal := new(GlossaryTermTranslation)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations", account_id, glossary_id, term_id)
+>>>>>>> branching: add basic branching api
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing glossary term translation.
+func (client *Client) GlossaryTermTranslationDelete(account_id, glossary_id, term_id, id string) error {
+
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/formats")
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Update an existing glossary term translation.
+func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, term_id, id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
+	retVal := new(GlossaryTermTranslation)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all glossary terms the current user has access to.
+func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, perPage int) ([]*GlossaryTerm, error) {
+	retVal := []*GlossaryTerm{}
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type InvitationCreateParams struct {
+	Email      *string `json:"email,omitempty"  cli:"opt --email"`
+	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+}
+
+func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "email":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Email = &val
+
+		case "locale_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleIDs = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		case "role":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Role = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationCreate(account_id string, params *InvitationCreateParams) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
+>>>>>>> branching: add basic branching api
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing invitation (must not be accepted yet). Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationDelete(account_id, id string) error {
+
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Resend the invitation email (must not be accepted yet). Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationResend(account_id, id string) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s/resend", account_id, id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Get details on a single invitation. Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationShow(account_id, id string) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type InvitationUpdateParams struct {
+	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+}
+
+func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "locale_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.LocaleIDs = &val
+
+		case "project_ids":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectIDs = &val
+
+		case "role":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Role = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
+	retVal := new(Invitation)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+>>>>>>> branching: add basic branching api
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.
+func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*Invitation, error) {
+	retVal := []*Invitation{}
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Mark a job as completed.
+func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+>>>>>>> branching: add basic branching api
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new job.
+func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+>>>>>>> branching: add basic branching api
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
 		if err != nil {
 			return err
 		}
@@ -4229,6 +4841,7 @@ func (client *Client) LocaleDelete(project_id, id string) error {
 }
 
 type LocaleDownloadParams struct {
+	Branch                     *string           `json:"branch,omitempty"  cli:"opt --branch"`
 	ConvertEmoji               bool              `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	Encoding                   *string           `json:"encoding,omitempty"  cli:"opt --encoding"`
 	FallbackLocaleID           *string           `json:"fallback_locale_id,omitempty"  cli:"opt --fallback-locale-id"`
@@ -4244,6 +4857,13 @@ type LocaleDownloadParams struct {
 func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
 		case "convert_emoji":
 			ok := false
 			params.ConvertEmoji, ok = v.(bool)
@@ -5986,8 +6606,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 		writer := multipart.NewWriter(paramsBuf)
 		ctype := writer.FormDataContentType()
 
+<<<<<<< HEAD
 		if params.Autotranslate != nil {
 			err := writer.WriteField("autotranslate", strconv.FormatBool(*params.Autotranslate))
+=======
+		if params.Branch != nil {
+			err := writer.WriteField("branch", *params.Branch)
+>>>>>>> branching: add basic branching api
 			if err != nil {
 				return err
 			}
