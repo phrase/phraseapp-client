@@ -71,6 +71,7 @@ func (sources Sources) Validate() error {
 type Source struct {
 	File        string
 	ProjectID   string
+	Branch      string
 	AccessToken string
 	FileFormat  string
 	Params      *phraseapp.UploadParams
@@ -152,7 +153,7 @@ func (sources Sources) ProjectIds() []string {
 	}
 	return projectIds
 }
-func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.Upload, error) {
+func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFile, branch string) (*phraseapp.Upload, error) {
 	if Debug {
 		fmt.Fprintln(os.Stdout, "Source file pattern:", source.File)
 		fmt.Fprintln(os.Stdout, "Actual file location:", localeFile.Path)
@@ -181,10 +182,14 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 		params.Tags = &v
 	}
 
+	if branch != "" {
+		params.Branch = &branch
+	}
+
 	return client.UploadCreate(source.ProjectID, params)
 }
 
-func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, error) {
+func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile, branch string) (*phraseapp.LocaleDetails, error) {
 	localeDetails, found, err := source.getLocaleIfExist(client, localeFile)
 	if err != nil {
 		return nil, err
@@ -212,6 +217,7 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	if localeFile.Code != "" {
 		localeParams.Code = &localeFile.Code
 	}
+	// localeParams.Branch = branch
 
 	localeDetails, err = client.LocaleCreate(source.ProjectID, localeParams)
 	if err != nil {

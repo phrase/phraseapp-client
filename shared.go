@@ -8,31 +8,47 @@ type ProjectLocales interface {
 	ProjectIds() []string
 }
 
-func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales) (map[string][]*phraseapp.Locale, error) {
-	projectIdToLocales := map[string][]*phraseapp.Locale{}
+type LocaleCacheKey struct {
+	ProjectID string
+	Branch    string
+}
+
+type LocaleCache map[LocaleCacheKey][]*phraseapp.Locale
+
+func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales, branch string) (LocaleCache, error) {
+
+	projectIdToLocales := LocaleCache{}
 	for _, pid := range projectLocales.ProjectIds() {
-		if _, ok := projectIdToLocales[pid]; !ok {
-			remoteLocales, err := RemoteLocales(client, pid)
+		key := LocaleCacheKey{
+			ProjectID: pid,
+			Branch:    branch,
+		}
+
+		if _, ok := projectIdToLocales[key]; !ok {
+			remoteLocales, err := RemoteLocales(client, key)
 			if err != nil {
 				return nil, err
 			}
 
-			projectIdToLocales[pid] = remoteLocales
+			projectIdToLocales[key] = remoteLocales
 		}
 	}
 	return projectIdToLocales, nil
+
 }
 
-func RemoteLocales(client *phraseapp.Client, projectId string) ([]*phraseapp.Locale, error) {
+func RemoteLocales(client *phraseapp.Client, key LocaleCacheKey) ([]*phraseapp.Locale, error) {
 	page := 1
-	locales, err := client.LocalesList(projectId, page, 25)
+	//TODO: Allow branch for locale list
+	locales, err := client.LocalesList(key.ProjectID, page, 25, &phraseapp.LocalesListParams{Branch: &key.Branch})
 	if err != nil {
 		return nil, err
 	}
 	result := locales
 	for len(locales) == 25 {
 		page = page + 1
-		locales, err = client.LocalesList(projectId, page, 25)
+		//TODO: Allow branch for locale list
+		locales, err = client.LocalesList(key.ProjectID, page, 25, &phraseapp.LocalesListParams{Branch: &key.Branch})
 		if err != nil {
 			return nil, err
 		}

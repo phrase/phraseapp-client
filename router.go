@@ -316,7 +316,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locale/update", cmd, "Update an existing locale.")
 	}
 
-	r.Register("locales/list", newLocalesList(cfg), "List all locales for the given project.")
+	if cmd, err := newLocalesList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locales/list", cmd, "List all locales for the given project.")
+	}
 
 	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.")
 
@@ -3313,13 +3317,15 @@ func (cmd *LocaleUpdate) Run() error {
 type LocalesList struct {
 	phraseapp.Config
 
+	phraseapp.LocalesListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
 }
 
-func newLocalesList(cfg *phraseapp.Config) *LocalesList {
+func newLocalesList(cfg *phraseapp.Config) (*LocalesList, error) {
 
 	actionLocalesList := &LocalesList{Config: *cfg}
 	actionLocalesList.ProjectID = cfg.DefaultProjectID
@@ -3330,17 +3336,24 @@ func newLocalesList(cfg *phraseapp.Config) *LocalesList {
 		actionLocalesList.PerPage = *cfg.PerPage
 	}
 
-	return actionLocalesList
+	val, defaultsPresent := actionLocalesList.Config.Defaults["locales/list"]
+	if defaultsPresent {
+		if err := actionLocalesList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionLocalesList, nil
 }
 
 func (cmd *LocalesList) Run() error {
+	params := &cmd.LocalesListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err

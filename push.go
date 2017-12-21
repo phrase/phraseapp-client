@@ -17,7 +17,8 @@ import (
 
 type PushCommand struct {
 	phraseapp.Config
-	Wait bool `cli:"opt --wait desc='Wait for files to be processed'"`
+	Wait   bool   `cli:"opt --wait desc='Wait for files to be processed'"`
+	Branch string `cli:"arg"`
 }
 
 func (cmd *PushCommand) Run() error {
@@ -57,19 +58,20 @@ func (cmd *PushCommand) Run() error {
 		}
 	}
 
-	projectIdToLocales, err := LocalesForProjects(client, sources)
+	projectIdToLocales, err := LocalesForProjects(client, sources, cmd.Branch)
+	log.Println(projectIdToLocales)
 	if err != nil {
 		return err
 	}
 	for _, source := range sources {
-		val, ok := projectIdToLocales[source.ProjectID]
+		val, ok := projectIdToLocales[LocaleCacheKey{source.ProjectID, cmd.Branch}]
 		if ok {
 			source.RemoteLocales = val
 		}
 	}
 
 	for _, source := range sources {
-		err := source.Push(client, cmd.Wait)
+		err := source.Push(client, cmd.Wait, cmd.Branch)
 		if err != nil {
 			return err
 		}
@@ -77,7 +79,7 @@ func (cmd *PushCommand) Run() error {
 	return nil
 }
 
-func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error {
+func (source *Source) Push(client *phraseapp.Client, waitForResults bool, branch string) error {
 	localeFiles, err := source.LocaleFiles()
 	if err != nil {
 		return err
@@ -86,8 +88,8 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 	for _, localeFile := range localeFiles {
 		fmt.Printf("Uploading %s... ", localeFile.RelPath())
 
-		if localeFile.shouldCreateLocale(source) {
-			localeDetails, err := source.createLocale(client, localeFile)
+		if localeFile.shouldCreateLocale(source, branch) {
+			localeDetails, err := source.createLocale(client, localeFile, branch)
 			if err == nil {
 				localeFile.ID = localeDetails.ID
 				localeFile.Code = localeDetails.Code
@@ -98,7 +100,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 			}
 		}
 
-		upload, err := source.uploadFile(client, localeFile)
+		upload, err := source.uploadFile(client, localeFile, branch)
 		if err != nil {
 			return err
 		}
@@ -293,7 +295,7 @@ func (localeFile *LocaleFile) fillFromPath(path, pattern string) {
 	fillFrom(pathEnd, patternEnd)
 }
 
-func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
+func (localeFile *LocaleFile) shouldCreateLocale(source *Source, branch string) bool {
 	if localeFile.ExistsRemote {
 		return false
 	}
