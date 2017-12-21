@@ -15,6 +15,7 @@ import (
 
 type PullCommand struct {
 	phraseapp.Config
+	Branch string `cli:"arg"`
 }
 
 func (cmd *PullCommand) Run() error {
@@ -33,13 +34,13 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	projectIdToLocales, err := LocalesForProjects(client, targets)
+	projectIdToLocales, err := LocalesForProjects(client, targets, cmd.Branch)
 	if err != nil {
 		return err
 	}
 
 	for _, target := range targets {
-		val, ok := projectIdToLocales[target.ProjectID]
+		val, ok := projectIdToLocales[LocaleCacheKey{target.ProjectID, cmd.Branch}]
 		if !ok || len(val) == 0 {
 			return fmt.Errorf("Could not find any locales for project %q", target.ProjectID)
 		}

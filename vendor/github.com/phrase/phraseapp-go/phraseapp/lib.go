@@ -4340,13 +4340,41 @@ func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) 
 	return retVal, err
 }
 
+type LocalesListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all locales for the given project.
-func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Locale, error) {
+func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
 	retVal := []*Locale{}
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
