@@ -18,7 +18,7 @@ import (
 type PushCommand struct {
 	phraseapp.Config
 	Wait   bool   `cli:"opt --wait desc='Wait for files to be processed'"`
-	Branch string `cli:"arg"`
+	Branch string `cli:"opt --branch"`
 }
 
 func (cmd *PushCommand) Run() error {
