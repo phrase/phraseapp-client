@@ -15,7 +15,7 @@ import (
 
 type PullCommand struct {
 	phraseapp.Config
-	Branch string `cli:"arg"`
+	Branch string `cli:"opt --branch"`
 }
 
 func (cmd *PullCommand) Run() error {
