@@ -59,7 +59,6 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	projectIdToLocales, err := LocalesForProjects(client, sources, cmd.Branch)
-	log.Println(projectIdToLocales)
 	if err != nil {
 		return err
 	}
