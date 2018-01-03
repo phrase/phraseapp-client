@@ -464,7 +464,7 @@ func TestUploadFile(t *testing.T) {
 	file.Code = "locale-code"
 	file.Tag = "sometag"
 
-	_, err := src.uploadFile(c, file)
+	_, err := src.uploadFile(c, file, "")
 	if err != nil {
 		t.Errorf("didn't expect an error, got: %s", err)
 	}
@@ -604,7 +604,7 @@ func TestShouldCreateLocale(t *testing.T) {
 			Code:         pattern.Code,
 			ExistsRemote: pattern.ExistsRemote,
 		}
-		was := localeFile.shouldCreateLocale(pattern.Source)
+		was := localeFile.shouldCreateLocale(pattern.Source, "")
 		if was != pattern.Expected {
 			t.Errorf("expected the locale should be created to be: %t, but was %t", pattern.Expected, was)
 		}

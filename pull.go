@@ -48,7 +48,7 @@ func (cmd *PullCommand) Run() error {
 	}
 
 	for _, target := range targets {
-		err := target.Pull(client)
+		err := target.Pull(client, cmd.Branch)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ type PullParams struct {
 	LocaleID string
 }
 
-func (target *Target) Pull(client *phraseapp.Client) error {
+func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 	if err := target.CheckPreconditions(); err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 			return err
 		}
 
-		err = target.DownloadAndWriteToFile(client, localeFile)
+		err = target.DownloadAndWriteToFile(client, localeFile, branch)
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
@@ -92,10 +92,11 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 	return nil
 }
 
-func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
-	downloadParams := new(phraseapp.LocaleDownloadParams)
+func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile, branch string) error {
+	downloadParams := &phraseapp.LocaleDownloadParams{Branch: &branch}
 	if target.Params != nil {
 		*downloadParams = target.Params.LocaleDownloadParams
+		downloadParams.Branch = &branch
 	}
 
 	if downloadParams.FileFormat == nil {
