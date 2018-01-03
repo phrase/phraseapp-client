@@ -4006,13 +4006,41 @@ func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownlo
 	return retVal, err
 }
 
+type LocaleShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single locale for a given project.
-func (client *Client) LocaleShow(project_id, id string) (*LocaleDetails, error) {
+func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5578,13 +5606,41 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 	return retVal, err
 }
 
+type UploadShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // View details and summary for a single upload.
-func (client *Client) UploadShow(project_id, id string) (*Upload, error) {
+func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", project_id, id)
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
