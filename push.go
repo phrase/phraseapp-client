@@ -13,6 +13,7 @@ import (
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-go/phraseapp"
+	"log"
 )
 
 type PushCommand struct {
@@ -56,6 +57,17 @@ func (cmd *PushCommand) Run() error {
 		if source.Format == nil {
 			return fmt.Errorf("Format %q of source %q is not supported by PhraseApp!", formatName, source.File)
 		}
+	}
+
+	projectsAffected := map[string]bool{}
+	for _, source := range sources {
+		projectsAffected[source.ProjectID] = true
+	}
+
+	for projectID := range projectsAffected {
+		branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
+		res, _ := client.BranchCreate(projectID, branchPrams)
+		log.Println(res)
 	}
 
 	projectIdToLocales, err := LocalesForProjects(client, sources, cmd.Branch)
