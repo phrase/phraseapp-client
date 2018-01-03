@@ -124,7 +124,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool, branch
 
 			fmt.Printf("Upload ID: %s, filename: %s suceeded. Waiting for your file to be processed... ", upload.ID, upload.Filename)
 			spinner.While(func() {
-				result, err := getUploadResult(client, source.ProjectID, upload)
+				result, err := getUploadResult(client, source.ProjectID, upload, branch)
 				taskResult <- result
 				taskErr <- err
 			})
@@ -322,7 +322,7 @@ func (localeFile *LocaleFile) shouldCreateLocale(source *Source, branch string) 
 	return (localeFile.Name != "" || localeFile.Code != "")
 }
 
-func getUploadResult(client *phraseapp.Client, projectID string, upload *phraseapp.Upload) (result string, err error) {
+func getUploadResult(client *phraseapp.Client, projectID string, upload *phraseapp.Upload, branch string) (result string, err error) {
 	b := &backoff.Backoff{
 		Min:    500 * time.Millisecond,
 		Max:    10 * time.Second,
@@ -332,7 +332,8 @@ func getUploadResult(client *phraseapp.Client, projectID string, upload *phrasea
 
 	for ; result != "success" && result != "error"; result = upload.State {
 		time.Sleep(b.Duration())
-		upload, err = client.UploadShow(projectID, upload.ID)
+		uploadShowParams := &phraseapp.UploadShowParams{Branch: &branch}
+		upload, err = client.UploadShow(projectID, upload.ID, uploadShowParams)
 		if err != nil {
 			break
 		}

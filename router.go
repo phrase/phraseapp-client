@@ -308,7 +308,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locale/download", cmd, "Download a locale in a specific file format.")
 	}
 
-	r.Register("locale/show", newLocaleShow(cfg), "Get details on a single locale for a given project.")
+	if cmd, err := newLocaleShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/show", cmd, "Get details on a single locale for a given project.")
+	}
 
 	if cmd, err := newLocaleUpdate(cfg); err != nil {
 		return nil, err
@@ -466,7 +470,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("upload/create", cmd, "Upload a new language file. Creates necessary resources in your project.")
 	}
 
-	r.Register("upload/show", newUploadShow(cfg), "View details and summary for a single upload.")
+	if cmd, err := newUploadShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("upload/show", cmd, "View details and summary for a single upload.")
+	}
 
 	r.Register("uploads/list", newUploadsList(cfg), "List all uploads for the given project.")
 
@@ -3246,26 +3254,35 @@ func (cmd *LocaleDownload) Run() error {
 type LocaleShow struct {
 	phraseapp.Config
 
+	phraseapp.LocaleShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
+func newLocaleShow(cfg *phraseapp.Config) (*LocaleShow, error) {
 
 	actionLocaleShow := &LocaleShow{Config: *cfg}
 	actionLocaleShow.ProjectID = cfg.DefaultProjectID
 
-	return actionLocaleShow
+	val, defaultsPresent := actionLocaleShow.Config.Defaults["locale/show"]
+	if defaultsPresent {
+		if err := actionLocaleShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionLocaleShow, nil
 }
 
 func (cmd *LocaleShow) Run() error {
+	params := &cmd.LocaleShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.LocaleShow(cmd.ProjectID, cmd.ID)
+	res, err := client.LocaleShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -4690,26 +4707,35 @@ func (cmd *UploadCreate) Run() error {
 type UploadShow struct {
 	phraseapp.Config
 
+	phraseapp.UploadShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newUploadShow(cfg *phraseapp.Config) *UploadShow {
+func newUploadShow(cfg *phraseapp.Config) (*UploadShow, error) {
 
 	actionUploadShow := &UploadShow{Config: *cfg}
 	actionUploadShow.ProjectID = cfg.DefaultProjectID
 
-	return actionUploadShow
+	val, defaultsPresent := actionUploadShow.Config.Defaults["upload/show"]
+	if defaultsPresent {
+		if err := actionUploadShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionUploadShow, nil
 }
 
 func (cmd *UploadShow) Run() error {
+	params := &cmd.UploadShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.UploadShow(cmd.ProjectID, cmd.ID)
+	res, err := client.UploadShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
