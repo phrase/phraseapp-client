@@ -39,7 +39,6 @@ func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales,
 
 func RemoteLocales(client *phraseapp.Client, key LocaleCacheKey) ([]*phraseapp.Locale, error) {
 	page := 1
-	//TODO: Allow branch for locale list
 	locales, err := client.LocalesList(key.ProjectID, page, 25, &phraseapp.LocalesListParams{Branch: &key.Branch})
 	if err != nil {
 		return nil, err
@@ -47,7 +46,6 @@ func RemoteLocales(client *phraseapp.Client, key LocaleCacheKey) ([]*phraseapp.L
 	result := locales
 	for len(locales) == 25 {
 		page = page + 1
-		//TODO: Allow branch for locale list
 		locales, err = client.LocalesList(key.ProjectID, page, 25, &phraseapp.LocalesListParams{Branch: &key.Branch})
 		if err != nil {
 			return nil, err
