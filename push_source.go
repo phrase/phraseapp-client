@@ -190,7 +190,7 @@ func (source *Source) uploadFile(client *phraseapp.Client, localeFile *LocaleFil
 }
 
 func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleFile, branch string) (*phraseapp.LocaleDetails, error) {
-	localeDetails, found, err := source.getLocaleIfExist(client, localeFile)
+	localeDetails, found, err := source.getLocaleIfExist(client, localeFile, branch)
 	if err != nil {
 		return nil, err
 	} else if found {
@@ -217,6 +217,10 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	if localeFile.Code != "" {
 		localeParams.Code = &localeFile.Code
 	}
+
+	if branch != "" {
+		localeParams.Branch = &branch
+	}
 	// localeParams.Branch = branch
 
 	localeDetails, err = client.LocaleCreate(source.ProjectID, localeParams)
@@ -226,13 +230,14 @@ func (source *Source) createLocale(client *phraseapp.Client, localeFile *LocaleF
 	return localeDetails, nil
 }
 
-func (source *Source) getLocaleIfExist(client *phraseapp.Client, localeFile *LocaleFile) (*phraseapp.LocaleDetails, bool, error) {
+func (source *Source) getLocaleIfExist(client *phraseapp.Client, localeFile *LocaleFile, branch string) (*phraseapp.LocaleDetails, bool, error) {
 	identifier := localeIdentifier(source, localeFile)
 	if identifier == "" {
 		return nil, false, nil
 	}
 
-	localeDetail, err := client.LocaleShow(source.ProjectID, identifier)
+	localeShowParams := &phraseapp.LocaleShowParams{Branch: &branch}
+	localeDetail, err := client.LocaleShow(source.ProjectID, identifier, localeShowParams)
 	if phraseapp.IsErrNotFound(err) {
 		return nil, false, nil
 	} else if err != nil {
