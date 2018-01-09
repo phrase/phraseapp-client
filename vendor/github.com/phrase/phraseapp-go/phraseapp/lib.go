@@ -2035,31 +2035,6 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 	return retVal, err
 }
 
-// List all branches the of the current project.
-func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Branch, error) {
-	retVal := []*Branch{}
-	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
-
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
-		if err != nil {
-			return err
-		}
-		defer rc.Close()
-
-		var reader io.Reader
-		if client.debug {
-			reader = io.TeeReader(rc, os.Stderr)
-		} else {
-			reader = rc
-		}
-
-		return json.NewDecoder(reader).Decode(&retVal)
-
-	}()
-	return retVal, err
-}
-
 // Create a new comment for a key.
 func (client *Client) CommentCreate(project_id, key_id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
@@ -4309,41 +4284,13 @@ func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownlo
 	return retVal, err
 }
 
-type LocaleShowParams struct {
-	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
-}
-
-func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
-	for k, v := range defaults {
-		switch k {
-		case "branch":
-			val, ok := v.(string)
-			if !ok {
-				return fmt.Errorf(cfgValueErrStr, k, v)
-			}
-			params.Branch = &val
-
-		default:
-			return fmt.Errorf(cfgInvalidKeyErrStr, k)
-		}
-	}
-
-	return nil
-}
-
 // Get details on a single locale for a given project.
-func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
+func (client *Client) LocaleShow(project_id, id string) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
-
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
 			return err
 		}
@@ -4393,41 +4340,13 @@ func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) 
 	return retVal, err
 }
 
-type LocalesListParams struct {
-	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
-}
-
-func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
-	for k, v := range defaults {
-		switch k {
-		case "branch":
-			val, ok := v.(string)
-			if !ok {
-				return fmt.Errorf(cfgValueErrStr, k, v)
-			}
-			params.Branch = &val
-
-		default:
-			return fmt.Errorf(cfgInvalidKeyErrStr, k)
-		}
-	}
-
-	return nil
-}
-
 // List all locales for the given project.
-func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
+func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Locale, error) {
 	retVal := []*Locale{}
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
-
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -6077,41 +5996,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 	return retVal, err
 }
 
-type UploadShowParams struct {
-	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
-}
-
-func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
-	for k, v := range defaults {
-		switch k {
-		case "branch":
-			val, ok := v.(string)
-			if !ok {
-				return fmt.Errorf(cfgValueErrStr, k, v)
-			}
-			params.Branch = &val
-
-		default:
-			return fmt.Errorf(cfgInvalidKeyErrStr, k)
-		}
-	}
-
-	return nil
-}
-
 // View details and summary for a single upload.
-func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
+func (client *Client) UploadShow(project_id, id string) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", project_id, id)
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
-
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
 			return err
 		}
