@@ -2105,7 +2105,7 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 func (client *Client) BranchCompare(project_id, id string) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s/compare", project_id, id)
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/compare", project_id, id)
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2183,7 +2183,7 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s/merge", project_id, id)
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", project_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
