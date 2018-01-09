@@ -90,6 +90,8 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("branch/update", cmd, "Update an existing branch.")
 	}
 
+	r.Register("branches/list", newBranchesList(cfg), "List all branches the of the current project.")
+
 	if cmd, err := newCommentCreate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -1174,6 +1176,45 @@ func (cmd *BranchUpdate) Run() error {
 	}
 
 	res, err := client.BranchUpdate(cmd.ProjectID, cmd.Name, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchesList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newBranchesList(cfg *phraseapp.Config) *BranchesList {
+
+	actionBranchesList := &BranchesList{Config: *cfg}
+	actionBranchesList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionBranchesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionBranchesList.PerPage = *cfg.PerPage
+	}
+
+	return actionBranchesList
+}
+
+func (cmd *BranchesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
