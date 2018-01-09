@@ -1051,7 +1051,7 @@ type BranchCompare struct {
 	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
-	Name      string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func newBranchCompare(cfg *phraseapp.Config) *BranchCompare {
@@ -1069,7 +1069,7 @@ func (cmd *BranchCompare) Run() error {
 		return err
 	}
 
-	res, err := client.BranchCompare(cmd.ProjectID, cmd.Name)
+	res, err := client.BranchCompare(cmd.ProjectID, cmd.ID)
 
 	if err != nil {
 		return err
@@ -1123,7 +1123,7 @@ type BranchMerge struct {
 	phraseapp.BranchMergeParams
 
 	ProjectID string `cli:"arg required"`
-	Name      string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func newBranchMerge(cfg *phraseapp.Config) (*BranchMerge, error) {
@@ -1148,7 +1148,7 @@ func (cmd *BranchMerge) Run() error {
 		return err
 	}
 
-	err = client.BranchMerge(cmd.ProjectID, cmd.Name, params)
+	err = client.BranchMerge(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1163,7 +1163,7 @@ type BranchUpdate struct {
 	phraseapp.BranchParams
 
 	ProjectID string `cli:"arg required"`
-	Name      string `cli:"arg required"`
+	ID        string `cli:"arg required"`
 }
 
 func newBranchUpdate(cfg *phraseapp.Config) (*BranchUpdate, error) {
@@ -1188,7 +1188,7 @@ func (cmd *BranchUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.BranchUpdate(cmd.ProjectID, cmd.Name, params)
+	res, err := client.BranchUpdate(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err

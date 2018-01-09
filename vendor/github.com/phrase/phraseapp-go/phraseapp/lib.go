@@ -2102,10 +2102,10 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 }
 
 // Compare branch to current state of project
-func (client *Client) BranchCompare(project_id, name string) (*Branch, error) {
+func (client *Client) BranchCompare(project_id, id string) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s/compare", project_id, name)
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s/compare", project_id, id)
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2180,10 +2180,10 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 }
 
 // Merge an existing branch.
-func (client *Client) BranchMerge(project_id, name string, params *BranchMergeParams) error {
+func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s/merge", project_id, name)
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s/merge", project_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2203,10 +2203,10 @@ func (client *Client) BranchMerge(project_id, name string, params *BranchMergePa
 }
 
 // Update an existing branch.
-func (client *Client) BranchUpdate(project_id, name string, params *BranchParams) (*Branch, error) {
+func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s", project_id, name)
+		url := fmt.Sprintf("/v2/projects/%s/branch/%s", project_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
