@@ -64,7 +64,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("branch/create", cmd, "Create a new branch.")
 	}
 
-	r.Register("branch/merge", newBranchMerge(cfg), "Merge an existing branch.")
+	if cmd, err := newBranchMerge(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/merge", cmd, "Merge an existing branch.")
+	}
 
 	if cmd, err := newBranchUpdate(cfg); err != nil {
 		return nil, err
@@ -973,26 +977,35 @@ func (cmd *BranchCreate) Run() error {
 type BranchMerge struct {
 	phraseapp.Config
 
+	phraseapp.BranchMergeParams
+
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
 }
 
-func newBranchMerge(cfg *phraseapp.Config) *BranchMerge {
+func newBranchMerge(cfg *phraseapp.Config) (*BranchMerge, error) {
 
 	actionBranchMerge := &BranchMerge{Config: *cfg}
 	actionBranchMerge.ProjectID = cfg.DefaultProjectID
 
-	return actionBranchMerge
+	val, defaultsPresent := actionBranchMerge.Config.Defaults["branch/merge"]
+	if defaultsPresent {
+		if err := actionBranchMerge.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchMerge, nil
 }
 
 func (cmd *BranchMerge) Run() error {
+	params := &cmd.BranchMergeParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.BranchMerge(cmd.ProjectID, cmd.Name)
+	err = client.BranchMerge(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err

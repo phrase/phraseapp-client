@@ -1816,13 +1816,41 @@ func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Br
 	return retVal, err
 }
 
+type BranchMergeParams struct {
+	Stategy *string `json:"stategy,omitempty"  cli:"opt --stategy"`
+}
+
+func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "stategy":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Stategy = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Merge an existing branch.
-func (client *Client) BranchMerge(project_id, name string) error {
+func (client *Client) BranchMerge(project_id, name string, params *BranchMergeParams) error {
 
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/branch/%s/merge", project_id, name)
 
-		rc, err := client.sendRequest("PATCH", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
