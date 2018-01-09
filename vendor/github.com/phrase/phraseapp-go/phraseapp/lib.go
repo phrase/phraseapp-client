@@ -1871,6 +1871,31 @@ func (client *Client) BranchUpdate(project_id, name string, params *BranchParams
 	return retVal, err
 }
 
+// List all branches the of the current project.
+func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Branch, error) {
+	retVal := []*Branch{}
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 // Create a new comment for a key.
 func (client *Client) CommentCreate(project_id, key_id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
