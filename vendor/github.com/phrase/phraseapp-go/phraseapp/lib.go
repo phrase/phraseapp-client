@@ -64,6 +64,7 @@ type Branch struct {
 	MergedAt  *time.Time   `json:"merged_at"`
 	MergedBy  *UserPreview `json:"merged_by"`
 	Name      string       `json:"name"`
+	State     string       `json:"state"`
 	UpdatedAt *time.Time   `json:"updated_at"`
 }
 
