@@ -59,7 +59,12 @@ type BlacklistedKey struct {
 }
 
 type Branch struct {
-	Name string `json:"name"`
+	CreatedAt *time.Time   `json:"created_at"`
+	CreatedBy *UserPreview `json:"created_by"`
+	MergedAt  *time.Time   `json:"merged_at"`
+	MergedBy  *UserPreview `json:"merged_by"`
+	Name      string       `json:"name"`
+	UpdatedAt *time.Time   `json:"updated_at"`
 }
 
 type Comment struct {
@@ -1760,31 +1765,6 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 	return retVal, err
 }
 
-// Compare branch to current state of project
-func (client *Client) BranchCompare(project_id, id string) (*Branch, error) {
-	retVal := new(Branch)
-	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s/compare", project_id, id)
-
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
-		if err != nil {
-			return err
-		}
-		defer rc.Close()
-
-		var reader io.Reader
-		if client.debug {
-			reader = io.TeeReader(rc, os.Stderr)
-		} else {
-			reader = rc
-		}
-
-		return json.NewDecoder(reader).Decode(&retVal)
-
-	}()
-	return retVal, err
-}
-
 // Create a new branch.
 func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
@@ -1816,19 +1796,36 @@ func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Br
 	return retVal, err
 }
 
+// Delete an existing branch.
+func (client *Client) BranchDelete(project_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
 type BranchMergeParams struct {
-	Stategy *string `json:"stategy,omitempty"  cli:"opt --stategy"`
+	Strategy *string `json:"strategy,omitempty"  cli:"opt --strategy"`
 }
 
 func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
-		case "stategy":
+		case "strategy":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Stategy = &val
+			params.Strategy = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -1865,7 +1862,7 @@ func (client *Client) BranchMerge(project_id, id string, params *BranchMergePara
 func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branch/%s", project_id, id)
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)

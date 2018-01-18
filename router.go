@@ -56,13 +56,13 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
 
-	r.Register("branch/compare", newBranchCompare(cfg), "Compare branch to current state of project")
-
 	if cmd, err := newBranchCreate(cfg); err != nil {
 		return nil, err
 	} else {
 		r.Register("branch/create", cmd, "Create a new branch.")
 	}
+
+	r.Register("branch/delete", newBranchDelete(cfg), "Delete an existing branch.")
 
 	if cmd, err := newBranchMerge(cfg); err != nil {
 		return nil, err
@@ -904,37 +904,6 @@ func (cmd *BlacklistedKeysList) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
-type BranchCompare struct {
-	phraseapp.Config
-
-	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
-}
-
-func newBranchCompare(cfg *phraseapp.Config) *BranchCompare {
-
-	actionBranchCompare := &BranchCompare{Config: *cfg}
-	actionBranchCompare.ProjectID = cfg.DefaultProjectID
-
-	return actionBranchCompare
-}
-
-func (cmd *BranchCompare) Run() error {
-
-	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.BranchCompare(cmd.ProjectID, cmd.ID)
-
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(os.Stdout).Encode(&res)
-}
-
 type BranchCreate struct {
 	phraseapp.Config
 
@@ -972,6 +941,37 @@ func (cmd *BranchCreate) Run() error {
 	}
 
 	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchDelete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchDelete(cfg *phraseapp.Config) *BranchDelete {
+
+	actionBranchDelete := &BranchDelete{Config: *cfg}
+	actionBranchDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchDelete
+}
+
+func (cmd *BranchDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type BranchMerge struct {
