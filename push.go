@@ -13,7 +13,6 @@ import (
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/spinner"
 	"github.com/phrase/phraseapp-go/phraseapp"
-	"log"
 )
 
 type PushCommand struct {
@@ -65,9 +64,33 @@ func (cmd *PushCommand) Run() error {
 	}
 
 	for projectID := range projectsAffected {
+
 		branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
-		res, _ := client.BranchCreate(projectID, branchPrams)
-		log.Println(res)
+		branch, _ := client.BranchCreate(projectID, branchPrams)
+
+		fmt.Println()
+
+		taskResult := make(chan string, 1)
+		taskErr := make(chan error, 1)
+
+		fmt.Printf("Waiting for branch %s is created!", branch.Name)
+		spinner.While(func() {
+			branchCreateResult, err := getBranchCreateResult(client, projectID, branch)
+			taskResult <- branchCreateResult
+			taskErr <- err
+		})
+		fmt.Println()
+
+		if err := <-taskErr; err != nil {
+			return err
+		}
+
+		switch <-taskResult {
+		case "success":
+			print.Success("Successfully created branch %s", branch.Name)
+		case "error":
+			print.Failure("There was an error creating branch %s.", branch.Name)
+		}
 	}
 
 	projectIdToLocales, err := LocalesForProjects(client, sources, cmd.Branch)
@@ -334,6 +357,25 @@ func getUploadResult(client *phraseapp.Client, projectID string, upload *phrasea
 		time.Sleep(b.Duration())
 		uploadShowParams := &phraseapp.UploadShowParams{Branch: &branch}
 		upload, err = client.UploadShow(projectID, upload.ID, uploadShowParams)
+		if err != nil {
+			break
+		}
+	}
+
+	return
+}
+
+func getBranchCreateResult(client *phraseapp.Client, projectID string, branch *phraseapp.Branch) (result string, err error) {
+	b := &backoff.Backoff{
+		Min:    500 * time.Millisecond,
+		Max:    10 * time.Second,
+		Factor: 2,
+		Jitter: true,
+	}
+
+	for ; result != "success" && result != "error"; result = branch.State {
+		time.Sleep(b.Duration())
+		branch, err = client.BranchShow(projectID, branch.Name)
 		if err != nil {
 			break
 		}
