@@ -1866,6 +1866,31 @@ func (client *Client) BranchMerge(project_id, id string, params *BranchMergePara
 	return err
 }
 
+// Get details on a single branch for a given project.
+func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 // Update an existing branch.
 func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
