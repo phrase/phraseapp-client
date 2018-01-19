@@ -70,6 +70,8 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("branch/merge", cmd, "Merge an existing branch.")
 	}
 
+	r.Register("branch/show", newBranchShow(cfg), "Get details on a single branch for a given project.")
+
 	if cmd, err := newBranchUpdate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -1012,6 +1014,37 @@ func (cmd *BranchMerge) Run() error {
 	}
 
 	return nil
+}
+
+type BranchShow struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchShow(cfg *phraseapp.Config) *BranchShow {
+
+	actionBranchShow := &BranchShow{Config: *cfg}
+	actionBranchShow.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchShow
+}
+
+func (cmd *BranchShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type BranchUpdate struct {
