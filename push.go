@@ -63,33 +63,37 @@ func (cmd *PushCommand) Run() error {
 		projectsAffected[source.ProjectID] = true
 	}
 
-	for projectID := range projectsAffected {
+	if cmd.Branch != "" {
+		for projectID := range projectsAffected {
+			_, err := client.BranchShow(projectID, cmd.Branch)
+			if err != nil {
+				branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
+				branch, _ := client.BranchCreate(projectID, branchPrams)
 
-		branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
-		branch, _ := client.BranchCreate(projectID, branchPrams)
+				fmt.Println()
 
-		fmt.Println()
+				taskResult := make(chan string, 1)
+				taskErr := make(chan error, 1)
 
-		taskResult := make(chan string, 1)
-		taskErr := make(chan error, 1)
+				fmt.Printf("Waiting for branch %s is created!", branch.Name)
+				spinner.While(func() {
+					branchCreateResult, err := getBranchCreateResult(client, projectID, branch)
+					taskResult <- branchCreateResult
+					taskErr <- err
+				})
+				fmt.Println()
 
-		fmt.Printf("Waiting for branch %s is created!", branch.Name)
-		spinner.While(func() {
-			branchCreateResult, err := getBranchCreateResult(client, projectID, branch)
-			taskResult <- branchCreateResult
-			taskErr <- err
-		})
-		fmt.Println()
+				if err := <-taskErr; err != nil {
+					return err
+				}
 
-		if err := <-taskErr; err != nil {
-			return err
-		}
-
-		switch <-taskResult {
-		case "success":
-			print.Success("Successfully created branch %s", branch.Name)
-		case "error":
-			print.Failure("There was an error creating branch %s.", branch.Name)
+				switch <-taskResult {
+				case "success":
+					print.Success("Successfully created branch %s", branch.Name)
+				case "error":
+					print.Failure("There was an error creating branch %s.", branch.Name)
+				}
+			}
 		}
 	}
 
