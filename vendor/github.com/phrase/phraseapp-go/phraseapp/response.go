@@ -38,7 +38,7 @@ func handleResponseStatus(resp *http.Response, expectedStatus int) error {
 			return ErrNotFound{Message: fmt.Sprintf("%d - Resource Not Found\nThe resource you requested or referenced resources you required do either not exist or you do not have the authorization to request this resource.", status)}
 		}
 		return ErrNotFound{Message: string(b)}
-	case 422:
+	case http.StatusUnsupportedMediaType, http.StatusUnprocessableEntity:
 		e := new(ValidationErrorResponse)
 		err := json.NewDecoder(resp.Body).Decode(&e)
 		if err != nil {
