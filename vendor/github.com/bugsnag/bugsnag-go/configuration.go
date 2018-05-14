@@ -20,6 +20,9 @@ type Configuration struct {
 	// The current release stage. This defaults to "production" and is used to
 	// filter errors in the Bugsnag dashboard.
 	ReleaseStage string
+	// A specialized type of the application, such as the worker queue or web
+	// framework used, like "rails", "mailman", or "celery"
+	AppType string
 	// The currently running version of the app. This is used to filter errors
 	// in the Bugsnag dasboard. If you set this then Bugsnag will only re-open
 	// resolved errors if they happen in different app versions.
@@ -38,6 +41,15 @@ type Configuration struct {
 	// and helpers. You can list wildcards here, and they'll be expanded using
 	// filepath.Glob. The default value is []string{"main*"}
 	ProjectPackages []string
+
+	// The SourceRoot is the directory where the application is built, and the
+	// assumed prefix of lines on the stacktrace originating in the parent
+	// application. When set, the prefix is trimmed from callstack file names
+	// before ProjectPackages for better readability and to better group errors
+	// on the Bugsnag dashboard. The default value is $GOPATH/src or $GOROOT/src
+	// if $GOPATH is unset. At runtime, $GOROOT is the root used during the Go
+	// build.
+	SourceRoot string
 
 	// Any meta-data that matches these filters will be marked as [REDACTED]
 	// before sending a Notification to Bugsnag. It defaults to
@@ -76,8 +88,14 @@ func (config *Configuration) update(other *Configuration) *Configuration {
 	if other.Hostname != "" {
 		config.Hostname = other.Hostname
 	}
+	if other.AppType != "" {
+		config.AppType = other.AppType
+	}
 	if other.AppVersion != "" {
 		config.AppVersion = other.AppVersion
+	}
+	if other.SourceRoot != "" {
+		config.SourceRoot = other.SourceRoot
 	}
 	if other.ReleaseStage != "" {
 		config.ReleaseStage = other.ReleaseStage
@@ -132,6 +150,10 @@ func (config *Configuration) isProjectPackage(pkg string) bool {
 }
 
 func (config *Configuration) stripProjectPackages(file string) string {
+	trimmedFile := file
+	if strings.HasPrefix(trimmedFile, config.SourceRoot) {
+		trimmedFile = strings.TrimPrefix(trimmedFile, config.SourceRoot)
+	}
 	for _, p := range config.ProjectPackages {
 		if len(p) > 2 && p[len(p)-2] == '/' && p[len(p)-1] == '*' {
 			p = p[:len(p)-1]
@@ -140,12 +162,12 @@ func (config *Configuration) stripProjectPackages(file string) string {
 		} else {
 			p = p + "/"
 		}
-		if strings.HasPrefix(file, p) {
-			return strings.TrimPrefix(file, p)
+		if strings.HasPrefix(trimmedFile, p) {
+			return strings.TrimPrefix(trimmedFile, p)
 		}
 	}
 
-	return file
+	return trimmedFile
 }
 
 func (config *Configuration) logf(fmt string, args ...interface{}) {
