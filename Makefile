@@ -15,9 +15,7 @@ build:
 	@go get ${PACKAGES}
 
 vendor:
-	godep save ./...
-	@godep save ./...
+	@dep ensure
 
 update_lib:
-	godep update github.com/phrase/phraseapp-go/...
-	make vendor
+	@dep ensure -update github.com/phrase/phraseapp-go
