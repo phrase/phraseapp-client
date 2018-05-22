@@ -34,13 +34,22 @@ func New(rawData ...interface{}) *Notifier {
 // Bugsnag after being converted to JSON. e.g. bugsnag.SeverityError, bugsnag.Context,
 // or bugsnag.MetaData.
 func (notifier *Notifier) Notify(err error, rawData ...interface{}) (e error) {
+	config := notifier.Config
+	return notifier.NotifySync(err, config.Synchronous, rawData...)
+}
+
+// NotifySync sends an error to Bugsnag. The synchronous parameter specifies
+// whether to send the report in the current context. Any rawData you pass here
+// will be sent to Bugsnag after being converted to JSON. e.g.
+// bugsnag.SeverityError,  bugsnag.Context, or bugsnag.MetaData.
+func (notifier *Notifier) NotifySync(err error, synchronous bool, rawData ...interface{}) (e error) {
 	event, config := newEvent(errors.New(err, 1), rawData, notifier)
 
 	// Never block, start throwing away errors if we have too many.
 	e = middleware.Run(event, config, func() error {
 		config.logf("notifying bugsnag: %s", event.Message)
 		if config.notifyInReleaseStage() {
-			if config.Synchronous {
+			if synchronous {
 				return (&payload{event, config}).deliver()
 			}
 			// Ensure that any errors are logged if they occur in a goroutine.
@@ -64,10 +73,16 @@ func (notifier *Notifier) Notify(err error, rawData ...interface{}) (e error) {
 
 // AutoNotify notifies Bugsnag of any panics, then repanics.
 // It sends along any rawData that gets passed in.
-// Usage: defer AutoNotify()
+// Usage:
+//  go func() {
+//		defer AutoNotify()
+//      // (possibly crashy code)
+//  }()
 func (notifier *Notifier) AutoNotify(rawData ...interface{}) {
 	if err := recover(); err != nil {
-		rawData = notifier.addDefaultSeverity(rawData, SeverityError)
+		severity := notifier.getDefaultSeverity(rawData, SeverityError)
+		state := HandledState{SeverityReasonHandledPanic, severity, true, ""}
+		notifier.appendStateIfNeeded(rawData, state)
 		notifier.Notify(errors.New(err, 2), rawData...)
 		panic(err)
 	}
@@ -78,7 +93,9 @@ func (notifier *Notifier) AutoNotify(rawData ...interface{}) {
 // Usage: defer Recover()
 func (notifier *Notifier) Recover(rawData ...interface{}) {
 	if err := recover(); err != nil {
-		rawData = notifier.addDefaultSeverity(rawData, SeverityWarning)
+		severity := notifier.getDefaultSeverity(rawData, SeverityWarning)
+		state := HandledState{SeverityReasonHandledPanic, severity, false, ""}
+		notifier.appendStateIfNeeded(rawData, state)
 		notifier.Notify(errors.New(err, 2), rawData...)
 	}
 }
@@ -89,14 +106,31 @@ func (notifier *Notifier) dontPanic() {
 	}
 }
 
-// Add a severity to raw data only if the default is not set.
-func (notifier *Notifier) addDefaultSeverity(rawData []interface{}, s severity) []interface{} {
+// Get defined severity from raw data or a fallback value
+func (notifier *Notifier) getDefaultSeverity(rawData []interface{}, s severity) severity {
+	allData := append(notifier.RawData, rawData...)
+	for _, datum := range allData {
+		if _, ok := datum.(severity); ok {
+			return datum.(severity)
+		}
+	}
+
+	for _, datum := range allData {
+		if _, ok := datum.(HandledState); ok {
+			return datum.(HandledState).OriginalSeverity
+		}
+	}
+
+	return s
+}
+
+func (notifier *Notifier) appendStateIfNeeded(rawData []interface{}, h HandledState) []interface{} {
 
 	for _, datum := range append(notifier.RawData, rawData...) {
-		if _, ok := datum.(severity); ok {
+		if _, ok := datum.(HandledState); ok {
 			return rawData
 		}
 	}
 
-	return append(rawData, s)
+	return append(rawData, h)
 }

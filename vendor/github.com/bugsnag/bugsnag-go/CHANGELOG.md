@@ -1,3 +1,52 @@
+# Changelog
+
+## 1.3.1 (2018-03-14)
+
+### Bug fixes
+
+* Add support for Revel v0.18
+  [#63](https://github.com/bugsnag/bugsnag-go/pull/63)
+  [Cameron Halter](https://github.com/EightB1ts)
+
+## 1.3.0 (2017-10-02)
+
+### Enhancements
+
+* Track whether an error report was captured automatically
+* Add SourceRoot as a configuration option, defaulting to `$GOPATH`
+
+## 1.2.2 (2017-08-25)
+
+### Bug fixes
+
+* Point osext dependency at upstream, update with fixes
+
+## 1.2.1 (2017-07-31)
+
+### Bug fixes
+
+* Improve goroutine panic reporting by sending reports synchronously in the
+  case that a goroutine is about to be cleaned up
+  [#52](https://github.com/bugsnag/bugsnag-go/pull/52)
+
+## 1.2.0 (2017-07-03)
+
+### Enhancements
+
+* Support custom stack frame implementations
+  [alexanderwilling](https://github.com/alexanderwilling)
+  [#43](https://github.com/bugsnag/bugsnag-go/issues/43)
+
+* Support app.type in error reports
+  [Jascha Ephraim](https://github.com/jaschaephraim)
+  [#51](https://github.com/bugsnag/bugsnag-go/pull/51)
+
+### Bug fixes
+
+* Mend nil pointer panic in metadata
+  [Johan Sageryd](https://github.com/jsageryd)
+  [#46](https://github.com/bugsnag/bugsnag-go/pull/46)
+
 ## 1.1.1 (2016-12-16)
 
 ### Bug fixes
