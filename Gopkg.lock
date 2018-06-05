@@ -26,7 +26,7 @@
     "cli",
     "tagparse"
   ]
-  revision = "0532c4d240968b87c89badb2f4cf9aeb9554654c"
+  revision = "42838e74d0829d575bba81c6ab3ef0d43274abab"
 
 [[projects]]
   name = "github.com/jpillora/backoff"
@@ -35,7 +35,7 @@
   version = "1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "branching"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
   revision = "20f90566879ab467d042147f43212337fee0f430"
@@ -49,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "16d17b3a65d3905d27223c58d9199553019894eb3166ab7204fd0f40e5405a4e"
+  inputs-digest = "70541f6ea941749f5e15ccb888fa1b0b5afa506c5652143080ea5f4e1b87d3b0"
   solver-name = "gps-cdcl"
   solver-version = 1
