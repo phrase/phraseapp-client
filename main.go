@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	bserrors "github.com/bugsnag/bugsnag-go/errors"
 	"github.com/dynport/dgtk/cli"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/updatechecker"
@@ -30,9 +29,6 @@ func Run() {
 	var cfg *phraseapp.Config
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			if PHRASEAPP_CLIENT_VERSION != "DEV" {
-				reportError(bserrors.New(recovered, 1), cfg)
-			}
 			if Debug {
 				fmt.Fprintf(os.Stderr, "%v\n%s", recovered, debug.Stack())
 			}

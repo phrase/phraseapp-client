@@ -8,21 +8,6 @@
   version = "v0.1.0"
 
 [[projects]]
-  name = "github.com/bugsnag/bugsnag-go"
-  packages = [
-    ".",
-    "errors"
-  ]
-  revision = "f860f733c3d1c69181d9240eed266f94422fc99e"
-  version = "v1.3.1"
-
-[[projects]]
-  name = "github.com/bugsnag/panicwrap"
-  packages = ["."]
-  revision = "4009b2b7c78d820cc4a2e42f035bb557ce4ae45b"
-  version = "v1.2.0"
-
-[[projects]]
   name = "github.com/coreos/go-semver"
   packages = ["semver"]
   revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
@@ -51,18 +36,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/kardianos/osext"
-  packages = ["."]
-  revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/phrase/client-error-proxy"
-  packages = ["errors"]
-  revision = "5a6e92d1a4e9ee88a90b1f087db690c1683ba8c1"
-
-[[projects]]
-  branch = "master"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
   revision = "64e3cc5d7120b109d2d61944352396f0c3b4d29e"
@@ -76,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2639130ec695c768c58938fe7d47828d286087e3ba3eec90a78c4cf1eed24c8c"
+  inputs-digest = "16d17b3a65d3905d27223c58d9199553019894eb3166ab7204fd0f40e5405a4e"
   solver-name = "gps-cdcl"
   solver-version = 1
