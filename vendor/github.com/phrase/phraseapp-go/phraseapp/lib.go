@@ -26,6 +26,12 @@ type Account struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+type AccountDetails struct {
+	Account
+
+	Slug string `json:"slug"`
+}
+
 type AffectedCount struct {
 	RecordsAffected int64 `json:"records_affected"`
 }
@@ -211,7 +217,8 @@ type Project struct {
 type ProjectDetails struct {
 	Project
 
-	SharesTranslationMemory bool `json:"shares_translation_memory"`
+	SharesTranslationMemory bool   `json:"shares_translation_memory"`
+	Slug                    string `json:"slug"`
 }
 
 type ProjectLocales struct {
@@ -1411,8 +1418,8 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 }
 
 // Get details on a single account.
-func (client *Client) AccountShow(id string) (*Account, error) {
-	retVal := new(Account)
+func (client *Client) AccountShow(id string) (*AccountDetails, error) {
+	retVal := new(AccountDetails)
 	err := func() error {
 		url := fmt.Sprintf("/v2/accounts/%s", id)
 
