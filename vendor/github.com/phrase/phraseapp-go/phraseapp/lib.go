@@ -542,7 +542,9 @@ func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Name = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Name = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -966,8 +968,14 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+<<<<<<< HEAD
 			params.Branch = &val
 >>>>>>> branching: add basic branching api
+=======
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+>>>>>>> vendor: update phraseapp-go
 
 		case "code":
 			val, ok := v.(string)
@@ -1529,8 +1537,14 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+<<<<<<< HEAD
 			params.Branch = &val
 >>>>>>> branching: add basic branching api
+=======
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+>>>>>>> vendor: update phraseapp-go
 
 		case "convert_emoji":
 			val, ok := v.(bool)
@@ -2167,7 +2181,9 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Strategy = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Strategy = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2573,6 +2589,7 @@ func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+<<<<<<< HEAD
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3052,25 +3069,42 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Role = &val
+=======
+>>>>>>> vendor: update phraseapp-go
 
-		default:
-			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
 		}
-	}
+		defer rc.Close()
 
-	return nil
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
 }
 
-// Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
-func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
-	retVal := new(Invitation)
+// Update an existing glossary.
+func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryParams) (*Glossary, error) {
+	retVal := new(Glossary)
 	err := func() error {
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
 >>>>>>> branching: add basic branching api
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+>>>>>>> vendor: update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3097,76 +3131,20 @@ func (client *Client) InvitationUpdate(account_id, id string, params *Invitation
 	return retVal, err
 }
 
-// List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.
-func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*Invitation, error) {
-	retVal := []*Invitation{}
+// Create a new glossary term.
+func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
 	err := func() error {
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
 >>>>>>> branching: add basic branching api
-
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
-		if err != nil {
-			return err
-		}
-		defer rc.Close()
-
-		var reader io.Reader
-		if client.debug {
-			reader = io.TeeReader(rc, os.Stderr)
-		} else {
-			reader = rc
-		}
-
-		return json.NewDecoder(reader).Decode(&retVal)
-
-	}()
-	return retVal, err
-}
-
-// Mark a job as completed.
-func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
-	retVal := new(JobDetails)
-	err := func() error {
-<<<<<<< HEAD
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 =======
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
->>>>>>> branching: add basic branching api
-
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
-		if err != nil {
-			return err
-		}
-		defer rc.Close()
-
-		var reader io.Reader
-		if client.debug {
-			reader = io.TeeReader(rc, os.Stderr)
-		} else {
-			reader = rc
-		}
-
-		return json.NewDecoder(reader).Decode(&retVal)
-
-	}()
-	return retVal, err
-}
-
-// Create a new job.
-func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetails, error) {
-	retVal := new(JobDetails)
-	err := func() error {
-<<<<<<< HEAD
-
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
-=======
-		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
->>>>>>> branching: add basic branching api
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+>>>>>>> vendor: update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3175,6 +3153,97 @@ func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetai
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing glossary term.
+func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) error {
+
+	err := func() error {
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+>>>>>>> branching: add basic branching api
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+>>>>>>> vendor: update phraseapp-go
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single glossary term.
+func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
+	err := func() error {
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing glossary term.
+func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
+	retVal := new(GlossaryTerm)
+	err := func() error {
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+=======
+		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+>>>>>>> branching: add basic branching api
+=======
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+>>>>>>> vendor: update phraseapp-go
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3930,12 +3999,20 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 	return err
 }
 
+<<<<<<< HEAD
 // Mark a job locale as uncompleted.
 func (client *Client) JobLocaleReopen(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/reopen", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
+=======
+// Mark a job locale as completed.
+func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", project_id, job_id, id)
+>>>>>>> vendor: update phraseapp-go
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -3956,6 +4033,26 @@ func (client *Client) JobLocaleReopen(project_id, job_id, id string) (*JobLocale
 	return retVal, err
 }
 
+<<<<<<< HEAD
+=======
+// Delete an existing job locale.
+func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
+
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+>>>>>>> vendor: update phraseapp-go
 // Get a single job locale for a given job.
 func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
@@ -4938,7 +5035,9 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Branch = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		case "convert_emoji":
 			ok := false
@@ -5010,6 +5109,7 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 
 			escapedParam := url.QueryEscape(val)
 			params.Tag = &escapedParam
+<<<<<<< HEAD
 
 		case "tags":
 			val, ok := v.(string)
@@ -5019,6 +5119,8 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 
 			escapedParam := url.QueryEscape(val)
 			params.Tags = &escapedParam
+=======
+>>>>>>> vendor: update phraseapp-go
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5073,7 +5175,9 @@ func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Branch = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5158,7 +5262,9 @@ func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Branch = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6883,7 +6989,9 @@ func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-			params.Branch = &val
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
