@@ -2100,7 +2100,8 @@ func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *Blackl
 func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) ([]*BlacklistedKey, error) {
 	retVal := []*BlacklistedKey{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2125,7 +2126,8 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2156,7 +2158,8 @@ func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Br
 func (client *Client) BranchDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2197,7 +2200,8 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2220,7 +2224,8 @@ func (client *Client) BranchMerge(project_id, id string, params *BranchMergePara
 func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2245,7 +2250,8 @@ func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
 func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2276,7 +2282,8 @@ func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) 
 func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Branch, error) {
 	retVal := []*Branch{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2406,10 +2413,15 @@ func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, erro
 	retVal := new(Comment)
 	err := func() error {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 =======
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
+=======
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2434,7 +2446,8 @@ func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, erro
 func (client *Client) CommentUpdate(project_id, key_id, id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2465,7 +2478,8 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 func (client *Client) CommentsList(project_id, key_id string, page, perPage int) ([]*Comment, error) {
 	retVal := []*Comment{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", project_id, key_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2490,6 +2504,7 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int)
 func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	retVal := []*Format{}
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/formats")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -2979,6 +2994,11 @@ func (client *Client) InvitationResend(account_id, id string) (*Invitation, erro
 	retVal := new(Invitation)
 	err := func() error {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+>>>>>>> update phraseapp-go
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 =======
@@ -3009,8 +3029,13 @@ func (client *Client) InvitationShow(account_id, id string) (*Invitation, error)
 	retVal := new(Invitation)
 	err := func() error {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
+>>>>>>> update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3040,11 +3065,20 @@ func (client *Client) InvitationShow(account_id, id string) (*Invitation, error)
 	return retVal, err
 }
 
+<<<<<<< HEAD
 type InvitationUpdateParams struct {
 	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
 	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
 	Role       *string `json:"role,omitempty"  cli:"opt --role"`
 }
+=======
+// Delete an existing glossary.
+func (client *Client) GlossaryDelete(account_id, id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
@@ -3063,6 +3097,7 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 			}
 			params.ProjectIDs = &val
 
+<<<<<<< HEAD
 		case "role":
 			val, ok := v.(string)
 			if !ok {
@@ -3071,6 +3106,14 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 			params.Role = &val
 =======
 >>>>>>> vendor: update phraseapp-go
+=======
+// Get details on a single glossary.
+func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
+	retVal := new(Glossary)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3097,6 +3140,7 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 	err := func() error {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
 =======
@@ -3105,6 +3149,10 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
 >>>>>>> vendor: update phraseapp-go
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3137,6 +3185,7 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 	err := func() error {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 =======
@@ -3145,6 +3194,10 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
 >>>>>>> vendor: update phraseapp-go
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
+>>>>>>> update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3177,6 +3230,7 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 	err := func() error {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 =======
@@ -3185,6 +3239,10 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
 >>>>>>> vendor: update phraseapp-go
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -3201,7 +3259,8 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3228,6 +3287,7 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 	err := func() error {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 =======
@@ -3236,6 +3296,10 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 =======
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
 >>>>>>> vendor: update phraseapp-go
+=======
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
+>>>>>>> update phraseapp-go
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3961,6 +4025,7 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLoca
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
+<<<<<<< HEAD
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -4013,6 +4078,8 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLoca
 	err := func() error {
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", project_id, job_id, id)
 >>>>>>> vendor: update phraseapp-go
+=======
+>>>>>>> update phraseapp-go
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -4039,7 +4106,8 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLoca
 func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -5191,7 +5259,8 @@ func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5278,7 +5347,8 @@ func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interfac
 func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
 	retVal := []*Locale{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -7005,7 +7075,8 @@ func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
