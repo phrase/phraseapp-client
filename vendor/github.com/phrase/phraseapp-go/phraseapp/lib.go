@@ -1645,7 +1645,8 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 func (client *Client) AccountShow(id string) (*AccountDetails, error) {
 	retVal := new(AccountDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s", id)
+
+		url := fmt.Sprintf("/v2/accounts/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -1670,6 +1671,7 @@ func (client *Client) AccountShow(id string) (*AccountDetails, error) {
 func (client *Client) AccountsList(page, perPage int) ([]*Account, error) {
 	retVal := []*Account{}
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/accounts")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -1695,6 +1697,7 @@ func (client *Client) AccountsList(page, perPage int) ([]*Account, error) {
 func (client *Client) AuthorizationCreate(params *AuthorizationParams) (*AuthorizationWithToken, error) {
 	retVal := new(AuthorizationWithToken)
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/authorizations")
 
 		paramsBuf := bytes.NewBuffer(nil)
@@ -1726,7 +1729,8 @@ func (client *Client) AuthorizationCreate(params *AuthorizationParams) (*Authori
 func (client *Client) AuthorizationDelete(id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/authorizations/%s", id)
+
+		url := fmt.Sprintf("/v2/authorizations/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -1743,7 +1747,8 @@ func (client *Client) AuthorizationDelete(id string) error {
 func (client *Client) AuthorizationShow(id string) (*Authorization, error) {
 	retVal := new(Authorization)
 	err := func() error {
-		url := fmt.Sprintf("/v2/authorizations/%s", id)
+
+		url := fmt.Sprintf("/v2/authorizations/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -1768,7 +1773,8 @@ func (client *Client) AuthorizationShow(id string) (*Authorization, error) {
 func (client *Client) AuthorizationUpdate(id string, params *AuthorizationParams) (*Authorization, error) {
 	retVal := new(Authorization)
 	err := func() error {
-		url := fmt.Sprintf("/v2/authorizations/%s", id)
+
+		url := fmt.Sprintf("/v2/authorizations/%s", url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -1799,6 +1805,7 @@ func (client *Client) AuthorizationUpdate(id string, params *AuthorizationParams
 func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, error) {
 	retVal := []*Authorization{}
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/authorizations")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -1824,7 +1831,8 @@ func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, e
 func (client *Client) BlacklistedKeyCreate(project_id string, params *BlacklistedKeyParams) (*BlacklistedKey, error) {
 	retVal := new(BlacklistedKey)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -1855,7 +1863,8 @@ func (client *Client) BlacklistedKeyCreate(project_id string, params *Blackliste
 func (client *Client) BlacklistedKeyDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -1872,7 +1881,8 @@ func (client *Client) BlacklistedKeyDelete(project_id, id string) error {
 func (client *Client) BlacklistedKeyShow(project_id, id string) (*BlacklistedKey, error) {
 	retVal := new(BlacklistedKey)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -1897,7 +1907,8 @@ func (client *Client) BlacklistedKeyShow(project_id, id string) (*BlacklistedKey
 func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *BlacklistedKeyParams) (*BlacklistedKey, error) {
 	retVal := new(BlacklistedKey)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -1928,7 +1939,8 @@ func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *Blackl
 func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) ([]*BlacklistedKey, error) {
 	retVal := []*BlacklistedKey{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -1953,7 +1965,8 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -1984,7 +1997,8 @@ func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Br
 func (client *Client) BranchDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2025,7 +2039,8 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2048,7 +2063,8 @@ func (client *Client) BranchMerge(project_id, id string, params *BranchMergePara
 func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2073,7 +2089,8 @@ func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
 func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2104,7 +2121,8 @@ func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) 
 func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Branch, error) {
 	retVal := []*Branch{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/branches", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2129,7 +2147,8 @@ func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Bra
 func (client *Client) CommentCreate(project_id, key_id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", project_id, key_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2160,7 +2179,8 @@ func (client *Client) CommentCreate(project_id, key_id string, params *CommentPa
 func (client *Client) CommentDelete(project_id, key_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2177,7 +2197,8 @@ func (client *Client) CommentDelete(project_id, key_id, id string) error {
 func (client *Client) CommentMarkCheck(project_id, key_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 204)
 		if err != nil {
@@ -2194,7 +2215,8 @@ func (client *Client) CommentMarkCheck(project_id, key_id, id string) error {
 func (client *Client) CommentMarkRead(project_id, key_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("PATCH", url, "", nil, 204)
 		if err != nil {
@@ -2211,7 +2233,8 @@ func (client *Client) CommentMarkRead(project_id, key_id, id string) error {
 func (client *Client) CommentMarkUnread(project_id, key_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2228,7 +2251,8 @@ func (client *Client) CommentMarkUnread(project_id, key_id, id string) error {
 func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2253,7 +2277,8 @@ func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, erro
 func (client *Client) CommentUpdate(project_id, key_id, id string, params *CommentParams) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", project_id, key_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2284,7 +2309,8 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 func (client *Client) CommentsList(project_id, key_id string, page, perPage int) ([]*Comment, error) {
 	retVal := []*Comment{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", project_id, key_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2309,6 +2335,7 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int)
 func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	retVal := []*Format{}
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/formats")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -2334,7 +2361,8 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*Glossary, error) {
 	retVal := []*Glossary{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2359,7 +2387,8 @@ func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*G
 func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries", account_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2390,7 +2419,8 @@ func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) 
 func (client *Client) GlossaryDelete(account_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2407,7 +2437,8 @@ func (client *Client) GlossaryDelete(account_id, id string) error {
 func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2432,7 +2463,8 @@ func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryParams) (*Glossary, error) {
 	retVal := new(Glossary)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2463,7 +2495,8 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2494,7 +2527,8 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2511,7 +2545,8 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2536,7 +2571,8 @@ func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*Glo
 func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, params *GlossaryTermParams) (*GlossaryTerm, error) {
 	retVal := new(GlossaryTerm)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", account_id, glossary_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2567,7 +2603,8 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, term_id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
 	retVal := new(GlossaryTermTranslation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations", account_id, glossary_id, term_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(term_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2598,7 +2635,8 @@ func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, ter
 func (client *Client) GlossaryTermTranslationDelete(account_id, glossary_id, term_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(term_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2615,7 +2653,8 @@ func (client *Client) GlossaryTermTranslationDelete(account_id, glossary_id, ter
 func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, term_id, id string, params *GlossaryTermTranslationParams) (*GlossaryTermTranslation, error) {
 	retVal := new(GlossaryTermTranslation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", account_id, glossary_id, term_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(term_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2646,7 +2685,8 @@ func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, ter
 func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, perPage int) ([]*GlossaryTerm, error) {
 	retVal := []*GlossaryTerm{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", account_id, glossary_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2725,7 +2765,8 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 func (client *Client) InvitationCreate(account_id string, params *InvitationCreateParams) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", url.QueryEscape(account_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2756,7 +2797,8 @@ func (client *Client) InvitationCreate(account_id string, params *InvitationCrea
 func (client *Client) InvitationDelete(account_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2773,7 +2815,8 @@ func (client *Client) InvitationDelete(account_id, id string) error {
 func (client *Client) InvitationResend(account_id, id string) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s/resend", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s/resend", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -2798,7 +2841,8 @@ func (client *Client) InvitationResend(account_id, id string) (*Invitation, erro
 func (client *Client) InvitationShow(account_id, id string) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -2867,7 +2911,8 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
 	retVal := new(Invitation)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2898,7 +2943,8 @@ func (client *Client) InvitationUpdate(account_id, id string, params *Invitation
 func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*Invitation, error) {
 	retVal := []*Invitation{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/invitations", account_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/invitations", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -2923,7 +2969,8 @@ func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*
 func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -2948,7 +2995,8 @@ func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
 func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -2979,7 +3027,8 @@ func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetai
 func (client *Client) JobDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -3017,7 +3066,8 @@ func (params *JobKeysCreateParams) ApplyValuesFromMap(defaults map[string]interf
 func (client *Client) JobKeysCreate(project_id, id string, params *JobKeysCreateParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3069,7 +3119,8 @@ func (params *JobKeysDeleteParams) ApplyValuesFromMap(defaults map[string]interf
 func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDeleteParams) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/keys", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3092,7 +3143,8 @@ func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDelete
 func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3117,7 +3169,8 @@ func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
 func (client *Client) JobStart(project_id, id string) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/start", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/start", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -3185,7 +3238,8 @@ func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{
 func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3216,7 +3270,8 @@ func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) 
 func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", project_id, job_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -3241,7 +3296,8 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLoca
 func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -3258,7 +3314,8 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", project_id, job_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3283,7 +3340,8 @@ func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, 
 func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *JobLocaleParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3314,7 +3372,8 @@ func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *Job
 func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLocaleParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", project_id, job_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", url.QueryEscape(project_id), url.QueryEscape(job_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3345,7 +3404,8 @@ func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLoc
 func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int) ([]*JobLocale, error) {
 	retVal := []*JobLocale{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", project_id, job_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", url.QueryEscape(project_id), url.QueryEscape(job_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -3414,7 +3474,8 @@ func (params *JobsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 func (client *Client) JobsList(project_id string, page, perPage int, params *JobsListParams) ([]*Job, error) {
 	retVal := []*Job{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/jobs", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3445,7 +3506,8 @@ func (client *Client) JobsList(project_id string, page, perPage int, params *Job
 func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams) (*TranslationKeyDetails, error) {
 	retVal := new(TranslationKeyDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
@@ -3586,7 +3648,8 @@ func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams)
 func (client *Client) KeyDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -3603,7 +3666,8 @@ func (client *Client) KeyDelete(project_id, id string) error {
 func (client *Client) KeyShow(project_id, id string) (*TranslationKeyDetails, error) {
 	retVal := new(TranslationKeyDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -3628,7 +3692,8 @@ func (client *Client) KeyShow(project_id, id string) (*TranslationKeyDetails, er
 func (client *Client) KeyUpdate(project_id, id string, params *TranslationKeyParams) (*TranslationKeyDetails, error) {
 	retVal := new(TranslationKeyDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
@@ -3803,7 +3868,8 @@ func (params *KeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) KeysDelete(project_id string, params *KeysDeleteParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3888,7 +3954,8 @@ func (params *KeysListParams) ApplyValuesFromMap(defaults map[string]interface{}
 func (client *Client) KeysList(project_id string, page, perPage int, params *KeysListParams) ([]*TranslationKey, error) {
 	retVal := []*TranslationKey{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -3973,7 +4040,8 @@ func (params *KeysSearchParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) KeysSearch(project_id string, page, perPage int, params *KeysSearchParams) ([]*TranslationKey, error) {
 	retVal := []*TranslationKey{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/search", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/search", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4048,7 +4116,8 @@ func (params *KeysTagParams) ApplyValuesFromMap(defaults map[string]interface{})
 func (client *Client) KeysTag(project_id string, params *KeysTagParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/tag", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/tag", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4123,7 +4192,8 @@ func (params *KeysUntagParams) ApplyValuesFromMap(defaults map[string]interface{
 func (client *Client) KeysUntag(project_id string, params *KeysUntagParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/untag", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/untag", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4154,7 +4224,8 @@ func (client *Client) KeysUntag(project_id string, params *KeysUntagParams) (*Af
 func (client *Client) LocaleCreate(project_id string, params *LocaleParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4185,7 +4256,8 @@ func (client *Client) LocaleCreate(project_id string, params *LocaleParams) (*Lo
 func (client *Client) LocaleDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -4306,7 +4378,8 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownloadParams) ([]byte, error) {
 	retVal := []byte{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s/download", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s/download", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4362,7 +4435,8 @@ func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4393,7 +4467,8 @@ func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams
 func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4448,7 +4523,8 @@ func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interfac
 func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
 	retVal := []*Locale{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4479,7 +4555,8 @@ func (client *Client) LocalesList(project_id string, page, perPage int, params *
 func (client *Client) MemberDelete(account_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -4496,7 +4573,8 @@ func (client *Client) MemberDelete(account_id, id string) error {
 func (client *Client) MemberShow(account_id, id string) (*Member, error) {
 	retVal := new(Member)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -4565,7 +4643,8 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdateParams) (*Member, error) {
 	retVal := new(Member)
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/members/%s", account_id, id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/members/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4596,7 +4675,8 @@ func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdatePa
 func (client *Client) MembersList(account_id string, page, perPage int) ([]*Member, error) {
 	retVal := []*Member{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/accounts/%s/members", account_id)
+
+		url := fmt.Sprintf("/v2/accounts/%s/members", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -4621,7 +4701,8 @@ func (client *Client) MembersList(account_id string, page, perPage int) ([]*Memb
 func (client *Client) OrderConfirm(project_id, id string) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/orders/%s/confirm", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/orders/%s/confirm", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("PATCH", url, "", nil, 200)
 		if err != nil {
@@ -4646,7 +4727,8 @@ func (client *Client) OrderConfirm(project_id, id string) (*TranslationOrder, er
 func (client *Client) OrderCreate(project_id string, params *TranslationOrderParams) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/orders", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/orders", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -4677,7 +4759,8 @@ func (client *Client) OrderCreate(project_id string, params *TranslationOrderPar
 func (client *Client) OrderDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/orders/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/orders/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -4694,7 +4777,8 @@ func (client *Client) OrderDelete(project_id, id string) error {
 func (client *Client) OrderShow(project_id, id string) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/orders/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/orders/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -4719,7 +4803,8 @@ func (client *Client) OrderShow(project_id, id string) (*TranslationOrder, error
 func (client *Client) OrdersList(project_id string, page, perPage int) ([]*TranslationOrder, error) {
 	retVal := []*TranslationOrder{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/orders", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/orders", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -4744,6 +4829,7 @@ func (client *Client) OrdersList(project_id string, page, perPage int) ([]*Trans
 func (client *Client) ProjectCreate(params *ProjectParams) (*ProjectDetails, error) {
 	retVal := new(ProjectDetails)
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/projects")
 
 		paramsBuf := bytes.NewBuffer(nil)
@@ -4829,7 +4915,8 @@ func (client *Client) ProjectCreate(params *ProjectParams) (*ProjectDetails, err
 func (client *Client) ProjectDelete(id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s", id)
+
+		url := fmt.Sprintf("/v2/projects/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -4846,7 +4933,8 @@ func (client *Client) ProjectDelete(id string) error {
 func (client *Client) ProjectShow(id string) (*ProjectDetails, error) {
 	retVal := new(ProjectDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s", id)
+
+		url := fmt.Sprintf("/v2/projects/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -4871,7 +4959,8 @@ func (client *Client) ProjectShow(id string) (*ProjectDetails, error) {
 func (client *Client) ProjectUpdate(id string, params *ProjectParams) (*ProjectDetails, error) {
 	retVal := new(ProjectDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s", id)
+
+		url := fmt.Sprintf("/v2/projects/%s", url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
@@ -4956,6 +5045,7 @@ func (client *Client) ProjectUpdate(id string, params *ProjectParams) (*ProjectD
 func (client *Client) ProjectsList(page, perPage int) ([]*Project, error) {
 	retVal := []*Project{}
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/projects")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
@@ -4981,6 +5071,7 @@ func (client *Client) ProjectsList(page, perPage int) ([]*Project, error) {
 func (client *Client) ShowUser() (*User, error) {
 	retVal := new(User)
 	err := func() error {
+
 		url := fmt.Sprintf("/v2/user")
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
@@ -5006,7 +5097,8 @@ func (client *Client) ShowUser() (*User, error) {
 func (client *Client) StyleguideCreate(project_id string, params *StyleguideParams) (*StyleguideDetails, error) {
 	retVal := new(StyleguideDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/styleguides", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/styleguides", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5037,7 +5129,8 @@ func (client *Client) StyleguideCreate(project_id string, params *StyleguidePara
 func (client *Client) StyleguideDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -5054,7 +5147,8 @@ func (client *Client) StyleguideDelete(project_id, id string) error {
 func (client *Client) StyleguideShow(project_id, id string) (*StyleguideDetails, error) {
 	retVal := new(StyleguideDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -5079,7 +5173,8 @@ func (client *Client) StyleguideShow(project_id, id string) (*StyleguideDetails,
 func (client *Client) StyleguideUpdate(project_id, id string, params *StyleguideParams) (*StyleguideDetails, error) {
 	retVal := new(StyleguideDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5110,7 +5205,8 @@ func (client *Client) StyleguideUpdate(project_id, id string, params *Styleguide
 func (client *Client) StyleguidesList(project_id string, page, perPage int) ([]*Styleguide, error) {
 	retVal := []*Styleguide{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/styleguides", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/styleguides", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -5135,7 +5231,8 @@ func (client *Client) StyleguidesList(project_id string, page, perPage int) ([]*
 func (client *Client) TagCreate(project_id string, params *TagParams) (*TagWithStats, error) {
 	retVal := new(TagWithStats)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/tags", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/tags", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5166,7 +5263,8 @@ func (client *Client) TagCreate(project_id string, params *TagParams) (*TagWithS
 func (client *Client) TagDelete(project_id, name string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/tags/%s", project_id, name)
+
+		url := fmt.Sprintf("/v2/projects/%s/tags/%s", url.QueryEscape(project_id), url.QueryEscape(name))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -5183,7 +5281,8 @@ func (client *Client) TagDelete(project_id, name string) error {
 func (client *Client) TagShow(project_id, name string) (*TagWithStats, error) {
 	retVal := new(TagWithStats)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/tags/%s", project_id, name)
+
+		url := fmt.Sprintf("/v2/projects/%s/tags/%s", url.QueryEscape(project_id), url.QueryEscape(name))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -5208,7 +5307,8 @@ func (client *Client) TagShow(project_id, name string) (*TagWithStats, error) {
 func (client *Client) TagsList(project_id string, page, perPage int) ([]*Tag, error) {
 	retVal := []*Tag{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/tags", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/tags", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -5233,7 +5333,8 @@ func (client *Client) TagsList(project_id string, page, perPage int) ([]*Tag, er
 func (client *Client) TranslationCreate(project_id string, params *TranslationParams) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5264,7 +5365,8 @@ func (client *Client) TranslationCreate(project_id string, params *TranslationPa
 func (client *Client) TranslationShow(project_id, id string) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -5341,7 +5443,8 @@ func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]in
 func (client *Client) TranslationUpdate(project_id, id string, params *TranslationUpdateParams) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5416,7 +5519,8 @@ func (params *TranslationsByKeyParams) ApplyValuesFromMap(defaults map[string]in
 func (client *Client) TranslationsByKey(project_id, key_id string, page, perPage int, params *TranslationsByKeyParams) ([]*Translation, error) {
 	retVal := []*Translation{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/keys/%s/translations", project_id, key_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/keys/%s/translations", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5491,7 +5595,8 @@ func (params *TranslationsByLocaleParams) ApplyValuesFromMap(defaults map[string
 func (client *Client) TranslationsByLocale(project_id, locale_id string, page, perPage int, params *TranslationsByLocaleParams) ([]*Translation, error) {
 	retVal := []*Translation{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s/translations", project_id, locale_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s/translations", url.QueryEscape(project_id), url.QueryEscape(locale_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5566,7 +5671,8 @@ func (params *TranslationsExcludeParams) ApplyValuesFromMap(defaults map[string]
 func (client *Client) TranslationsExclude(project_id string, params *TranslationsExcludeParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/exclude", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/exclude", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5641,7 +5747,8 @@ func (params *TranslationsIncludeParams) ApplyValuesFromMap(defaults map[string]
 func (client *Client) TranslationsInclude(project_id string, params *TranslationsIncludeParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/include", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/include", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5716,7 +5823,8 @@ func (params *TranslationsListParams) ApplyValuesFromMap(defaults map[string]int
 func (client *Client) TranslationsList(project_id string, page, perPage int, params *TranslationsListParams) ([]*Translation, error) {
 	retVal := []*Translation{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5791,7 +5899,8 @@ func (params *TranslationsSearchParams) ApplyValuesFromMap(defaults map[string]i
 func (client *Client) TranslationsSearch(project_id string, page, perPage int, params *TranslationsSearchParams) ([]*Translation, error) {
 	retVal := []*Translation{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/search", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/search", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5866,7 +5975,8 @@ func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string
 func (client *Client) TranslationsUnverify(project_id string, params *TranslationsUnverifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/unverify", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/unverify", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5941,7 +6051,8 @@ func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]i
 func (client *Client) TranslationsVerify(project_id string, params *TranslationsVerifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/verify", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/verify", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -5972,7 +6083,8 @@ func (client *Client) TranslationsVerify(project_id string, params *Translations
 func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/uploads", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/uploads", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
@@ -6134,7 +6246,8 @@ func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface
 func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -6165,7 +6278,8 @@ func (client *Client) UploadShow(project_id, id string, params *UploadShowParams
 func (client *Client) UploadsList(project_id string, page, perPage int) ([]*Upload, error) {
 	retVal := []*Upload{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/uploads", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/uploads", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -6190,7 +6304,8 @@ func (client *Client) UploadsList(project_id string, page, perPage int) ([]*Uplo
 func (client *Client) VersionShow(project_id, translation_id, id string) (*TranslationVersionWithUser, error) {
 	retVal := new(TranslationVersionWithUser)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions/%s", project_id, translation_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions/%s", url.QueryEscape(project_id), url.QueryEscape(translation_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -6215,7 +6330,8 @@ func (client *Client) VersionShow(project_id, translation_id, id string) (*Trans
 func (client *Client) VersionsList(project_id, translation_id string, page, perPage int) ([]*TranslationVersion, error) {
 	retVal := []*TranslationVersion{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions", project_id, translation_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions", url.QueryEscape(project_id), url.QueryEscape(translation_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -6240,7 +6356,8 @@ func (client *Client) VersionsList(project_id, translation_id string, page, perP
 func (client *Client) WebhookCreate(project_id string, params *WebhookParams) (*Webhook, error) {
 	retVal := new(Webhook)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks", url.QueryEscape(project_id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -6271,7 +6388,8 @@ func (client *Client) WebhookCreate(project_id string, params *WebhookParams) (*
 func (client *Client) WebhookDelete(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -6288,7 +6406,8 @@ func (client *Client) WebhookDelete(project_id, id string) error {
 func (client *Client) WebhookShow(project_id, id string) (*Webhook, error) {
 	retVal := new(Webhook)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
 		if err != nil {
@@ -6313,7 +6432,8 @@ func (client *Client) WebhookShow(project_id, id string) (*Webhook, error) {
 func (client *Client) WebhookTest(project_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s/test", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s/test", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -6330,7 +6450,8 @@ func (client *Client) WebhookTest(project_id, id string) error {
 func (client *Client) WebhookUpdate(project_id, id string, params *WebhookParams) (*Webhook, error) {
 	retVal := new(Webhook)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", project_id, id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
@@ -6361,7 +6482,8 @@ func (client *Client) WebhookUpdate(project_id, id string, params *WebhookParams
 func (client *Client) WebhooksList(project_id string, page, perPage int) ([]*Webhook, error) {
 	retVal := []*Webhook{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/webhooks", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/webhooks", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
