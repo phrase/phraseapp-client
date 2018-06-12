@@ -38,7 +38,7 @@
   branch = "master"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
-  revision = "64e3cc5d7120b109d2d61944352396f0c3b4d29e"
+  revision = "38798aecc90d30d8739e5b604fba7b1cc3b2bbe6"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"

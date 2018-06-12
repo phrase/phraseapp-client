@@ -38,6 +38,12 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("authorizations/list", newAuthorizationsList(cfg), "List all your authorizations.")
 
+	r.Register("bitbucket_sync/export", newBitbucketSyncExport(cfg), "Export translations from PhraseApp to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.")
+
+	r.Register("bitbucket_sync/import", newBitbucketSyncImport(cfg), "Import translations from Bitbucket to PhraseApp according to the .phraseapp.yml file within the Bitbucket repository.")
+
+	r.Register("bitbucket_syncs/list", newBitbucketSyncsList(cfg), "List all Bitbucket repositories for which synchronisation with PhraseApp is activated.")
+
 	if cmd, err := newBlacklistedKeyCreate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -682,6 +688,100 @@ func (cmd *AuthorizationsList) Run() error {
 	}
 
 	res, err := client.AuthorizationsList(cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BitbucketSyncExport struct {
+	phraseapp.Config
+
+	ID string `cli:"arg required"`
+}
+
+func newBitbucketSyncExport(cfg *phraseapp.Config) *BitbucketSyncExport {
+
+	actionBitbucketSyncExport := &BitbucketSyncExport{Config: *cfg}
+
+	return actionBitbucketSyncExport
+}
+
+func (cmd *BitbucketSyncExport) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BitbucketSyncExport(cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BitbucketSyncImport struct {
+	phraseapp.Config
+
+	ID string `cli:"arg required"`
+}
+
+func newBitbucketSyncImport(cfg *phraseapp.Config) *BitbucketSyncImport {
+
+	actionBitbucketSyncImport := &BitbucketSyncImport{Config: *cfg}
+
+	return actionBitbucketSyncImport
+}
+
+func (cmd *BitbucketSyncImport) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BitbucketSyncImport(cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BitbucketSyncsList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+}
+
+func newBitbucketSyncsList(cfg *phraseapp.Config) *BitbucketSyncsList {
+
+	actionBitbucketSyncsList := &BitbucketSyncsList{Config: *cfg}
+	if cfg.Page != nil {
+		actionBitbucketSyncsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionBitbucketSyncsList.PerPage = *cfg.PerPage
+	}
+
+	return actionBitbucketSyncsList
+}
+
+func (cmd *BitbucketSyncsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BitbucketSyncsList(cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
