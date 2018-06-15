@@ -824,6 +824,7 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 }
 
 type LocaleParams struct {
+	Autotranslate               *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
 	Code                        *string `json:"code,omitempty"  cli:"opt --code"`
 	Default                     *bool   `json:"default,omitempty"  cli:"opt --default"`
 	Main                        *bool   `json:"main,omitempty"  cli:"opt --main"`
@@ -837,6 +838,13 @@ type LocaleParams struct {
 func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "autotranslate":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Autotranslate = &val
+
 		case "code":
 			val, ok := v.(string)
 			if !ok {
@@ -1267,6 +1275,7 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 }
 
 type UploadParams struct {
+	Autotranslate      *bool             `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
 	ConvertEmoji       *bool             `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	File               *string           `json:"file,omitempty"  cli:"opt --file"`
 	FileEncoding       *string           `json:"file_encoding,omitempty"  cli:"opt --file-encoding"`
@@ -1284,6 +1293,13 @@ type UploadParams struct {
 func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "autotranslate":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Autotranslate = &val
+
 		case "convert_emoji":
 			val, ok := v.(bool)
 			if !ok {
@@ -5354,6 +5370,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
 		ctype := writer.FormDataContentType()
+
+		if params.Autotranslate != nil {
+			err := writer.WriteField("autotranslate", strconv.FormatBool(*params.Autotranslate))
+			if err != nil {
+				return err
+			}
+		}
 
 		if params.ConvertEmoji != nil {
 			err := writer.WriteField("convert_emoji", strconv.FormatBool(*params.ConvertEmoji))
