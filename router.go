@@ -190,25 +190,25 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job/update", cmd, "Update an existing job.")
 	}
 
-	r.Register("job_locale/complete", newJobLocaleComplete(cfg), "Mark a JobLocale as completed.")
+	r.Register("job_locale/complete", newJobLocaleComplete(cfg), "Mark a job locale as completed.")
 
-	r.Register("job_locale/delete", newJobLocaleDelete(cfg), "Delete an existing JobLocale.")
+	r.Register("job_locale/delete", newJobLocaleDelete(cfg), "Delete an existing job locale.")
 
-	r.Register("job_locale/show", newJobLocaleShow(cfg), "Get a single JobLocale for a given job.")
+	r.Register("job_locale/show", newJobLocaleShow(cfg), "Get a single job locale for a given job.")
 
 	if cmd, err := newJobLocaleUpdate(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("job_locale/update", cmd, "Update an existing job.")
+		r.Register("job_locale/update", cmd, "Update an existing job locale.")
 	}
 
 	if cmd, err := newJobLocalesCreate(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("job_locales/create", cmd, "Create a new JobLocale.")
+		r.Register("job_locales/create", cmd, "Create a new job locale.")
 	}
 
-	r.Register("job_locales/list", newJobLocalesList(cfg), "List all JobLocales for a given job.")
+	r.Register("job_locales/list", newJobLocalesList(cfg), "List all job locales for a given job.")
 
 	if cmd, err := newJobsList(cfg); err != nil {
 		return nil, err
