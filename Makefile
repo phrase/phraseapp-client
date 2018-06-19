@@ -19,3 +19,6 @@ vendor:
 
 update_lib:
 	@dep ensure -update github.com/phrase/phraseapp-go
+
+release:
+	@sh build/build.sh

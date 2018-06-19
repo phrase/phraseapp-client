@@ -1,13 +1,14 @@
 #!/bin/bash
 set -e
 
+wd=$(realpath $(dirname $0)/..)
 export BUILD_DIR=$(realpath $(dirname $0)/..)
 pushd $BUILD_DIR > /dev/null
-export GOVERSION=${GOVERSION:-1.8}
+export GOVERSION=${GOVERSION:-1.10.3}
 export REVISION=${GIT_COMMIT:-$(git rev-parse HEAD)}
 export LIBRARY_REVISION=$(cat Gopkg.lock | grep github.com/phrase/phraseapp-go -A 2 | tail -n 1 | cut -d '"' -f 2)
-export PROJ_DIR=/go/src/github.com/phrase/phraseapp-client
-export BUILD_VERSION=${VERSION:-$REVISION}
+export CURRENT_DATE=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
+export VERSION=$(cat ${wd}/.version)
 
 if [[ -z $LIBRARY_REVISION ]]; then
   echo "unable to get library revision"
