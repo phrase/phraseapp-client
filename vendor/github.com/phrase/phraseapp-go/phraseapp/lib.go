@@ -219,12 +219,13 @@ type Member struct {
 }
 
 type Project struct {
-	Account    *Account   `json:"account"`
-	CreatedAt  *time.Time `json:"created_at"`
-	ID         string     `json:"id"`
-	MainFormat string     `json:"main_format"`
-	Name       string     `json:"name"`
-	UpdatedAt  *time.Time `json:"updated_at"`
+	Account         *Account   `json:"account"`
+	CreatedAt       *time.Time `json:"created_at"`
+	ID              string     `json:"id"`
+	MainFormat      string     `json:"main_format"`
+	Name            string     `json:"name"`
+	ProjectImageUrl string     `json:"project_image_url"`
+	UpdatedAt       *time.Time `json:"updated_at"`
 }
 
 type ProjectDetails struct {
@@ -346,14 +347,15 @@ type TranslationKey struct {
 type TranslationKeyDetails struct {
 	TranslationKey
 
-	CommentsCount        int64  `json:"comments_count"`
-	FormatValueType      string `json:"format_value_type"`
-	MaxCharactersAllowed int64  `json:"max_characters_allowed"`
-	NamePlural           string `json:"name_plural"`
-	OriginalFile         string `json:"original_file"`
-	ScreenshotUrl        string `json:"screenshot_url"`
-	Unformatted          bool   `json:"unformatted"`
-	XmlSpacePreserve     bool   `json:"xml_space_preserve"`
+	CommentsCount        int64        `json:"comments_count"`
+	Creator              *UserPreview `json:"creator"`
+	FormatValueType      string       `json:"format_value_type"`
+	MaxCharactersAllowed int64        `json:"max_characters_allowed"`
+	NamePlural           string       `json:"name_plural"`
+	OriginalFile         string       `json:"original_file"`
+	ScreenshotUrl        string       `json:"screenshot_url"`
+	Unformatted          bool         `json:"unformatted"`
+	XmlSpacePreserve     bool         `json:"xml_space_preserve"`
 }
 
 type TranslationOrder struct {
@@ -458,6 +460,28 @@ func (params *AuthorizationParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type BitbucketSyncParams struct {
+	AccountID *string `json:"account_id,omitempty"  cli:"opt --account-id"`
+}
+
+func (params *BitbucketSyncParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "account_id":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.AccountID = &val
+
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
 		}
@@ -1030,6 +1054,8 @@ type ProjectParams struct {
 	AccountID               *string `json:"account_id,omitempty"  cli:"opt --account-id"`
 	MainFormat              *string `json:"main_format,omitempty"  cli:"opt --main-format"`
 	Name                    *string `json:"name,omitempty"  cli:"opt --name"`
+	ProjectImage            *string `json:"project_image,omitempty"  cli:"opt --project-image"`
+	RemoveProjectImage      *bool   `json:"remove_project_image,omitempty"  cli:"opt --remove-project-image"`
 	SharesTranslationMemory *bool   `json:"shares_translation_memory,omitempty"  cli:"opt --shares-translation-memory"`
 }
 
@@ -1056,6 +1082,20 @@ func (params *ProjectParams) ApplyValuesFromMap(defaults map[string]interface{})
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Name = &val
+
+		case "project_image":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectImage = &val
+
+		case "remove_project_image":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.RemoveProjectImage = &val
 
 		case "shares_translation_memory":
 			val, ok := v.(bool)
@@ -1626,12 +1666,18 @@ func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, e
 }
 
 // Export translations from PhraseApp to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.
-func (client *Client) BitbucketSyncExport(id string) (*BitbucketSyncExportResponse, error) {
+func (client *Client) BitbucketSyncExport(id string, params *BitbucketSyncParams) (*BitbucketSyncExportResponse, error) {
 	retVal := new(BitbucketSyncExportResponse)
 	err := func() error {
 		url := fmt.Sprintf("/v2/bitbucket_syncs/%s/export", id)
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -1651,12 +1697,18 @@ func (client *Client) BitbucketSyncExport(id string) (*BitbucketSyncExportRespon
 }
 
 // Import translations from Bitbucket to PhraseApp according to the .phraseapp.yml file within the Bitbucket repository.
-func (client *Client) BitbucketSyncImport(id string) error {
+func (client *Client) BitbucketSyncImport(id string, params *BitbucketSyncParams) error {
 
 	err := func() error {
 		url := fmt.Sprintf("/v2/bitbucket_syncs/%s/import", id)
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -1668,12 +1720,18 @@ func (client *Client) BitbucketSyncImport(id string) error {
 }
 
 // List all Bitbucket repositories for which synchronisation with PhraseApp is activated.
-func (client *Client) BitbucketSyncsList(page, perPage int) ([]*BitbucketSync, error) {
+func (client *Client) BitbucketSyncsList(page, perPage int, params *BitbucketSyncParams) ([]*BitbucketSync, error) {
 	retVal := []*BitbucketSync{}
 	err := func() error {
 		url := fmt.Sprintf("/v2/bitbucket_syncs")
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -2889,11 +2947,11 @@ func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) 
 	return retVal, err
 }
 
-// Mark a JobLocale as completed.
-func (client *Client) JobLocaleComplete(project_id, id string) (*JobLocale, error) {
+// Mark a job locale as completed.
+func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", project_id, id)
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", project_id, job_id, id)
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
 		if err != nil {
@@ -2914,11 +2972,11 @@ func (client *Client) JobLocaleComplete(project_id, id string) (*JobLocale, erro
 	return retVal, err
 }
 
-// Delete an existing JobLocale.
+// Delete an existing job locale.
 func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", project_id, job_id, id)
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", project_id, job_id, id)
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
 		if err != nil {
@@ -2931,7 +2989,7 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 	return err
 }
 
-// Get a single JobLocale for a given job.
+// Get a single job locale for a given job.
 func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
@@ -2956,7 +3014,7 @@ func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, 
 	return retVal, err
 }
 
-// Update an existing job.
+// Update an existing job locale.
 func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *JobLocaleParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
@@ -2987,7 +3045,7 @@ func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *Job
 	return retVal, err
 }
 
-// Create a new JobLocale.
+// Create a new job locale.
 func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLocaleParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
@@ -3018,7 +3076,7 @@ func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLoc
 	return retVal, err
 }
 
-// List all JobLocales for a given job.
+// List all job locales for a given job.
 func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int) ([]*JobLocale, error) {
 	retVal := []*JobLocale{}
 	err := func() error {
@@ -4302,12 +4360,66 @@ func (client *Client) ProjectCreate(params *ProjectParams) (*ProjectDetails, err
 		url := fmt.Sprintf("/v2/projects")
 
 		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
+		writer := multipart.NewWriter(paramsBuf)
+		ctype := writer.FormDataContentType()
+
+		if params.AccountID != nil {
+			err := writer.WriteField("account_id", *params.AccountID)
+			if err != nil {
+				return err
+			}
 		}
 
-		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if params.MainFormat != nil {
+			err := writer.WriteField("main_format", *params.MainFormat)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Name != nil {
+			err := writer.WriteField("name", *params.Name)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.ProjectImage != nil {
+			part, err := writer.CreateFormFile("project_image", filepath.Base(*params.ProjectImage))
+			if err != nil {
+				return err
+			}
+			file, err := os.Open(*params.ProjectImage)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(part, file)
+			if err != nil {
+				return err
+			}
+			err = file.Close()
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.RemoveProjectImage != nil {
+			err := writer.WriteField("remove_project_image", strconv.FormatBool(*params.RemoveProjectImage))
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.SharesTranslationMemory != nil {
+			err := writer.WriteField("shares_translation_memory", strconv.FormatBool(*params.SharesTranslationMemory))
+			if err != nil {
+				return err
+			}
+		}
+		err := writer.WriteField("utf8", "✓")
+		writer.Close()
+
+		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
 		if err != nil {
 			return err
 		}
@@ -4375,12 +4487,66 @@ func (client *Client) ProjectUpdate(id string, params *ProjectParams) (*ProjectD
 		url := fmt.Sprintf("/v2/projects/%s", id)
 
 		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
+		writer := multipart.NewWriter(paramsBuf)
+		ctype := writer.FormDataContentType()
+
+		if params.AccountID != nil {
+			err := writer.WriteField("account_id", *params.AccountID)
+			if err != nil {
+				return err
+			}
 		}
 
-		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if params.MainFormat != nil {
+			err := writer.WriteField("main_format", *params.MainFormat)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Name != nil {
+			err := writer.WriteField("name", *params.Name)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.ProjectImage != nil {
+			part, err := writer.CreateFormFile("project_image", filepath.Base(*params.ProjectImage))
+			if err != nil {
+				return err
+			}
+			file, err := os.Open(*params.ProjectImage)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(part, file)
+			if err != nil {
+				return err
+			}
+			err = file.Close()
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.RemoveProjectImage != nil {
+			err := writer.WriteField("remove_project_image", strconv.FormatBool(*params.RemoveProjectImage))
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.SharesTranslationMemory != nil {
+			err := writer.WriteField("shares_translation_memory", strconv.FormatBool(*params.SharesTranslationMemory))
+			if err != nil {
+				return err
+			}
+		}
+		err := writer.WriteField("utf8", "✓")
+		writer.Close()
+
+		rc, err := client.sendRequest("PATCH", url, ctype, paramsBuf, 200)
 		if err != nil {
 			return err
 		}
