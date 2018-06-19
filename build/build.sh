@@ -8,7 +8,7 @@ export DIST_DIR=dist
 rm -rf $DIST_DIR
 mkdir $DIST_DIR
 
-tar --create . | docker run --rm -e VERSION=${VERSION} -i golang:$GOVERSION bash -c "$(cat build/docker_build.sh)" > ${DIST_DIR}/build.tar
+tar --create . | docker run --rm -i golang:$GOVERSION bash -c "$(cat build/docker_build.sh)" > ${DIST_DIR}/build.tar
 
 cd $DIST_DIR
 
