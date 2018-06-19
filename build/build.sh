@@ -4,11 +4,13 @@ set -e
 wd=$(realpath $(dirname $0)/..)
 source ${wd}/build/config.sh
 
-export DIR=$(mktemp -d)
+export DIST_DIR=dist
+rm -rf $DIST_DIR
+mkdir $DIST_DIR
 
-tar --create . | docker run --rm -i golang:$GOVERSION bash -c "$(cat build/docker_build.sh)" > $DIR/build.tar
+tar --create . | docker run --rm -e VERSION=${VERSION} -i golang:$GOVERSION bash -c "$(cat build/docker_build.sh)" > ${DIST_DIR}/build.tar
 
-cd $DIR
+cd $DIST_DIR
 
 tar --extract --file=build.tar
 rm -f build.tar
@@ -24,10 +26,12 @@ for name in phraseapp_linux_386 phraseapp_linux_amd64; do
 done
 
 if ! which zip > /dev/null; then
-  apt-get update && apt-get install -y zip
+  echo "zip not installed"
 fi
 
 zip phraseapp_windows_amd64.exe.zip phraseapp_windows_amd64.exe > /dev/null
 
-echo $DIR > ${wd}/.bin_dir
-echo -n $BUILD_VERSION > ${DIR}/.build_version
+echo "Version: ${VERSION}"
+echo "Build at: ${CURRENT_DATE}"
+echo "Brew hash: $(sha256sum phraseapp_macosx_amd64.tar.gz | cut -d ' ' -f 1)"
+echo "Build output: $(pwd)"
