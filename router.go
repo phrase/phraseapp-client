@@ -2590,7 +2590,6 @@ type KeyDelete struct {
 	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
-	JobID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
