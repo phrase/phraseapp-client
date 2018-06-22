@@ -21,4 +21,5 @@ update_lib:
 	@dep ensure -update github.com/phrase/phraseapp-go
 
 release:
-	@sh build/build.sh
+	sh build/build.sh
+	sh innosetup/build.sh

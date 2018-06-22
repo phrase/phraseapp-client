@@ -7,8 +7,8 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{DC598D8E-8A9B-4CAD-AFD8-0324FDF4E0F1}
 AppName=PhraseApp Client
-AppVersion=1.6.1
-;AppVerName=PhraseApp Client 1.6.1
+AppVersion=1.7.3
+;AppVerName=PhraseApp Client 1.7.3
 AppPublisher=PhraseApp GmbH
 AppPublisherURL=https://phraseapp.com/cli
 AppSupportURL=https://phraseapp.com/cli
@@ -18,7 +18,7 @@ DefaultGroupName=PhraseApp-Client
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE
 InfoAfterFile=postinstall.rtf
-OutputBaseFilename=phraseapp-setup
+OutputBaseFilename=phraseapp_setup
 SetupIconFile=parrot.ico
 Compression=lzma
 SolidCompression=yes
@@ -31,7 +31,7 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp.exe"; DestName: "phraseapp.exe"; Flags: ignoreversion 
+Source: "../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp.exe"; DestName: "phraseapp.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
