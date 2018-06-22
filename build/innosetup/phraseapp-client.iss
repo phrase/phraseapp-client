@@ -23,19 +23,11 @@ SetupIconFile=parrot.ico
 Compression=lzma
 SolidCompression=yes
 
-[Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "german"; MessagesFile: "compiler:Languages\German.isl"
-
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-
 [Files]
-Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp.exe"; DestName: "phraseapp.exe"; Flags: ignoreversion
+Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp"; DestName: "phraseapp.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\PhraseApp Client"; Filename: "{app}"
 Name: "{group}\{cm:UninstallProgram,PhraseApp Client}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\PhraseApp Client"; Filename: "{app}\phraseapp.exe"; Tasks: desktopicon
-
+Name: "{commondesktop}\PhraseApp Client"; Filename: "{app}\phraseapp.exe";
