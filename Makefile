@@ -22,4 +22,4 @@ update_lib:
 
 release:
 	sh build/build.sh
-	sh innosetup/build.sh
+	sh build/innosetup/build.sh

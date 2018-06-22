@@ -31,7 +31,7 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp.exe"; DestName: "phraseapp.exe"; Flags: ignoreversion
+Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp.exe"; DestName: "phraseapp.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
