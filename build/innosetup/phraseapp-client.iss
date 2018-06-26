@@ -13,6 +13,7 @@ AppPublisher=PhraseApp GmbH
 AppPublisherURL=https://phraseapp.com/cli
 AppSupportURL=https://phraseapp.com/cli
 AppUpdatesURL=https://phraseapp.com/cli
+ArchitecturesAllowed=x64
 DefaultDirName={pf}\PhraseApp
 DefaultGroupName=PhraseApp-Client
 DisableProgramGroupPage=yes
