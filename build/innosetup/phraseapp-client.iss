@@ -24,10 +24,33 @@ Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp"; DestName: "phraseapp.exe"; Flags: ignoreversion
+Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}"; DestName: "phraseapp.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[Registry]
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
+    Check: NeedsAddPath('C:\foo')
 
 [Icons]
 Name: "{group}\PhraseApp Client"; Filename: "{app}"
 Name: "{group}\{cm:UninstallProgram,PhraseApp Client}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\PhraseApp Client"; Filename: "{app}\phraseapp.exe";
+
+[Code]
+function NeedsAddPath(Param: string): boolean;
+var
+  OrigPath: string;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,
+    'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+    'Path', OrigPath)
+  then begin
+    Result := True;
+    exit;
+  end;
+  { look for the path with leading and trailing semicolon }
+  { Pos() returns 0 if not found }
+  Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
+end;
+
