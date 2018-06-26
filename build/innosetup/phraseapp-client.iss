@@ -13,6 +13,7 @@ AppPublisher=PhraseApp GmbH
 AppPublisherURL=https://phraseapp.com/cli
 AppSupportURL=https://phraseapp.com/cli
 AppUpdatesURL=https://phraseapp.com/cli
+ArchitecturesAllowed=x64
 DefaultDirName={pf}\PhraseApp
 DefaultGroupName=PhraseApp-Client
 DisableProgramGroupPage=yes
@@ -24,8 +25,15 @@ Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}\phraseapp"; DestName: "phraseapp.exe"; Flags: ignoreversion
+Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}"; DestName: "phraseapp.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[Registry]
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
+
+[Setup]
+AlwaysRestart = yes
 
 [Icons]
 Name: "{group}\PhraseApp Client"; Filename: "{app}"
