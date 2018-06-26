@@ -32,6 +32,9 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
     ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
     Check: NeedsAddPath('C:\foo')
 
+[Setup]
+AlwaysRestart = yes
+
 [Icons]
 Name: "{group}\PhraseApp Client"; Filename: "{app}"
 Name: "{group}\{cm:UninstallProgram,PhraseApp Client}"; Filename: "{uninstallexe}"
