@@ -38,4 +38,3 @@ AlwaysRestart = yes
 [Icons]
 Name: "{group}\PhraseApp Client"; Filename: "{app}"
 Name: "{group}\{cm:UninstallProgram,PhraseApp Client}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\PhraseApp Client"; Filename: "{app}\phraseapp.exe";
