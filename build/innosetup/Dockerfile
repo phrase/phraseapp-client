@@ -7,7 +7,7 @@ ENV WINEDEBUG fixme-all
 ENV WINEARCH win32
 
 # # Install Inno Setup binaries
-RUN curl -SL "http://www.xs4all.nl/~mlaan2/ispack/innosetup-5.5.9.exe" -o is.exe
+RUN curl -SL "https://github.com/jrsoftware/issrc/releases/download/is-5_6_1/innosetup-5.6.1.exe" -o is.exe
 RUN xvfb-run wine wineboot --init \
         && xvfb-run -e /dev/stdout wine is.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 
