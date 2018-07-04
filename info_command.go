@@ -8,7 +8,6 @@ import (
 
 func GetInfo() string {
 	info := []string{
-		fmt.Sprintf("Built at:                            %s", BUILT_AT),
 		fmt.Sprintf("PhraseApp client version:            %s", PHRASEAPP_CLIENT_VERSION),
 		fmt.Sprintf("PhraseApp client revision:           %s", REVISION),
 		fmt.Sprintf("PhraseApp library revision:          %s", LIBRARY_REVISION),
@@ -25,6 +24,5 @@ func infoCommand() error {
 var (
 	REVISION                 = "DEV"
 	LIBRARY_REVISION         = "DEV"
-	BUILT_AT                 = "LIVE"
 	PHRASEAPP_CLIENT_VERSION = "DEV"
 )

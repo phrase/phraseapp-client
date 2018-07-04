@@ -18,11 +18,11 @@ rm -f build.tar
 # Homebrew - binary must be called phraseapp, because the binary name inside
 # the tar will be made available system wide
 cp phraseapp_macosx_amd64 phraseapp
-tar cfz phraseapp_macosx_amd64.tar.gz phraseapp
+tar --create --mtime="@${SOURCE_DATE_EPOCH}" phraseapp | gzip -n > phraseapp_macosx_amd64.tar.gz
 rm phraseapp
 
 for name in phraseapp_linux_386 phraseapp_linux_amd64; do
-  tar cfz ${name}.tar.gz $name
+  tar --create --mtime="@${SOURCE_DATE_EPOCH}" $name | gzip -n > ${name}.tar.gz
 done
 
 if ! which zip > /dev/null; then
@@ -32,6 +32,5 @@ fi
 zip phraseapp_windows_amd64.exe.zip phraseapp_windows_amd64.exe > /dev/null
 
 echo "Version: ${VERSION}"
-echo "Build at: ${CURRENT_DATE}"
 echo "Brew hash: $(sha256sum phraseapp_macosx_amd64.tar.gz | cut -d ' ' -f 1)"
 echo "Build output: $(pwd)"
