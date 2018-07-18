@@ -15,7 +15,7 @@ function build {
 	name=$3
 	echo "build os=${goos} arch=${goarch}" > /dev/stderr
 
-	CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -o $bin_dir/${name} -ldflags "-X=main.REVISION=$REVISION -X=main.PHRASEAPP_CLIENT_VERSION=$VERSION -X=main.LIBRARY_REVISION=$LIBRARY_REVISION -extldflags '-static'" .
+	CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -o $bin_dir/${name} -ldflags "-X 'main.LAST_CHANGE=${LAST_CHANGE}' -X=main.REVISION=$REVISION -X=main.PHRASEAPP_CLIENT_VERSION=$VERSION -X=main.LIBRARY_REVISION=$LIBRARY_REVISION -extldflags '-static'" .
 }
 
 build linux   amd64   phraseapp_linux_amd64

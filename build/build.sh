@@ -31,6 +31,7 @@ fi
 
 zip phraseapp_windows_amd64.exe.zip phraseapp_windows_amd64.exe > /dev/null
 
+echo "Last change: ${LAST_CHANGE}"
 echo "Version: ${VERSION}"
 echo "Brew hash: $(sha256sum phraseapp_macosx_amd64.tar.gz | cut -d ' ' -f 1)"
 echo "Build output: $(pwd)"
