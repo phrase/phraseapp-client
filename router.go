@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = ""
-	RevisionGenerator = ""
+	RevisionDocs      = "af8c8e121b03fbb27f30326738fd1c3ac086b0a2"
+	RevisionGenerator = "HEAD/2018-08-10T140549/soenke"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -192,6 +192,8 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job/keys/delete", cmd, "Remove multiple keys from existing job.")
 	}
 
+	r.Register("job/reopen", newJobReopen(cfg), "Mark a job as uncompleted.")
+
 	r.Register("job/show", newJobShow(cfg), "Get details on a single job for a given project.")
 
 	r.Register("job/start", newJobStart(cfg), "Starts an existing job in state draft.")
@@ -205,6 +207,8 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	r.Register("job_locale/complete", newJobLocaleComplete(cfg), "Mark a job locale as completed.")
 
 	r.Register("job_locale/delete", newJobLocaleDelete(cfg), "Delete an existing job locale.")
+
+	r.Register("job_locale/reopen", newJobLocaleReopen(cfg), "Mark a job locale as uncompleted.")
 
 	r.Register("job_locale/show", newJobLocaleShow(cfg), "Get a single job locale for a given job.")
 
@@ -2180,6 +2184,37 @@ func (cmd *JobKeysDelete) Run() error {
 	return nil
 }
 
+type JobReopen struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobReopen(cfg *phraseapp.Config) *JobReopen {
+
+	actionJobReopen := &JobReopen{Config: *cfg}
+	actionJobReopen.ProjectID = cfg.DefaultProjectID
+
+	return actionJobReopen
+}
+
+func (cmd *JobReopen) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobReopen(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
 type JobShow struct {
 	phraseapp.Config
 
@@ -2344,6 +2379,38 @@ func (cmd *JobLocaleDelete) Run() error {
 	}
 
 	return nil
+}
+
+type JobLocaleReopen struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	JobID     string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newJobLocaleReopen(cfg *phraseapp.Config) *JobLocaleReopen {
+
+	actionJobLocaleReopen := &JobLocaleReopen{Config: *cfg}
+	actionJobLocaleReopen.ProjectID = cfg.DefaultProjectID
+
+	return actionJobLocaleReopen
+}
+
+func (cmd *JobLocaleReopen) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.JobLocaleReopen(cmd.ProjectID, cmd.JobID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
 type JobLocaleShow struct {

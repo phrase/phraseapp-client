@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = ""
-	RevisionGenerator = ""
+	RevisionDocs      = "af8c8e121b03fbb27f30326738fd1c3ac086b0a2"
+	RevisionGenerator = "HEAD/2018-08-10T135953/soenke"
 )
 
 type Account struct {
@@ -2998,6 +2998,31 @@ func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDelete
 	return err
 }
 
+// Mark a job as uncompleted.
+func (client *Client) JobReopen(project_id, id string) (*JobDetails, error) {
+	retVal := new(JobDetails)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/reopen", project_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 // Get details on a single job for a given project.
 func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3162,6 +3187,31 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 		return nil
 	}()
 	return err
+}
+
+// Mark a job locale as uncompleted.
+func (client *Client) JobLocaleReopen(project_id, job_id, id string) (*JobLocale, error) {
+	retVal := new(JobLocale)
+	err := func() error {
+		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/reopen", project_id, job_id, id)
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
 }
 
 // Get a single job locale for a given job.
