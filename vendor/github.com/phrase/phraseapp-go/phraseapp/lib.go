@@ -78,6 +78,16 @@ type BlacklistedKey struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+type Branch struct {
+	CreatedAt *time.Time   `json:"created_at"`
+	CreatedBy *UserPreview `json:"created_by"`
+	MergedAt  *time.Time   `json:"merged_at"`
+	MergedBy  *UserPreview `json:"merged_by"`
+	Name      string       `json:"name"`
+	State     string       `json:"state"`
+	UpdatedAt *time.Time   `json:"updated_at"`
+}
+
 type Comment struct {
 	CreatedAt *time.Time   `json:"created_at"`
 	ID        string       `json:"id"`
@@ -520,6 +530,30 @@ func (params *BlacklistedKeyParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+type BranchParams struct {
+	Name *string `json:"name,omitempty"  cli:"opt --name"`
+}
+
+func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Name = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 type CommentParams struct {
 	Message *string `json:"message,omitempty"  cli:"opt --message"`
 }
@@ -903,6 +937,7 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 
 type LocaleParams struct {
 	Autotranslate               *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+	Branch                      *string `json:"branch,omitempty"  cli:"opt --branch"`
 	Code                        *string `json:"code,omitempty"  cli:"opt --code"`
 	Default                     *bool   `json:"default,omitempty"  cli:"opt --default"`
 	Main                        *bool   `json:"main,omitempty"  cli:"opt --main"`
@@ -923,6 +958,15 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			}
 
 			params.Autotranslate = &val
+
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		case "code":
 			val, ok := v.(string)
@@ -1449,6 +1493,7 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 
 type UploadParams struct {
 	Autotranslate      *bool             `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+	Branch             *string           `json:"branch,omitempty"  cli:"opt --branch"`
 	ConvertEmoji       *bool             `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	File               *string           `json:"file,omitempty"  cli:"opt --file"`
 	FileEncoding       *string           `json:"file_encoding,omitempty"  cli:"opt --file-encoding"`
@@ -1473,6 +1518,15 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			}
 
 			params.Autotranslate = &val
+
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		case "convert_emoji":
 			val, ok := v.(bool)
@@ -2028,7 +2082,190 @@ func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *Blackl
 func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) ([]*BlacklistedKey, error) {
 	retVal := []*BlacklistedKey{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", project_id)
+
+		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", url.QueryEscape(project_id))
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new branch.
+func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing branch.
+func (client *Client) BranchDelete(project_id, id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+type BranchMergeParams struct {
+	Strategy *string `json:"strategy,omitempty"  cli:"opt --strategy"`
+}
+
+func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "strategy":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Strategy = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+// Merge an existing branch.
+func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/merge", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single branch for a given project.
+func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing branch.
+func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) (*Branch, error) {
+	retVal := new(Branch)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all branches the of the current project.
+func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Branch, error) {
+	retVal := []*Branch{}
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -4229,6 +4466,7 @@ func (client *Client) LocaleDelete(project_id, id string) error {
 }
 
 type LocaleDownloadParams struct {
+	Branch                     *string           `json:"branch,omitempty"  cli:"opt --branch"`
 	ConvertEmoji               bool              `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	Encoding                   *string           `json:"encoding,omitempty"  cli:"opt --encoding"`
 	FallbackLocaleID           *string           `json:"fallback_locale_id,omitempty"  cli:"opt --fallback-locale-id"`
@@ -4238,12 +4476,20 @@ type LocaleDownloadParams struct {
 	KeepNotranslateTags        bool              `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
 	SkipUnverifiedTranslations bool              `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
 	Tag                        *string           `json:"tag,omitempty"  cli:"opt --tag"`
-	Tags                       *string           `json:"tags,omitempty"  cli:"opt --tags"`
 }
 
 func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "convert_emoji":
 			ok := false
 			params.ConvertEmoji, ok = v.(bool)
@@ -4315,15 +4561,6 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			escapedParam := url.QueryEscape(val)
 			params.Tag = &escapedParam
 
-		case "tags":
-			val, ok := v.(string)
-			if !ok {
-				return fmt.Errorf(cfgValueErrStr, k, v)
-			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
-
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
 		}
@@ -4365,13 +4602,44 @@ func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownlo
 	return retVal, err
 }
 
+type LocaleShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single locale for a given project.
-func (client *Client) LocaleShow(project_id, id string) (*LocaleDetails, error) {
+func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales/%s", project_id, id)
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -4422,13 +4690,44 @@ func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) 
 	return retVal, err
 }
 
+type LocalesListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all locales for the given project.
-func (client *Client) LocalesList(project_id string, page, perPage int) ([]*Locale, error) {
+func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
 	retVal := []*Locale{}
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/locales", project_id)
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		url := fmt.Sprintf("/v2/projects/%s/locales", url.QueryEscape(project_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -5993,6 +6292,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 			}
 		}
 
+		if params.Branch != nil {
+			err := writer.WriteField("branch", *params.Branch)
+			if err != nil {
+				return err
+			}
+		}
+
 		if params.ConvertEmoji != nil {
 			err := writer.WriteField("convert_emoji", strconv.FormatBool(*params.ConvertEmoji))
 			if err != nil {
@@ -6114,13 +6420,44 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 	return retVal, err
 }
 
+type UploadShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // View details and summary for a single upload.
-func (client *Client) UploadShow(project_id, id string) (*Upload, error) {
+func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
 	retVal := new(Upload)
 	err := func() error {
-		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", project_id, id)
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}

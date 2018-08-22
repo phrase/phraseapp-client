@@ -17,7 +17,8 @@ import (
 
 type PushCommand struct {
 	phraseapp.Config
-	Wait bool `cli:"opt --wait desc='Wait for files to be processed'"`
+	Wait   bool   `cli:"opt --wait desc='Wait for files to be processed'"`
+	Branch string `cli:"opt --branch"`
 }
 
 func (cmd *PushCommand) Run() error {
@@ -57,19 +58,58 @@ func (cmd *PushCommand) Run() error {
 		}
 	}
 
-	projectIdToLocales, err := LocalesForProjects(client, sources)
+	projectsAffected := map[string]bool{}
+	for _, source := range sources {
+		projectsAffected[source.ProjectID] = true
+	}
+
+	if cmd.Branch != "" {
+		for projectID := range projectsAffected {
+			_, err := client.BranchShow(projectID, cmd.Branch)
+			if err != nil {
+				branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
+				branch, _ := client.BranchCreate(projectID, branchPrams)
+
+				fmt.Println()
+
+				taskResult := make(chan string, 1)
+				taskErr := make(chan error, 1)
+
+				fmt.Printf("Waiting for branch %s is created!", branch.Name)
+				spinner.While(func() {
+					branchCreateResult, err := getBranchCreateResult(client, projectID, branch)
+					taskResult <- branchCreateResult
+					taskErr <- err
+				})
+				fmt.Println()
+
+				if err := <-taskErr; err != nil {
+					return err
+				}
+
+				switch <-taskResult {
+				case "success":
+					print.Success("Successfully created branch %s", branch.Name)
+				case "error":
+					print.Failure("There was an error creating branch %s.", branch.Name)
+				}
+			}
+		}
+	}
+
+	projectIdToLocales, err := LocalesForProjects(client, sources, cmd.Branch)
 	if err != nil {
 		return err
 	}
 	for _, source := range sources {
-		val, ok := projectIdToLocales[source.ProjectID]
+		val, ok := projectIdToLocales[LocaleCacheKey{source.ProjectID, cmd.Branch}]
 		if ok {
 			source.RemoteLocales = val
 		}
 	}
 
 	for _, source := range sources {
-		err := source.Push(client, cmd.Wait)
+		err := source.Push(client, cmd.Wait, cmd.Branch)
 		if err != nil {
 			return err
 		}
@@ -77,7 +117,7 @@ func (cmd *PushCommand) Run() error {
 	return nil
 }
 
-func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error {
+func (source *Source) Push(client *phraseapp.Client, waitForResults bool, branch string) error {
 	localeFiles, err := source.LocaleFiles()
 	if err != nil {
 		return err
@@ -86,8 +126,8 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 	for _, localeFile := range localeFiles {
 		fmt.Printf("Uploading %s... ", localeFile.RelPath())
 
-		if localeFile.shouldCreateLocale(source) {
-			localeDetails, err := source.createLocale(client, localeFile)
+		if localeFile.shouldCreateLocale(source, branch) {
+			localeDetails, err := source.createLocale(client, localeFile, branch)
 			if err == nil {
 				localeFile.ID = localeDetails.ID
 				localeFile.Code = localeDetails.Code
@@ -98,7 +138,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 			}
 		}
 
-		upload, err := source.uploadFile(client, localeFile)
+		upload, err := source.uploadFile(client, localeFile, branch)
 		if err != nil {
 			return err
 		}
@@ -111,7 +151,7 @@ func (source *Source) Push(client *phraseapp.Client, waitForResults bool) error 
 
 			fmt.Printf("Upload ID: %s, filename: %s suceeded. Waiting for your file to be processed... ", upload.ID, upload.Filename)
 			spinner.While(func() {
-				result, err := getUploadResult(client, source.ProjectID, upload)
+				result, err := getUploadResult(client, source.ProjectID, upload, branch)
 				taskResult <- result
 				taskErr <- err
 			})
@@ -293,7 +333,7 @@ func (localeFile *LocaleFile) fillFromPath(path, pattern string) {
 	fillFrom(pathEnd, patternEnd)
 }
 
-func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
+func (localeFile *LocaleFile) shouldCreateLocale(source *Source, branch string) bool {
 	if localeFile.ExistsRemote {
 		return false
 	}
@@ -309,7 +349,7 @@ func (localeFile *LocaleFile) shouldCreateLocale(source *Source) bool {
 	return (localeFile.Name != "" || localeFile.Code != "")
 }
 
-func getUploadResult(client *phraseapp.Client, projectID string, upload *phraseapp.Upload) (result string, err error) {
+func getUploadResult(client *phraseapp.Client, projectID string, upload *phraseapp.Upload, branch string) (result string, err error) {
 	b := &backoff.Backoff{
 		Min:    500 * time.Millisecond,
 		Max:    10 * time.Second,
@@ -319,7 +359,27 @@ func getUploadResult(client *phraseapp.Client, projectID string, upload *phrasea
 
 	for ; result != "success" && result != "error"; result = upload.State {
 		time.Sleep(b.Duration())
-		upload, err = client.UploadShow(projectID, upload.ID)
+		uploadShowParams := &phraseapp.UploadShowParams{Branch: &branch}
+		upload, err = client.UploadShow(projectID, upload.ID, uploadShowParams)
+		if err != nil {
+			break
+		}
+	}
+
+	return
+}
+
+func getBranchCreateResult(client *phraseapp.Client, projectID string, branch *phraseapp.Branch) (result string, err error) {
+	b := &backoff.Backoff{
+		Min:    500 * time.Millisecond,
+		Max:    10 * time.Second,
+		Factor: 2,
+		Jitter: true,
+	}
+
+	for ; result != "success" && result != "error"; result = branch.State {
+		time.Sleep(b.Duration())
+		branch, err = client.BranchShow(projectID, branch.Name)
 		if err != nil {
 			break
 		}

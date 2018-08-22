@@ -26,7 +26,7 @@
     "cli",
     "tagparse"
   ]
-  revision = "0532c4d240968b87c89badb2f4cf9aeb9554654c"
+  revision = "3360a73d8ca97fec1e8f5c14fcbe20255b71eb31"
 
 [[projects]]
   name = "github.com/jpillora/backoff"
@@ -38,7 +38,7 @@
   branch = "master"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
-  revision = "b3d065c2b8229912e0d64776104ecd5f2644e6eb"
+  revision = "19d8a3da6823971c6ee032e161e043fcb58f0c03"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"

@@ -15,6 +15,7 @@ import (
 
 type PullCommand struct {
 	phraseapp.Config
+	Branch string `cli:"opt --branch"`
 }
 
 func (cmd *PullCommand) Run() error {
@@ -33,13 +34,13 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	projectIdToLocales, err := LocalesForProjects(client, targets)
+	projectIdToLocales, err := LocalesForProjects(client, targets, cmd.Branch)
 	if err != nil {
 		return err
 	}
 
 	for _, target := range targets {
-		val, ok := projectIdToLocales[target.ProjectID]
+		val, ok := projectIdToLocales[LocaleCacheKey{target.ProjectID, cmd.Branch}]
 		if !ok || len(val) == 0 {
 			return fmt.Errorf("Could not find any locales for project %q", target.ProjectID)
 		}
@@ -47,7 +48,7 @@ func (cmd *PullCommand) Run() error {
 	}
 
 	for _, target := range targets {
-		err := target.Pull(client)
+		err := target.Pull(client, cmd.Branch)
 		if err != nil {
 			return err
 		}
@@ -61,7 +62,7 @@ type PullParams struct {
 	LocaleID string
 }
 
-func (target *Target) Pull(client *phraseapp.Client) error {
+func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 	if err := target.CheckPreconditions(); err != nil {
 		return err
 	}
@@ -77,7 +78,7 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 			return err
 		}
 
-		err = target.DownloadAndWriteToFile(client, localeFile)
+		err = target.DownloadAndWriteToFile(client, localeFile, branch)
 		if err != nil {
 			return fmt.Errorf("%s for %s", err, localeFile.Path)
 		} else {
@@ -91,10 +92,11 @@ func (target *Target) Pull(client *phraseapp.Client) error {
 	return nil
 }
 
-func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile) error {
-	downloadParams := new(phraseapp.LocaleDownloadParams)
+func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFile *LocaleFile, branch string) error {
+	downloadParams := &phraseapp.LocaleDownloadParams{Branch: &branch}
 	if target.Params != nil {
 		*downloadParams = target.Params.LocaleDownloadParams
+		downloadParams.Branch = &branch
 	}
 
 	if downloadParams.FileFormat == nil {

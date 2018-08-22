@@ -74,6 +74,30 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
 
+	if cmd, err := newBranchCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/create", cmd, "Create a new branch.")
+	}
+
+	r.Register("branch/delete", newBranchDelete(cfg), "Delete an existing branch.")
+
+	if cmd, err := newBranchMerge(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/merge", cmd, "Merge an existing branch.")
+	}
+
+	r.Register("branch/show", newBranchShow(cfg), "Get details on a single branch for a given project.")
+
+	if cmd, err := newBranchUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/update", cmd, "Update an existing branch.")
+	}
+
+	r.Register("branches/list", newBranchesList(cfg), "List all branches the of the current project.")
+
 	if cmd, err := newCommentCreate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -292,7 +316,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locale/download", cmd, "Download a locale in a specific file format.")
 	}
 
-	r.Register("locale/show", newLocaleShow(cfg), "Get details on a single locale for a given project.")
+	if cmd, err := newLocaleShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/show", cmd, "Get details on a single locale for a given project.")
+	}
 
 	if cmd, err := newLocaleUpdate(cfg); err != nil {
 		return nil, err
@@ -300,7 +328,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locale/update", cmd, "Update an existing locale.")
 	}
 
-	r.Register("locales/list", newLocalesList(cfg), "List all locales for the given project.")
+	if cmd, err := newLocalesList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locales/list", cmd, "List all locales for the given project.")
+	}
 
 	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.")
 
@@ -446,7 +478,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("upload/create", cmd, "Upload a new language file. Creates necessary resources in your project.")
 	}
 
-	r.Register("upload/show", newUploadShow(cfg), "View details and summary for a single upload.")
+	if cmd, err := newUploadShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("upload/show", cmd, "View details and summary for a single upload.")
+	}
 
 	r.Register("uploads/list", newUploadsList(cfg), "List all uploads for the given project.")
 
@@ -1005,6 +1041,226 @@ func (cmd *BlacklistedKeysList) Run() error {
 	}
 
 	res, err := client.BlacklistedKeysList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchCreate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newBranchCreate(cfg *phraseapp.Config) (*BranchCreate, error) {
+
+	actionBranchCreate := &BranchCreate{Config: *cfg}
+	actionBranchCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchCreate.Config.Defaults["branch/create"]
+	if defaultsPresent {
+		if err := actionBranchCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchCreate, nil
+}
+
+func (cmd *BranchCreate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchDelete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchDelete(cfg *phraseapp.Config) *BranchDelete {
+
+	actionBranchDelete := &BranchDelete{Config: *cfg}
+	actionBranchDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchDelete
+}
+
+func (cmd *BranchDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BranchMerge struct {
+	phraseapp.Config
+
+	phraseapp.BranchMergeParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchMerge(cfg *phraseapp.Config) (*BranchMerge, error) {
+
+	actionBranchMerge := &BranchMerge{Config: *cfg}
+	actionBranchMerge.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchMerge.Config.Defaults["branch/merge"]
+	if defaultsPresent {
+		if err := actionBranchMerge.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchMerge, nil
+}
+
+func (cmd *BranchMerge) Run() error {
+	params := &cmd.BranchMergeParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchMerge(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type BranchShow struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchShow(cfg *phraseapp.Config) *BranchShow {
+
+	actionBranchShow := &BranchShow{Config: *cfg}
+	actionBranchShow.ProjectID = cfg.DefaultProjectID
+
+	return actionBranchShow
+}
+
+func (cmd *BranchShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchUpdate struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newBranchUpdate(cfg *phraseapp.Config) (*BranchUpdate, error) {
+
+	actionBranchUpdate := &BranchUpdate{Config: *cfg}
+	actionBranchUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchUpdate.Config.Defaults["branch/update"]
+	if defaultsPresent {
+		if err := actionBranchUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchUpdate, nil
+}
+
+func (cmd *BranchUpdate) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type BranchesList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newBranchesList(cfg *phraseapp.Config) *BranchesList {
+
+	actionBranchesList := &BranchesList{Config: *cfg}
+	actionBranchesList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionBranchesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionBranchesList.PerPage = *cfg.PerPage
+	}
+
+	return actionBranchesList
+}
+
+func (cmd *BranchesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.BranchesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -3085,26 +3341,35 @@ func (cmd *LocaleDownload) Run() error {
 type LocaleShow struct {
 	phraseapp.Config
 
+	phraseapp.LocaleShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newLocaleShow(cfg *phraseapp.Config) *LocaleShow {
+func newLocaleShow(cfg *phraseapp.Config) (*LocaleShow, error) {
 
 	actionLocaleShow := &LocaleShow{Config: *cfg}
 	actionLocaleShow.ProjectID = cfg.DefaultProjectID
 
-	return actionLocaleShow
+	val, defaultsPresent := actionLocaleShow.Config.Defaults["locale/show"]
+	if defaultsPresent {
+		if err := actionLocaleShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionLocaleShow, nil
 }
 
 func (cmd *LocaleShow) Run() error {
+	params := &cmd.LocaleShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.LocaleShow(cmd.ProjectID, cmd.ID)
+	res, err := client.LocaleShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3156,13 +3421,15 @@ func (cmd *LocaleUpdate) Run() error {
 type LocalesList struct {
 	phraseapp.Config
 
+	phraseapp.LocalesListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
 }
 
-func newLocalesList(cfg *phraseapp.Config) *LocalesList {
+func newLocalesList(cfg *phraseapp.Config) (*LocalesList, error) {
 
 	actionLocalesList := &LocalesList{Config: *cfg}
 	actionLocalesList.ProjectID = cfg.DefaultProjectID
@@ -3173,17 +3440,24 @@ func newLocalesList(cfg *phraseapp.Config) *LocalesList {
 		actionLocalesList.PerPage = *cfg.PerPage
 	}
 
-	return actionLocalesList
+	val, defaultsPresent := actionLocalesList.Config.Defaults["locales/list"]
+	if defaultsPresent {
+		if err := actionLocalesList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionLocalesList, nil
 }
 
 func (cmd *LocalesList) Run() error {
+	params := &cmd.LocalesListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.LocalesList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -4520,26 +4794,35 @@ func (cmd *UploadCreate) Run() error {
 type UploadShow struct {
 	phraseapp.Config
 
+	phraseapp.UploadShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newUploadShow(cfg *phraseapp.Config) *UploadShow {
+func newUploadShow(cfg *phraseapp.Config) (*UploadShow, error) {
 
 	actionUploadShow := &UploadShow{Config: *cfg}
 	actionUploadShow.ProjectID = cfg.DefaultProjectID
 
-	return actionUploadShow
+	val, defaultsPresent := actionUploadShow.Config.Defaults["upload/show"]
+	if defaultsPresent {
+		if err := actionUploadShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionUploadShow, nil
 }
 
 func (cmd *UploadShow) Run() error {
+	params := &cmd.UploadShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.UploadShow(cmd.ProjectID, cmd.ID)
+	res, err := client.UploadShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
