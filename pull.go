@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/phrase/phraseapp-client/internal/api"
 	"github.com/phrase/phraseapp-client/internal/paths"
@@ -121,12 +123,32 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
+	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
+
+	remainingRequests, err := strconv.Atoi(resp.Header["X-Rate-Limit-Remaining"][0])
+	if err != nil {
+		remainingRequests = 0
+	}
+
+	if remainingRequests == 1 {
+		resetTime, err := strconv.ParseInt(resp.Header["X-Rate-Limit-Reset"][0], 10, 64)
+		if err != nil {
+			resetTime = time.Now().Add(time.Second * 10).Unix()
+		}
+
+		timeUntilReset := time.Unix(resetTime, 0)
+		fmt.Println(timeUntilReset.String())
+		time.Sleep(timeUntilReset.Sub(time.Now()))
+	}
+
+	fmt.Println(resp.Header["X-Rate-Limit-Remaining"])
+	fmt.Println(resp.Header["X-Rate-Limit-Reset"])
+	fmt.Println(resp.Header["Etag"])
 
 	err = ioutil.WriteFile(localeFile.Path, content, 0700)
 	return err
