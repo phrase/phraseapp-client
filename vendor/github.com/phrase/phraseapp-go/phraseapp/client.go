@@ -54,7 +54,7 @@ func NewClient(credentials Credentials, debug bool) (*Client, error) {
 	return client, nil
 }
 
-func (client *Client) authenticate(req *http.Request) error {
+func (client *Client) Authenticate(req *http.Request) error {
 	if client.Credentials.Token != "" {
 		req.Header.Set("Authorization", "token "+client.Credentials.Token)
 	} else if client.Credentials.Username != "" {
@@ -120,7 +120,7 @@ func (client *Client) sendRequest(method, urlPath, contentType string, body io.R
 }
 
 func (client *Client) send(req *http.Request, expectedStatus int) (*http.Response, error) {
-	err := client.authenticate(req)
+	err := client.Authenticate(req)
 	if err != nil {
 		return nil, err
 	}

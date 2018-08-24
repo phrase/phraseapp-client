@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/phrase/phraseapp-client/internal/api"
 	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-client/internal/print"
@@ -116,16 +117,19 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		fmt.Fprintln(os.Stderr, "FormatOptions", downloadParams.FormatOptions)
 	}
 
-	res, err := client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
+	resp, err := api.LocaleDownload(client, target.ProjectID, localeFile.ID, downloadParams)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(localeFile.Path, res, 0700)
-	if err != nil {
-		return err
-	}
-	return nil
+	err = ioutil.WriteFile(localeFile.Path, content, 0700)
+	return err
 }
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
