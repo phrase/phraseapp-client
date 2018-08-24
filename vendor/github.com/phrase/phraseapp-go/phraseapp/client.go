@@ -3,6 +3,7 @@ package phraseapp
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -52,6 +53,45 @@ func NewClient(credentials Credentials, debug bool) (*Client, error) {
 	}
 
 	return client, nil
+}
+
+// LocaleDownloadWithResponse returns the response from the API request to download a locale
+func (client *Client) LocaleDownloadWithResponse(project_id, id string, params *LocaleDownloadParams) (*http.Response, error) {
+	urlPath := fmt.Sprintf("/v2/projects/%s/locales/%s/download", url.QueryEscape(project_id), url.QueryEscape(id))
+	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
+	if err != nil {
+		return nil, err
+	}
+
+	paramsBuf := bytes.NewBuffer(nil)
+	err = json.NewEncoder(paramsBuf).Encode(&params)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", endpointURL.String(), paramsBuf)
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.authenticate(req)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = handleResponseStatus(resp, 200)
+	if err != nil {
+		resp.Body.Close()
+		return nil, err
+	}
+
+	return resp, err
 }
 
 func (client *Client) authenticate(req *http.Request) error {
