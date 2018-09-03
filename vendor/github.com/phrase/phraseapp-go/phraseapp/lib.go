@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "af8c8e121b03fbb27f30326738fd1c3ac086b0a2"
-	RevisionGenerator = "HEAD/2018-08-10T135953/soenke"
+	RevisionDocs      = ""
+	RevisionGenerator = ""
 )
 
 type Account struct {
@@ -4466,16 +4466,18 @@ func (client *Client) LocaleDelete(project_id, id string) error {
 }
 
 type LocaleDownloadParams struct {
-	Branch                     *string           `json:"branch,omitempty"  cli:"opt --branch"`
-	ConvertEmoji               bool              `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
-	Encoding                   *string           `json:"encoding,omitempty"  cli:"opt --encoding"`
-	FallbackLocaleID           *string           `json:"fallback_locale_id,omitempty"  cli:"opt --fallback-locale-id"`
-	FileFormat                 *string           `json:"file_format,omitempty"  cli:"opt --file-format"`
-	FormatOptions              map[string]string `json:"format_options,omitempty"  cli:"opt --format-options"`
-	IncludeEmptyTranslations   bool              `json:"include_empty_translations,omitempty"  cli:"opt --include-empty-translations"`
-	KeepNotranslateTags        bool              `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
-	SkipUnverifiedTranslations bool              `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
-	Tag                        *string           `json:"tag,omitempty"  cli:"opt --tag"`
+	Branch                        *string           `json:"branch,omitempty"  cli:"opt --branch"`
+	ConvertEmoji                  bool              `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
+	Encoding                      *string           `json:"encoding,omitempty"  cli:"opt --encoding"`
+	FallbackLocaleID              *string           `json:"fallback_locale_id,omitempty"  cli:"opt --fallback-locale-id"`
+	FileFormat                    *string           `json:"file_format,omitempty"  cli:"opt --file-format"`
+	FormatOptions                 map[string]string `json:"format_options,omitempty"  cli:"opt --format-options"`
+	IncludeEmptyTranslations      bool              `json:"include_empty_translations,omitempty"  cli:"opt --include-empty-translations"`
+	IncludeTranslatedKeys         bool              `json:"include_translated_keys,omitempty"  cli:"opt --include-translated-keys"`
+	IncludeUnverifiedTranslations bool              `json:"include_unverified_translations,omitempty"  cli:"opt --include-unverified-translations"`
+	KeepNotranslateTags           bool              `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
+	SkipUnverifiedTranslations    bool              `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
+	Tag                           *string           `json:"tag,omitempty"  cli:"opt --tag"`
 }
 
 func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -4537,6 +4539,18 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 		case "include_empty_translations":
 			ok := false
 			params.IncludeEmptyTranslations, ok = v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		case "include_translated_keys":
+			ok := false
+			params.IncludeTranslatedKeys, ok = v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		case "include_unverified_translations":
+			ok := false
+			params.IncludeUnverifiedTranslations, ok = v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
