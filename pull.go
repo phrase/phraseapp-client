@@ -16,6 +16,10 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
+const (
+	timeoutInMinutes = 30
+)
+
 type PullCommand struct {
 	phraseapp.Config
 	Branch string `cli:"opt --branch"`
@@ -75,7 +79,12 @@ func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 		return err
 	}
 
+	startedAt := time.Now()
 	for _, localeFile := range localeFiles {
+		if time.Now().Sub(startedAt).Minutes() >= timeoutInMinutes {
+			return fmt.Errorf("Timeout of %d minutes exceeded", timeoutInMinutes)
+		}
+
 		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
@@ -130,25 +139,21 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		return err
 	}
 
-	remainingRequests, err := strconv.Atoi(resp.Header["X-Rate-Limit-Remaining"][0])
+	remaining, err := strconv.Atoi(resp.Header.Get("X-Rate-Limit-Remaining"))
 	if err != nil {
-		remainingRequests = 0
+		remaining = 0
 	}
 
-	if remainingRequests == 1 {
-		resetTime, err := strconv.ParseInt(resp.Header["X-Rate-Limit-Reset"][0], 10, 64)
+	if remaining == 0 {
+		reset, err := strconv.ParseInt(resp.Header.Get("X-Rate-Limit-Reset"), 10, 64)
 		if err != nil {
-			resetTime = time.Now().Add(time.Second * 10).Unix()
+			reset = time.Now().Add(time.Second * 10).Unix()
 		}
 
-		timeUntilReset := time.Unix(resetTime, 0)
-		fmt.Println(timeUntilReset.String())
-		time.Sleep(timeUntilReset.Sub(time.Now()))
+		resetTime := time.Unix(reset, 0).Sub(time.Now())
+		fmt.Printf("Rate limit exceeded. Download will continue in %d seconds\n", int64(resetTime.Seconds()))
+		time.Sleep(resetTime)
 	}
-
-	fmt.Println(resp.Header["X-Rate-Limit-Remaining"])
-	fmt.Println(resp.Header["X-Rate-Limit-Reset"])
-	fmt.Println(resp.Header["Etag"])
 
 	err = ioutil.WriteFile(localeFile.Path, content, 0700)
 	return err
