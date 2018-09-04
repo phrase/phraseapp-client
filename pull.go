@@ -150,8 +150,8 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 			reset = time.Now().Add(time.Second * 10).Unix()
 		}
 
-		resetTime := time.Unix(reset, 0).Sub(time.Now())
-		fmt.Printf("Rate limit exceeded. Download will continue in %d seconds\n", int64(resetTime.Seconds()))
+		resetTime := time.Unix(reset, 0).Add(time.Second * 1).Sub(time.Now())
+		fmt.Printf("Rate limit exceeded. Download will resume in %d seconds\n", int64(resetTime.Seconds()))
 		time.Sleep(resetTime)
 	}
 
