@@ -38,7 +38,7 @@
   branch = "cli-ratelimit"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
-  revision = "26df05f9a321030a213fddde3201937e287d6cd3"
+  revision = "c728fc05d7391e61d4bda772986c52029fed2ffe"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"

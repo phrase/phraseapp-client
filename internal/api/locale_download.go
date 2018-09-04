@@ -33,6 +33,17 @@ func LocaleDownload(client *phraseapp.Client, project_id, id string, params *phr
 		return nil, err
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = phraseapp.HandleResponseStatus(resp, 200)
+	if err != nil {
+		resp.Body.Close()
+		return nil, err
+	}
+
 	return resp, err
 }

@@ -145,7 +145,7 @@ func (client *Client) send(req *http.Request, expectedStatus int) (*http.Respons
 		fmt.Fprintf(os.Stderr, "\nResponse HTTP Status Code: %s\n", resp.Status)
 	}
 
-	err = handleResponseStatus(resp, expectedStatus)
+	err = HandleResponseStatus(resp, expectedStatus)
 	if err != nil {
 		resp.Body.Close()
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -139,20 +140,9 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		return err
 	}
 
-	remaining, err := strconv.Atoi(resp.Header.Get("X-Rate-Limit-Remaining"))
+	err = checkRateLimit(resp)
 	if err != nil {
-		remaining = 0
-	}
-
-	if remaining == 0 {
-		reset, err := strconv.ParseInt(resp.Header.Get("X-Rate-Limit-Reset"), 10, 64)
-		if err != nil {
-			reset = time.Now().Add(time.Second * 10).Unix()
-		}
-
-		resetTime := time.Unix(reset, 0).Add(time.Second * 1).Sub(time.Now())
-		fmt.Printf("Rate limit exceeded. Download will resume in %d seconds\n", int64(resetTime.Seconds()))
-		time.Sleep(resetTime)
+		return err
 	}
 
 	err = ioutil.WriteFile(localeFile.Path, content, 0700)
@@ -192,6 +182,27 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 	}
 
 	return files, nil
+}
+
+func checkRateLimit(resp *http.Response) error {
+
+	remaining, err := strconv.Atoi(resp.Header.Get("X-Rate-Limit-Remaining"))
+	if err != nil {
+		return err
+	}
+
+	if remaining == 0 {
+		reset, err := strconv.ParseInt(resp.Header.Get("X-Rate-Limit-Reset"), 10, 64)
+		if err != nil {
+			reset = time.Now().Add(time.Second * 10).Unix()
+		}
+
+		resetTime := time.Unix(reset, 0).Add(time.Second * 1).Sub(time.Now())
+		fmt.Printf("Rate limit exceeded. Download will resume in %d seconds\n", int64(resetTime.Seconds()))
+		time.Sleep(resetTime)
+	}
+
+	return nil
 }
 
 func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFile, error) {

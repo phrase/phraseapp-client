@@ -13,7 +13,7 @@ func further() string {
 	return fmt.Sprintf("\nFor further information see:\n%s", docsURL)
 }
 
-func handleResponseStatus(resp *http.Response, expectedStatus int) error {
+func HandleResponseStatus(resp *http.Response, expectedStatus int) error {
 	switch status := resp.StatusCode; status {
 	case expectedStatus:
 		return nil
