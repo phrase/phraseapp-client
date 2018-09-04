@@ -35,10 +35,10 @@
   version = "1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "cli-ratelimit"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
-  revision = "598d226e84380e92d4893f76d7eec22211f4fb27"
+  revision = "26df05f9a321030a213fddde3201937e287d6cd3"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -49,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "16d17b3a65d3905d27223c58d9199553019894eb3166ab7204fd0f40e5405a4e"
+  inputs-digest = "d3f6c9a14205b1264ba82f3dd720ade3a883169d590833bf75b0b82fd241e449"
   solver-name = "gps-cdcl"
   solver-version = 1

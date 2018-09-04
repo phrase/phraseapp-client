@@ -54,6 +54,7 @@ func NewClient(credentials Credentials, debug bool) (*Client, error) {
 	return client, nil
 }
 
+// Authenticate with access token when it is provided in the credentials. Otherwise a prompt for the username and password will open.
 func (client *Client) Authenticate(req *http.Request) error {
 	if client.Credentials.Token != "" {
 		req.Header.Set("Authorization", "token "+client.Credentials.Token)
