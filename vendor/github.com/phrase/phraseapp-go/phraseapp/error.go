@@ -104,5 +104,5 @@ func (rle *RateLimitingError) Error() string {
 	if rle.TooManyRequests {
 		return fmt.Sprintf("Rate limit exceeded: too many parallel requests")
 	}
-	return fmt.Sprintf("Rate limit exceeded: from %d requests %d are remaning (reset in %d seconds)", rle.Limit, rle.Remaining, int64(rle.Reset.Sub(time.Now()).Seconds()))
+	return fmt.Sprintf("Rate limit exceeded: from %d requests %d are remaining (reset in %d seconds)", rle.Limit, rle.Remaining, int64(rle.Reset.Sub(time.Now()).Seconds()))
 }

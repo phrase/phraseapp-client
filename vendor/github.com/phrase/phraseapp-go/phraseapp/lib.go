@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = ""
-	RevisionGenerator = ""
+	RevisionDocs      = "a8c95b4c514a6d9bb2e4001492204945431a2b0d"
+	RevisionGenerator = "HEAD/2018-09-04T145440/soenke"
 )
 
 type Account struct {
@@ -4478,6 +4478,7 @@ type LocaleDownloadParams struct {
 	KeepNotranslateTags           bool              `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
 	SkipUnverifiedTranslations    bool              `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
 	Tag                           *string           `json:"tag,omitempty"  cli:"opt --tag"`
+	Tags                          *string           `json:"tags,omitempty"  cli:"opt --tags"`
 }
 
 func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -4574,6 +4575,15 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 
 			escapedParam := url.QueryEscape(val)
 			params.Tag = &escapedParam
+
+		case "tags":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Tags = &escapedParam
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
