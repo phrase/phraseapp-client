@@ -1,6 +1,8 @@
 package main
 
-import "github.com/phrase/phraseapp-go/phraseapp"
+import (
+	"github.com/phrase/phraseapp-go/phraseapp"
+)
 
 var Debug bool
 
@@ -16,7 +18,6 @@ type LocaleCacheKey struct {
 type LocaleCache map[LocaleCacheKey][]*phraseapp.Locale
 
 func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales, branch string) (LocaleCache, error) {
-
 	projectIdToLocales := LocaleCache{}
 	for _, pid := range projectLocales.ProjectIds() {
 		key := LocaleCacheKey{
@@ -27,6 +28,9 @@ func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales,
 		if _, ok := projectIdToLocales[key]; !ok {
 			remoteLocales, err := RemoteLocales(client, key)
 			if err != nil {
+				if branch != "" {
+					continue
+				}
 				return nil, err
 			}
 
