@@ -28,7 +28,9 @@ func LocalesForProjects(client *phraseapp.Client, projectLocales ProjectLocales,
 		if _, ok := projectIdToLocales[key]; !ok {
 			remoteLocales, err := RemoteLocales(client, key)
 			if err != nil {
-				if branch != "" {
+				if _, ok := (err).(phraseapp.ErrNotFound); ok && branch != "" {
+					// skip this key if we targeted a branch in
+					// a project which does not exist
 					continue
 				}
 				return nil, err
