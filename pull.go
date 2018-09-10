@@ -34,6 +34,11 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
+	err = client.EnableCaching()
+	if err != nil {
+		return err
+	}
+
 	targets, err := TargetsFromConfig(cmd.Config)
 	if err != nil {
 		return err

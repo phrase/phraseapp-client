@@ -11,10 +11,11 @@ import (
 )
 
 func newClient(creds phraseapp.Credentials, debug bool) (*phraseapp.Client, error) {
-	c, err := phraseapp.NewClient(creds, debug)
+	client, err := phraseapp.NewClient(creds, debug)
 	if err != nil {
 		return nil, err
 	}
+
 	if os.Getenv("PHRASEAPP_INSECURE_SKIP_VERIFY") == "true" {
 		tr := &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
@@ -26,7 +27,8 @@ func newClient(creds phraseapp.Credentials, debug bool) (*phraseapp.Client, erro
 			ExpectContinueTimeout: 1 * time.Second,
 			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 		}
-		c.Client = http.Client{Transport: tr}
+		client.Client = http.Client{Transport: tr}
 	}
-	return c, nil
+
+	return client, nil
 }
