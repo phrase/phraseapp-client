@@ -42,6 +42,9 @@ func (cmd *PullCommand) Run() error {
 	for _, target := range targets {
 		val, ok := projectIdToLocales[LocaleCacheKey{target.ProjectID, cmd.Branch}]
 		if !ok || len(val) == 0 {
+			if cmd.Branch != "" {
+				continue
+			}
 			return fmt.Errorf("Could not find any locales for project %q", target.ProjectID)
 		}
 		target.RemoteLocales = val
