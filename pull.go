@@ -6,11 +6,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-client/internal/placeholders"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-go/phraseapp"
+)
+
+const (
+	timeoutInMinutes = 30 * time.Minute
 )
 
 type PullCommand struct {
@@ -75,7 +80,12 @@ func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 		return err
 	}
 
+	startedAt := time.Now()
 	for _, localeFile := range localeFiles {
+		if time.Since(startedAt) >= timeoutInMinutes {
+			return fmt.Errorf("Timeout of %d minutes exceeded", timeoutInMinutes)
+		}
+
 		err := createFile(localeFile.Path)
 		if err != nil {
 			return err
@@ -121,14 +131,19 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 
 	res, err := client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
 	if err != nil {
-		return err
+		if rateLimitError, ok := (err).(*phraseapp.RateLimitingError); ok {
+			waitForRateLimit(rateLimitError)
+			res, err = client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 
 	err = ioutil.WriteFile(localeFile.Path, res, 0700)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (target *Target) LocaleFiles() (LocaleFiles, error) {
@@ -160,10 +175,19 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		}
 	} else {
 		// no local files match remote locale
-		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q.", target.ProjectID)
+		return nil, fmt.Errorf("could not find any files on your system that matches the locales for porject %q", target.ProjectID)
 	}
 
 	return files, nil
+}
+
+func waitForRateLimit(rateLimitError *phraseapp.RateLimitingError) {
+	if rateLimitError.Remaining == 0 {
+		reset := rateLimitError.Reset
+		resetTime := reset.Add(time.Second * 5).Sub(time.Now())
+		fmt.Printf("Rate limit exceeded. Download will resume in %d seconds\n", int64(resetTime.Seconds()))
+		time.Sleep(resetTime)
+	}
 }
 
 func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFile, error) {
