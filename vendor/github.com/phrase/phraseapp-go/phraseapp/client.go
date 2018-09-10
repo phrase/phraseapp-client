@@ -37,25 +37,37 @@ func NewClient(credentials Credentials, debug bool) (*Client, error) {
 		debug:       debug,
 	}
 
-	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
-	if envToken != "" && credentials.Token == "" && credentials.Username == "" {
-		client.Credentials.Token = envToken
-	}
-
-	if client.Credentials.Host == "" {
-		envHost := os.Getenv("PHRASEAPP_HOST")
-		if envHost != "" {
-			client.Credentials.Host = envHost
-		} else {
-			client.Credentials.Host = "https://api.phraseapp.com"
-		}
-	}
-
+	credentials.init()
+	client.Credentials = credentials
 	return client, nil
 }
 
-// Authenticate with access token when it is provided in the credentials. Otherwise a prompt for the username and password will open.
-func (client *Client) Authenticate(req *http.Request) error {
+func (client *Client) EnableCaching() error {
+	cache, err := newHTTPCacheClient(client.debug)
+	if err != nil {
+		return err
+	}
+	client.Transport = cache
+	return nil
+}
+
+func (c *Credentials) init() {
+	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
+	if envToken != "" && c.Token == "" && c.Username == "" {
+		c.Token = envToken
+	}
+
+	if c.Host == "" {
+		envHost := os.Getenv("PHRASEAPP_HOST")
+		if envHost != "" {
+			c.Host = envHost
+		} else {
+			c.Host = "https://api.phraseapp.com"
+		}
+	}
+}
+
+func (client *Client) authenticate(req *http.Request) error {
 	if client.Credentials.Token != "" {
 		req.Header.Set("Authorization", "token "+client.Credentials.Token)
 	} else if client.Credentials.Username != "" {
@@ -121,7 +133,7 @@ func (client *Client) sendRequest(method, urlPath, contentType string, body io.R
 }
 
 func (client *Client) send(req *http.Request, expectedStatus int) (*http.Response, error) {
-	err := client.Authenticate(req)
+	err := client.authenticate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +157,7 @@ func (client *Client) send(req *http.Request, expectedStatus int) (*http.Respons
 		fmt.Fprintf(os.Stderr, "\nResponse HTTP Status Code: %s\n", resp.Status)
 	}
 
-	err = HandleResponseStatus(resp, expectedStatus)
+	err = handleResponseStatus(resp, expectedStatus)
 	if err != nil {
 		resp.Body.Close()
 	}
