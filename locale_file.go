@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,4 +46,17 @@ func (localeFile *LocaleFile) Message() string {
 		str = fmt.Sprintf("%s", localeFile.Name)
 	}
 	return strings.TrimSpace(str)
+}
+
+func (localeFile *LocaleFile) Etag() (string, error) {
+	file, err := os.Open(localeFile.Path)
+	if err != nil {
+		return "", err
+	}
+
+	defer file.Close()
+	hash := md5.New()
+	_, err = io.Copy(hash, f)
+	result := hex.EncodeToString(hash.Sum(nil))
+	return result, err
 }

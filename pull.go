@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/peterbourgon/diskv"
+
 	"github.com/phrase/phraseapp-client/internal/api"
 	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-client/internal/placeholders"
@@ -129,13 +131,19 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 		fmt.Fprintln(os.Stderr, "FormatOptions", downloadParams.FormatOptions)
 	}
 
-	resp, err := api.LocaleDownload(client, target.ProjectID, localeFile.ID, downloadParams)
+	etag, err := localeFile.Etag()
+	resp, err := api.LocaleDownload(client, target.ProjectID, localeFile.ID, etag, downloadParams)
 	if err != nil {
 		return err
 	}
 
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = cacheFile(resp.Header.Get("Etag"), content)
 	if err != nil {
 		return err
 	}
@@ -178,14 +186,43 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		}
 	} else {
 		// no local files match remote locale
-		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q.", target.ProjectID)
+		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q", target.ProjectID)
 	}
 
 	return files, nil
 }
 
-func checkRateLimit(resp *http.Response) error {
+func cacheFile(etag string, content []byte) error {
+	if etag == "" {
+		return fmt.Errorf("Etag cannot be empty")
+	}
 
+	fmt.Println(etag)
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return err
+	}
+
+	cacheDir = filepath.Join(cacheDir, "phraseapp")
+	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+		err := os.MkdirAll(cacheDir, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	cache := diskv.New(diskv.Options{
+		BasePath:     cacheDir,
+		CacheSizeMax: 1024 * 1024 * 100, // 100MB
+	})
+
+	key := strings.TrimLeft(etag, "W/")
+	key = strings.Trim(key, "\"")
+	err = cache.Write(key, content)
+	return err
+}
+
+func checkRateLimit(resp *http.Response) error {
 	remaining, err := strconv.Atoi(resp.Header.Get("X-Rate-Limit-Remaining"))
 	if err != nil {
 		return err

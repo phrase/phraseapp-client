@@ -17,6 +17,8 @@ func HandleResponseStatus(resp *http.Response, expectedStatus int) error {
 	switch status := resp.StatusCode; status {
 	case expectedStatus:
 		return nil
+	case http.StatusNotModified:
+		return nil
 	case http.StatusBadRequest:
 		e := new(ErrorResponse)
 		err := json.NewDecoder(resp.Body).Decode(&e)

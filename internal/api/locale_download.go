@@ -10,7 +10,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-func LocaleDownload(client *phraseapp.Client, project_id, id string, params *phraseapp.LocaleDownloadParams) (*http.Response, error) {
+func LocaleDownload(client *phraseapp.Client, project_id, id string, etag string, params *phraseapp.LocaleDownloadParams) (*http.Response, error) {
 	urlPath := fmt.Sprintf("/v2/projects/%s/locales/%s/download", url.QueryEscape(project_id), url.QueryEscape(id))
 	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
 	if err != nil {
@@ -34,6 +34,7 @@ func LocaleDownload(client *phraseapp.Client, project_id, id string, params *phr
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("ETag", etag)
 	resp, err := client.Client.Do(req)
 	if err != nil {
 		return nil, err
