@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	timeoutInMinutes = 30
+	timeoutInMinutes = 30 * time.Minute
 )
 
 type PullCommand struct {
@@ -79,7 +79,7 @@ func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 
 	startedAt := time.Now()
 	for _, localeFile := range localeFiles {
-		if time.Now().Sub(startedAt).Minutes() >= timeoutInMinutes {
+		if time.Since(startedAt) >= timeoutInMinutes {
 			return fmt.Errorf("Timeout of %d minutes exceeded", timeoutInMinutes)
 		}
 
@@ -129,7 +129,11 @@ func (target *Target) DownloadAndWriteToFile(client *phraseapp.Client, localeFil
 	res, err := client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
 	if err != nil {
 		if rateLimitError, ok := (err).(*phraseapp.RateLimitingError); ok {
-			checkRateLimit(rateLimitError)
+			waitForRateLimit(rateLimitError)
+			res, err = client.LocaleDownload(target.ProjectID, localeFile.ID, downloadParams)
+			if err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
@@ -168,16 +172,16 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		}
 	} else {
 		// no local files match remote locale
-		return nil, fmt.Errorf("Could not find any files on your system that matches the locales for porject %q.", target.ProjectID)
+		return nil, fmt.Errorf("could not find any files on your system that matches the locales for porject %q", target.ProjectID)
 	}
 
 	return files, nil
 }
 
-func checkRateLimit(rateLimitError *phraseapp.RateLimitingError) {
+func waitForRateLimit(rateLimitError *phraseapp.RateLimitingError) {
 	if rateLimitError.Remaining == 0 {
 		reset := rateLimitError.Reset
-		resetTime := reset.Add(time.Second * 1).Sub(time.Now())
+		resetTime := reset.Add(time.Second * 5).Sub(time.Now())
 		fmt.Printf("Rate limit exceeded. Download will resume in %d seconds\n", int64(resetTime.Seconds()))
 		time.Sleep(resetTime)
 	}
