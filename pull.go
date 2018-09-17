@@ -34,11 +34,6 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	err = client.EnableCaching()
-	if err != nil {
-		return err
-	}
-
 	targets, err := TargetsFromConfig(cmd.Config)
 	if err != nil {
 		return err
@@ -86,6 +81,11 @@ func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 	}
 
 	startedAt := time.Now()
+	err = client.EnableCaching(phraseapp.CacheConfig{})
+	if err != nil {
+		return err
+	}
+
 	for _, localeFile := range localeFiles {
 		if time.Since(startedAt) >= timeoutInMinutes {
 			return fmt.Errorf("Timeout of %d minutes exceeded", timeoutInMinutes)
@@ -107,6 +107,7 @@ func (target *Target) Pull(client *phraseapp.Client, branch string) error {
 		}
 	}
 
+	client.DisableCaching()
 	return nil
 }
 

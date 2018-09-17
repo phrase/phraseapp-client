@@ -53,10 +53,10 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
   revision = "387597d48ced4980543a04c703c94ff641e7a828"
+  version = "v3.0.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -67,6 +67,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "210dc4a1a0f179a985a218977c6296c3433905a531cdbec0d2902a9dc5c4cf49"
+  inputs-digest = "16d17b3a65d3905d27223c58d9199553019894eb3166ab7204fd0f40e5405a4e"
   solver-name = "gps-cdcl"
   solver-version = 1
