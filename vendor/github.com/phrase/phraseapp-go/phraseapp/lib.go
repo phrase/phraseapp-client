@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "a8c95b4c514a6d9bb2e4001492204945431a2b0d"
-	RevisionGenerator = "HEAD/2018-09-04T145440/soenke"
+	RevisionDocs      = "732b1e2d93a671158c2ef8536bb39c7b76f73b66"
+	RevisionGenerator = "HEAD/2018-09-18T130804/kirchner"
 )
 
 type Account struct {
@@ -137,15 +137,16 @@ type GlossaryTermTranslation struct {
 }
 
 type Invitation struct {
-	AcceptedAt *time.Time       `json:"accepted_at"`
-	CreatedAt  *time.Time       `json:"created_at"`
-	Email      string           `json:"email"`
-	ID         string           `json:"id"`
-	Locales    []*LocalePreview `json:"locales"`
-	Projects   []*ProjectShort  `json:"projects"`
-	Role       string           `json:"role"`
-	State      string           `json:"state"`
-	UpdatedAt  *time.Time       `json:"updated_at"`
+	AcceptedAt  *time.Time        `json:"accepted_at"`
+	CreatedAt   *time.Time        `json:"created_at"`
+	Email       string            `json:"email"`
+	ID          string            `json:"id"`
+	Locales     []*LocalePreview  `json:"locales"`
+	Permissions map[string]string `json:"permissions"`
+	Projects    []*ProjectShort   `json:"projects"`
+	Role        string            `json:"role"`
+	State       string            `json:"state"`
+	UpdatedAt   *time.Time        `json:"updated_at"`
 }
 
 type Job struct {
@@ -555,12 +556,22 @@ func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 }
 
 type CommentParams struct {
+	Branch  *string `json:"branch,omitempty"  cli:"opt --branch"`
 	Message *string `json:"message,omitempty"  cli:"opt --message"`
 }
 
 func (params *CommentParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "message":
 			val, ok := v.(string)
 			if !ok {
@@ -699,6 +710,7 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 }
 
 type JobLocaleParams struct {
+	Branch   *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string  `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	UserIDs  []string `json:"user_ids,omitempty"  cli:"opt --user-ids"`
 }
@@ -706,6 +718,15 @@ type JobLocaleParams struct {
 func (params *JobLocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -730,6 +751,7 @@ func (params *JobLocaleParams) ApplyValuesFromMap(defaults map[string]interface{
 }
 
 type JobParams struct {
+	Branch            *string     `json:"branch,omitempty"  cli:"opt --branch"`
 	Briefing          *string     `json:"briefing,omitempty"  cli:"opt --briefing"`
 	DueDate           **time.Time `json:"due_date,omitempty"  cli:"opt --due-date"`
 	Name              *string     `json:"name,omitempty"  cli:"opt --name"`
@@ -740,6 +762,15 @@ type JobParams struct {
 func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "briefing":
 			val, ok := v.(string)
 			if !ok {
@@ -787,6 +818,7 @@ func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 }
 
 type TranslationKeyParams struct {
+	Branch                *string `json:"branch,omitempty"  cli:"opt --branch"`
 	DataType              *string `json:"data_type,omitempty"  cli:"opt --data-type"`
 	Description           *string `json:"description,omitempty"  cli:"opt --description"`
 	LocalizedFormatKey    *string `json:"localized_format_key,omitempty"  cli:"opt --localized-format-key"`
@@ -806,6 +838,15 @@ type TranslationKeyParams struct {
 func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "data_type":
 			val, ok := v.(string)
 			if !ok {
@@ -1044,6 +1085,7 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 }
 
 type TranslationOrderParams struct {
+	Branch                           *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	Category                         *string  `json:"category,omitempty"  cli:"opt --category"`
 	IncludeUntranslatedKeys          *bool    `json:"include_untranslated_keys,omitempty"  cli:"opt --include-untranslated-keys"`
 	IncludeUnverifiedTranslations    *bool    `json:"include_unverified_translations,omitempty"  cli:"opt --include-unverified-translations"`
@@ -1062,6 +1104,15 @@ type TranslationOrderParams struct {
 func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "category":
 			val, ok := v.(string)
 			if !ok {
@@ -1396,12 +1447,22 @@ func (params *StyleguideParams) ApplyValuesFromMap(defaults map[string]interface
 }
 
 type TagParams struct {
-	Name *string `json:"name,omitempty"  cli:"opt --name"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Name   *string `json:"name,omitempty"  cli:"opt --name"`
 }
 
 func (params *TagParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "name":
 			val, ok := v.(string)
 			if !ok {
@@ -1420,6 +1481,7 @@ func (params *TagParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 }
 
 type TranslationParams struct {
+	Branch       *string `json:"branch,omitempty"  cli:"opt --branch"`
 	Content      *string `json:"content,omitempty"  cli:"opt --content"`
 	Excluded     *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
 	KeyID        *string `json:"key_id,omitempty"  cli:"opt --key-id"`
@@ -1431,6 +1493,15 @@ type TranslationParams struct {
 func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "content":
 			val, ok := v.(string)
 			if !ok {
@@ -2318,14 +2389,44 @@ func (client *Client) CommentCreate(project_id, key_id string, params *CommentPa
 	return retVal, err
 }
 
+type CommentDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing comment.
-func (client *Client) CommentDelete(project_id, key_id, id string) error {
+func (client *Client) CommentDelete(project_id, key_id, id string, params *CommentDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -2334,16 +2435,46 @@ func (client *Client) CommentDelete(project_id, key_id, id string) error {
 		return nil
 	}()
 	return err
+}
+
+type CommentMarkCheckParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentMarkCheckParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
 }
 
 // Check if comment was marked as read. Returns 204 if read, 404 if unread.
-func (client *Client) CommentMarkCheck(project_id, key_id, id string) error {
+func (client *Client) CommentMarkCheck(project_id, key_id, id string, params *CommentMarkCheckParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -2352,16 +2483,46 @@ func (client *Client) CommentMarkCheck(project_id, key_id, id string) error {
 		return nil
 	}()
 	return err
+}
+
+type CommentMarkReadParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentMarkReadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
 }
 
 // Mark a comment as read.
-func (client *Client) CommentMarkRead(project_id, key_id, id string) error {
+func (client *Client) CommentMarkRead(project_id, key_id, id string, params *CommentMarkReadParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("PATCH", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -2370,16 +2531,46 @@ func (client *Client) CommentMarkRead(project_id, key_id, id string) error {
 		return nil
 	}()
 	return err
+}
+
+type CommentMarkUnreadParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentMarkUnreadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
 }
 
 // Mark a comment as unread.
-func (client *Client) CommentMarkUnread(project_id, key_id, id string) error {
+func (client *Client) CommentMarkUnread(project_id, key_id, id string, params *CommentMarkUnreadParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -2390,14 +2581,44 @@ func (client *Client) CommentMarkUnread(project_id, key_id, id string) error {
 	return err
 }
 
+type CommentShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single comment.
-func (client *Client) CommentShow(project_id, key_id, id string) (*Comment, error) {
+func (client *Client) CommentShow(project_id, key_id, id string, params *CommentShowParams) (*Comment, error) {
 	retVal := new(Comment)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -2448,14 +2669,44 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 	return retVal, err
 }
 
+type CommentsListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *CommentsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all comments for a key.
-func (client *Client) CommentsList(project_id, key_id string, page, perPage int) ([]*Comment, error) {
+func (client *Client) CommentsList(project_id, key_id string, page, perPage int, params *CommentsListParams) ([]*Comment, error) {
 	retVal := []*Comment{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -2851,10 +3102,11 @@ func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, pe
 }
 
 type InvitationCreateParams struct {
-	Email      *string `json:"email,omitempty"  cli:"opt --email"`
-	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
-	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
-	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+	Email       *string           `json:"email,omitempty"  cli:"opt --email"`
+	LocaleIDs   *string           `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	Permissions map[string]string `json:"permissions,omitempty"  cli:"opt --permissions"`
+	ProjectIDs  *string           `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role        *string           `json:"role,omitempty"  cli:"opt --role"`
 }
 
 func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -2877,6 +3129,17 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 
 			escapedParam := url.QueryEscape(val)
 			params.LocaleIDs = &escapedParam
+
+		case "permissions":
+			rval, err := ValidateIsRawMap(k, v)
+			if err != nil {
+				return err
+			}
+			val, err := ConvertToStringMap(rval)
+			if err != nil {
+				return err
+			}
+			params.Permissions = val
 
 		case "project_ids":
 			val, ok := v.(string)
@@ -3007,9 +3270,10 @@ func (client *Client) InvitationShow(account_id, id string) (*Invitation, error)
 }
 
 type InvitationUpdateParams struct {
-	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
-	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
-	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+	LocaleIDs   *string           `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	Permissions map[string]string `json:"permissions,omitempty"  cli:"opt --permissions"`
+	ProjectIDs  *string           `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role        *string           `json:"role,omitempty"  cli:"opt --role"`
 }
 
 func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -3023,6 +3287,17 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 
 			escapedParam := url.QueryEscape(val)
 			params.LocaleIDs = &escapedParam
+
+		case "permissions":
+			rval, err := ValidateIsRawMap(k, v)
+			if err != nil {
+				return err
+			}
+			val, err := ConvertToStringMap(rval)
+			if err != nil {
+				return err
+			}
+			params.Permissions = val
 
 		case "project_ids":
 			val, ok := v.(string)
@@ -3108,14 +3383,44 @@ func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*
 	return retVal, err
 }
 
+type JobCompleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobCompleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Mark a job as completed.
-func (client *Client) JobComplete(project_id, id string) (*JobDetails, error) {
+func (client *Client) JobComplete(project_id, id string, params *JobCompleteParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/complete", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3166,14 +3471,44 @@ func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetai
 	return retVal, err
 }
 
+type JobDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing job.
-func (client *Client) JobDelete(project_id, id string) error {
+func (client *Client) JobDelete(project_id, id string, params *JobDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -3185,12 +3520,22 @@ func (client *Client) JobDelete(project_id, id string) error {
 }
 
 type JobKeysCreateParams struct {
+	Branch            *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	TranslationKeyIDs []string `json:"translation_key_ids,omitempty"  cli:"opt --translation-key-ids"`
 }
 
 func (params *JobKeysCreateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "translation_key_ids":
 			ok := false
 			params.TranslationKeyIDs, ok = v.([]string)
@@ -3238,12 +3583,22 @@ func (client *Client) JobKeysCreate(project_id, id string, params *JobKeysCreate
 }
 
 type JobKeysDeleteParams struct {
+	Branch            *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	TranslationKeyIDs []string `json:"translation_key_ids,omitempty"  cli:"opt --translation-key-ids"`
 }
 
 func (params *JobKeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "translation_key_ids":
 			ok := false
 			params.TranslationKeyIDs, ok = v.([]string)
@@ -3282,14 +3637,44 @@ func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDelete
 	return err
 }
 
+type JobReopenParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobReopenParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Mark a job as uncompleted.
-func (client *Client) JobReopen(project_id, id string) (*JobDetails, error) {
+func (client *Client) JobReopen(project_id, id string, params *JobReopenParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/reopen", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3308,14 +3693,44 @@ func (client *Client) JobReopen(project_id, id string) (*JobDetails, error) {
 	return retVal, err
 }
 
+type JobShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single job for a given project.
-func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
+func (client *Client) JobShow(project_id, id string, params *JobShowParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3334,14 +3749,44 @@ func (client *Client) JobShow(project_id, id string) (*JobDetails, error) {
 	return retVal, err
 }
 
+type JobStartParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobStartParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Starts an existing job in state draft.
-func (client *Client) JobStart(project_id, id string) (*JobDetails, error) {
+func (client *Client) JobStart(project_id, id string, params *JobStartParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/start", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3361,6 +3806,7 @@ func (client *Client) JobStart(project_id, id string) (*JobDetails, error) {
 }
 
 type JobUpdateParams struct {
+	Branch   *string     `json:"branch,omitempty"  cli:"opt --branch"`
 	Briefing *string     `json:"briefing,omitempty"  cli:"opt --briefing"`
 	DueDate  **time.Time `json:"due_date,omitempty"  cli:"opt --due-date"`
 	Name     *string     `json:"name,omitempty"  cli:"opt --name"`
@@ -3369,6 +3815,15 @@ type JobUpdateParams struct {
 func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "briefing":
 			val, ok := v.(string)
 			if !ok {
@@ -3435,14 +3890,44 @@ func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) 
 	return retVal, err
 }
 
+type JobLocaleCompleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobLocaleCompleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Mark a job locale as completed.
-func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLocale, error) {
+func (client *Client) JobLocaleComplete(project_id, job_id, id string, params *JobLocaleCompleteParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/complete", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3461,14 +3946,44 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string) (*JobLoca
 	return retVal, err
 }
 
+type JobLocaleDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobLocaleDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing job locale.
-func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
+func (client *Client) JobLocaleDelete(project_id, job_id, id string, params *JobLocaleDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -3479,14 +3994,44 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string) error {
 	return err
 }
 
+type JobLocaleReopenParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobLocaleReopenParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Mark a job locale as uncompleted.
-func (client *Client) JobLocaleReopen(project_id, job_id, id string) (*JobLocale, error) {
+func (client *Client) JobLocaleReopen(project_id, job_id, id string, params *JobLocaleReopenParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales/%s/reopen", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3505,14 +4050,44 @@ func (client *Client) JobLocaleReopen(project_id, job_id, id string) (*JobLocale
 	return retVal, err
 }
 
+type JobLocaleShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobLocaleShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get a single job locale for a given job.
-func (client *Client) JobLocaleShow(project_id, job_id, id string) (*JobLocale, error) {
+func (client *Client) JobLocaleShow(project_id, job_id, id string, params *JobLocaleShowParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3595,14 +4170,44 @@ func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLoc
 	return retVal, err
 }
 
+type JobLocalesListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *JobLocalesListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all job locales for a given job.
-func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int) ([]*JobLocale, error) {
+func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int, params *JobLocalesListParams) ([]*JobLocale, error) {
 	retVal := []*JobLocale{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", url.QueryEscape(project_id), url.QueryEscape(job_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -3623,6 +4228,7 @@ func (client *Client) JobLocalesList(project_id, job_id string, page, perPage in
 
 type JobsListParams struct {
 	AssignedTo *string `json:"assigned_to,omitempty"  cli:"opt --assigned-to"`
+	Branch     *string `json:"branch,omitempty"  cli:"opt --branch"`
 	OwnedBy    *string `json:"owned_by,omitempty"  cli:"opt --owned-by"`
 	State      *string `json:"state,omitempty"  cli:"opt --state"`
 }
@@ -3638,6 +4244,15 @@ func (params *JobsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 
 			escapedParam := url.QueryEscape(val)
 			params.AssignedTo = &escapedParam
+
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
 
 		case "owned_by":
 			val, ok := v.(string)
@@ -3707,6 +4322,13 @@ func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams)
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
 		ctype := writer.FormDataContentType()
+
+		if params.Branch != nil {
+			err := writer.WriteField("branch", *params.Branch)
+			if err != nil {
+				return err
+			}
+		}
 
 		if params.DataType != nil {
 			err := writer.WriteField("data_type", *params.DataType)
@@ -3839,14 +4461,44 @@ func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams)
 	return retVal, err
 }
 
+type KeyDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *KeyDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing key.
-func (client *Client) KeyDelete(project_id, id string) error {
+func (client *Client) KeyDelete(project_id, id string, params *KeyDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -3857,14 +4509,44 @@ func (client *Client) KeyDelete(project_id, id string) error {
 	return err
 }
 
+type KeyShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *KeyShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single key for a given project.
-func (client *Client) KeyShow(project_id, id string) (*TranslationKeyDetails, error) {
+func (client *Client) KeyShow(project_id, id string, params *KeyShowParams) (*TranslationKeyDetails, error) {
 	retVal := new(TranslationKeyDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3893,6 +4575,13 @@ func (client *Client) KeyUpdate(project_id, id string, params *TranslationKeyPar
 		paramsBuf := bytes.NewBuffer(nil)
 		writer := multipart.NewWriter(paramsBuf)
 		ctype := writer.FormDataContentType()
+
+		if params.Branch != nil {
+			err := writer.WriteField("branch", *params.Branch)
+			if err != nil {
+				return err
+			}
+		}
 
 		if params.DataType != nil {
 			err := writer.WriteField("data_type", *params.DataType)
@@ -4026,6 +4715,7 @@ func (client *Client) KeyUpdate(project_id, id string, params *TranslationKeyPar
 }
 
 type KeysDeleteParams struct {
+	Branch   *string `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	Q        *string `json:"q,omitempty"  cli:"opt --query -q"`
 }
@@ -4033,6 +4723,15 @@ type KeysDeleteParams struct {
 func (params *KeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -4092,6 +4791,7 @@ func (client *Client) KeysDelete(project_id string, params *KeysDeleteParams) (*
 }
 
 type KeysListParams struct {
+	Branch   *string `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	Order    *string `json:"order,omitempty"  cli:"opt --order"`
 	Q        *string `json:"q,omitempty"  cli:"opt --query -q"`
@@ -4101,6 +4801,15 @@ type KeysListParams struct {
 func (params *KeysListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -4178,6 +4887,7 @@ func (client *Client) KeysList(project_id string, page, perPage int, params *Key
 }
 
 type KeysSearchParams struct {
+	Branch   *string `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	Order    *string `json:"order,omitempty"  cli:"opt --order"`
 	Q        *string `json:"q,omitempty"  cli:"opt --query -q"`
@@ -4187,6 +4897,15 @@ type KeysSearchParams struct {
 func (params *KeysSearchParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -4264,6 +4983,7 @@ func (client *Client) KeysSearch(project_id string, page, perPage int, params *K
 }
 
 type KeysTagParams struct {
+	Branch   *string `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	Q        *string `json:"q,omitempty"  cli:"opt --query -q"`
 	Tags     *string `json:"tags,omitempty"  cli:"opt --tags"`
@@ -4272,6 +4992,15 @@ type KeysTagParams struct {
 func (params *KeysTagParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -4340,6 +5069,7 @@ func (client *Client) KeysTag(project_id string, params *KeysTagParams) (*Affect
 }
 
 type KeysUntagParams struct {
+	Branch   *string `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	Q        *string `json:"q,omitempty"  cli:"opt --query -q"`
 	Tags     *string `json:"tags,omitempty"  cli:"opt --tags"`
@@ -4348,6 +5078,15 @@ type KeysUntagParams struct {
 func (params *KeysUntagParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
@@ -4447,14 +5186,44 @@ func (client *Client) LocaleCreate(project_id string, params *LocaleParams) (*Lo
 	return retVal, err
 }
 
+type LocaleDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *LocaleDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing locale.
-func (client *Client) LocaleDelete(project_id, id string) error {
+func (client *Client) LocaleDelete(project_id, id string, params *LocaleDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -4815,9 +5584,10 @@ func (client *Client) MemberShow(account_id, id string) (*Member, error) {
 }
 
 type MemberUpdateParams struct {
-	LocaleIDs  *string `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
-	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
-	Role       *string `json:"role,omitempty"  cli:"opt --role"`
+	LocaleIDs   *string           `json:"locale_ids,omitempty"  cli:"opt --locale-ids"`
+	Permissions map[string]string `json:"permissions,omitempty"  cli:"opt --permissions"`
+	ProjectIDs  *string           `json:"project_ids,omitempty"  cli:"opt --project-ids"`
+	Role        *string           `json:"role,omitempty"  cli:"opt --role"`
 }
 
 func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -4831,6 +5601,17 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 
 			escapedParam := url.QueryEscape(val)
 			params.LocaleIDs = &escapedParam
+
+		case "permissions":
+			rval, err := ValidateIsRawMap(k, v)
+			if err != nil {
+				return err
+			}
+			val, err := ConvertToStringMap(rval)
+			if err != nil {
+				return err
+			}
+			params.Permissions = val
 
 		case "project_ids":
 			val, ok := v.(string)
@@ -4916,14 +5697,44 @@ func (client *Client) MembersList(account_id string, page, perPage int) ([]*Memb
 	return retVal, err
 }
 
+type OrderConfirmParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *OrderConfirmParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Confirm an existing order and send it to the provider for translation. Same constraints as for create.
-func (client *Client) OrderConfirm(project_id, id string) (*TranslationOrder, error) {
+func (client *Client) OrderConfirm(project_id, id string, params *OrderConfirmParams) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/orders/%s/confirm", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("PATCH", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -4974,14 +5785,44 @@ func (client *Client) OrderCreate(project_id string, params *TranslationOrderPar
 	return retVal, err
 }
 
+type OrderDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *OrderDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Cancel an existing order. Must not yet be confirmed.
-func (client *Client) OrderDelete(project_id, id string) error {
+func (client *Client) OrderDelete(project_id, id string, params *OrderDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/orders/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -4992,14 +5833,44 @@ func (client *Client) OrderDelete(project_id, id string) error {
 	return err
 }
 
+type OrderShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *OrderShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single order.
-func (client *Client) OrderShow(project_id, id string) (*TranslationOrder, error) {
+func (client *Client) OrderShow(project_id, id string, params *OrderShowParams) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/orders/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5018,14 +5889,44 @@ func (client *Client) OrderShow(project_id, id string) (*TranslationOrder, error
 	return retVal, err
 }
 
+type OrdersListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *OrdersListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all orders for the given project.
-func (client *Client) OrdersList(project_id string, page, perPage int) ([]*TranslationOrder, error) {
+func (client *Client) OrdersList(project_id string, page, perPage int, params *OrdersListParams) ([]*TranslationOrder, error) {
 	retVal := []*TranslationOrder{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/orders", url.QueryEscape(project_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -5478,14 +6379,44 @@ func (client *Client) TagCreate(project_id string, params *TagParams) (*TagWithS
 	return retVal, err
 }
 
+type TagDeleteParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TagDeleteParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Delete an existing tag.
-func (client *Client) TagDelete(project_id, name string) error {
+func (client *Client) TagDelete(project_id, name string, params *TagDeleteParams) error {
 
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/tags/%s", url.QueryEscape(project_id), url.QueryEscape(name))
 
-		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -5496,14 +6427,44 @@ func (client *Client) TagDelete(project_id, name string) error {
 	return err
 }
 
+type TagShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TagShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details and progress information on a single tag for a given project.
-func (client *Client) TagShow(project_id, name string) (*TagWithStats, error) {
+func (client *Client) TagShow(project_id, name string, params *TagShowParams) (*TagWithStats, error) {
 	retVal := new(TagWithStats)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/tags/%s", url.QueryEscape(project_id), url.QueryEscape(name))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5522,14 +6483,44 @@ func (client *Client) TagShow(project_id, name string) (*TagWithStats, error) {
 	return retVal, err
 }
 
+type TagsListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TagsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all tags for the given project.
-func (client *Client) TagsList(project_id string, page, perPage int) ([]*Tag, error) {
+func (client *Client) TagsList(project_id string, page, perPage int, params *TagsListParams) ([]*Tag, error) {
 	retVal := []*Tag{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/tags", url.QueryEscape(project_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -5580,14 +6571,44 @@ func (client *Client) TranslationCreate(project_id string, params *TranslationPa
 	return retVal, err
 }
 
+type TranslationShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single translation.
-func (client *Client) TranslationShow(project_id, id string) (*TranslationDetails, error) {
+func (client *Client) TranslationShow(project_id, id string, params *TranslationShowParams) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5607,6 +6628,7 @@ func (client *Client) TranslationShow(project_id, id string) (*TranslationDetail
 }
 
 type TranslationUpdateParams struct {
+	Branch       *string `json:"branch,omitempty"  cli:"opt --branch"`
 	Content      *string `json:"content,omitempty"  cli:"opt --content"`
 	Excluded     *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
 	PluralSuffix *string `json:"plural_suffix,omitempty"  cli:"opt --plural-suffix"`
@@ -5616,6 +6638,15 @@ type TranslationUpdateParams struct {
 func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "content":
 			val, ok := v.(string)
 			if !ok {
@@ -5691,14 +6722,24 @@ func (client *Client) TranslationUpdate(project_id, id string, params *Translati
 }
 
 type TranslationsByKeyParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsByKeyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -5767,14 +6808,24 @@ func (client *Client) TranslationsByKey(project_id, key_id string, page, perPage
 }
 
 type TranslationsByLocaleParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsByLocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -5843,14 +6894,24 @@ func (client *Client) TranslationsByLocale(project_id, locale_id string, page, p
 }
 
 type TranslationsExcludeParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsExcludeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -5919,14 +6980,24 @@ func (client *Client) TranslationsExclude(project_id string, params *Translation
 }
 
 type TranslationsIncludeParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsIncludeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -5995,14 +7066,24 @@ func (client *Client) TranslationsInclude(project_id string, params *Translation
 }
 
 type TranslationsListParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -6071,14 +7152,24 @@ func (client *Client) TranslationsList(project_id string, page, perPage int, par
 }
 
 type TranslationsSearchParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsSearchParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -6147,14 +7238,24 @@ func (client *Client) TranslationsSearch(project_id string, page, perPage int, p
 }
 
 type TranslationsUnverifyParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -6223,14 +7324,24 @@ func (client *Client) TranslationsUnverify(project_id string, params *Translatio
 }
 
 type TranslationsVerifyParams struct {
-	Order *string `json:"order,omitempty"  cli:"opt --order"`
-	Q     *string `json:"q,omitempty"  cli:"opt --query -q"`
-	Sort  *string `json:"sort,omitempty"  cli:"opt --sort"`
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Order  *string `json:"order,omitempty"  cli:"opt --order"`
+	Q      *string `json:"q,omitempty"  cli:"opt --query -q"`
+	Sort   *string `json:"sort,omitempty"  cli:"opt --sort"`
 }
 
 func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
 		case "order":
 			val, ok := v.(string)
 			if !ok {
@@ -6500,14 +7611,44 @@ func (client *Client) UploadShow(project_id, id string, params *UploadShowParams
 	return retVal, err
 }
 
+type UploadsListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *UploadsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all uploads for the given project.
-func (client *Client) UploadsList(project_id string, page, perPage int) ([]*Upload, error) {
+func (client *Client) UploadsList(project_id string, page, perPage int, params *UploadsListParams) ([]*Upload, error) {
 	retVal := []*Upload{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/uploads", url.QueryEscape(project_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -6526,14 +7667,44 @@ func (client *Client) UploadsList(project_id string, page, perPage int) ([]*Uplo
 	return retVal, err
 }
 
+type VersionShowParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *VersionShowParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // Get details on a single version.
-func (client *Client) VersionShow(project_id, translation_id, id string) (*TranslationVersionWithUser, error) {
+func (client *Client) VersionShow(project_id, translation_id, id string, params *VersionShowParams) (*TranslationVersionWithUser, error) {
 	retVal := new(TranslationVersionWithUser)
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions/%s", url.QueryEscape(project_id), url.QueryEscape(translation_id), url.QueryEscape(id))
 
-		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -6552,14 +7723,44 @@ func (client *Client) VersionShow(project_id, translation_id, id string) (*Trans
 	return retVal, err
 }
 
+type VersionsListParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *VersionsListParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+
+			escapedParam := url.QueryEscape(val)
+			params.Branch = &escapedParam
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 // List all versions for the given translation.
-func (client *Client) VersionsList(project_id, translation_id string, page, perPage int) ([]*TranslationVersion, error) {
+func (client *Client) VersionsList(project_id, translation_id string, page, perPage int, params *VersionsListParams) ([]*TranslationVersion, error) {
 	retVal := []*TranslationVersion{}
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions", url.QueryEscape(project_id), url.QueryEscape(translation_id))
 
-		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}

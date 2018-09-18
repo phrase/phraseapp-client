@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "af8c8e121b03fbb27f30326738fd1c3ac086b0a2"
-	RevisionGenerator = "HEAD/2018-08-10T140549/soenke"
+	RevisionDocs      = "732b1e2d93a671158c2ef8536bb39c7b76f73b66"
+	RevisionGenerator = "HEAD/2018-09-18T132212/kirchner"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -104,15 +104,35 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("comment/create", cmd, "Create a new comment for a key.")
 	}
 
-	r.Register("comment/delete", newCommentDelete(cfg), "Delete an existing comment.")
+	if cmd, err := newCommentDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/delete", cmd, "Delete an existing comment.")
+	}
 
-	r.Register("comment/mark/check", newCommentMarkCheck(cfg), "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+	if cmd, err := newCommentMarkCheck(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/mark/check", cmd, "Check if comment was marked as read. Returns 204 if read, 404 if unread.")
+	}
 
-	r.Register("comment/mark/read", newCommentMarkRead(cfg), "Mark a comment as read.")
+	if cmd, err := newCommentMarkRead(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/mark/read", cmd, "Mark a comment as read.")
+	}
 
-	r.Register("comment/mark/unread", newCommentMarkUnread(cfg), "Mark a comment as unread.")
+	if cmd, err := newCommentMarkUnread(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/mark/unread", cmd, "Mark a comment as unread.")
+	}
 
-	r.Register("comment/show", newCommentShow(cfg), "Get details on a single comment.")
+	if cmd, err := newCommentShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comment/show", cmd, "Get details on a single comment.")
+	}
 
 	if cmd, err := newCommentUpdate(cfg); err != nil {
 		return nil, err
@@ -120,7 +140,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("comment/update", cmd, "Update an existing comment.")
 	}
 
-	r.Register("comments/list", newCommentsList(cfg), "List all comments for a key.")
+	if cmd, err := newCommentsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("comments/list", cmd, "List all comments for a key.")
+	}
 
 	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
 
@@ -194,7 +218,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("invitations/list", newInvitationsList(cfg), "List invitations for an account. It will also list the accessible resources like projects and locales the invited user has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.")
 
-	r.Register("job/complete", newJobComplete(cfg), "Mark a job as completed.")
+	if cmd, err := newJobComplete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/complete", cmd, "Mark a job as completed.")
+	}
 
 	if cmd, err := newJobCreate(cfg); err != nil {
 		return nil, err
@@ -202,7 +230,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job/create", cmd, "Create a new job.")
 	}
 
-	r.Register("job/delete", newJobDelete(cfg), "Delete an existing job.")
+	if cmd, err := newJobDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/delete", cmd, "Delete an existing job.")
+	}
 
 	if cmd, err := newJobKeysCreate(cfg); err != nil {
 		return nil, err
@@ -216,11 +248,23 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job/keys/delete", cmd, "Remove multiple keys from existing job.")
 	}
 
-	r.Register("job/reopen", newJobReopen(cfg), "Mark a job as uncompleted.")
+	if cmd, err := newJobReopen(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/reopen", cmd, "Mark a job as uncompleted.")
+	}
 
-	r.Register("job/show", newJobShow(cfg), "Get details on a single job for a given project.")
+	if cmd, err := newJobShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/show", cmd, "Get details on a single job for a given project.")
+	}
 
-	r.Register("job/start", newJobStart(cfg), "Starts an existing job in state draft.")
+	if cmd, err := newJobStart(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job/start", cmd, "Starts an existing job in state draft.")
+	}
 
 	if cmd, err := newJobUpdate(cfg); err != nil {
 		return nil, err
@@ -228,13 +272,29 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job/update", cmd, "Update an existing job.")
 	}
 
-	r.Register("job_locale/complete", newJobLocaleComplete(cfg), "Mark a job locale as completed.")
+	if cmd, err := newJobLocaleComplete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locale/complete", cmd, "Mark a job locale as completed.")
+	}
 
-	r.Register("job_locale/delete", newJobLocaleDelete(cfg), "Delete an existing job locale.")
+	if cmd, err := newJobLocaleDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locale/delete", cmd, "Delete an existing job locale.")
+	}
 
-	r.Register("job_locale/reopen", newJobLocaleReopen(cfg), "Mark a job locale as uncompleted.")
+	if cmd, err := newJobLocaleReopen(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locale/reopen", cmd, "Mark a job locale as uncompleted.")
+	}
 
-	r.Register("job_locale/show", newJobLocaleShow(cfg), "Get a single job locale for a given job.")
+	if cmd, err := newJobLocaleShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locale/show", cmd, "Get a single job locale for a given job.")
+	}
 
 	if cmd, err := newJobLocaleUpdate(cfg); err != nil {
 		return nil, err
@@ -248,7 +308,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("job_locales/create", cmd, "Create a new job locale.")
 	}
 
-	r.Register("job_locales/list", newJobLocalesList(cfg), "List all job locales for a given job.")
+	if cmd, err := newJobLocalesList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("job_locales/list", cmd, "List all job locales for a given job.")
+	}
 
 	if cmd, err := newJobsList(cfg); err != nil {
 		return nil, err
@@ -262,9 +326,17 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("key/create", cmd, "Create a new key.")
 	}
 
-	r.Register("key/delete", newKeyDelete(cfg), "Delete an existing key.")
+	if cmd, err := newKeyDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("key/delete", cmd, "Delete an existing key.")
+	}
 
-	r.Register("key/show", newKeyShow(cfg), "Get details on a single key for a given project.")
+	if cmd, err := newKeyShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("key/show", cmd, "Get details on a single key for a given project.")
+	}
 
 	if cmd, err := newKeyUpdate(cfg); err != nil {
 		return nil, err
@@ -308,7 +380,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locale/create", cmd, "Create a new locale.")
 	}
 
-	r.Register("locale/delete", newLocaleDelete(cfg), "Delete an existing locale.")
+	if cmd, err := newLocaleDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("locale/delete", cmd, "Delete an existing locale.")
+	}
 
 	if cmd, err := newLocaleDownload(cfg); err != nil {
 		return nil, err
@@ -346,7 +422,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("members/list", newMembersList(cfg), "Get all users active in the account. It also lists resources like projects and locales the member has access to. In case nothing is shown the default access from the role is used. Access token scope must include <code>team.manage</code>.")
 
-	r.Register("order/confirm", newOrderConfirm(cfg), "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+	if cmd, err := newOrderConfirm(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("order/confirm", cmd, "Confirm an existing order and send it to the provider for translation. Same constraints as for create.")
+	}
 
 	if cmd, err := newOrderCreate(cfg); err != nil {
 		return nil, err
@@ -354,11 +434,23 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("order/create", cmd, "Create a new order. Access token scope must include <code>orders.create</code>.")
 	}
 
-	r.Register("order/delete", newOrderDelete(cfg), "Cancel an existing order. Must not yet be confirmed.")
+	if cmd, err := newOrderDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("order/delete", cmd, "Cancel an existing order. Must not yet be confirmed.")
+	}
 
-	r.Register("order/show", newOrderShow(cfg), "Get details on a single order.")
+	if cmd, err := newOrderShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("order/show", cmd, "Get details on a single order.")
+	}
 
-	r.Register("orders/list", newOrdersList(cfg), "List all orders for the given project.")
+	if cmd, err := newOrdersList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("orders/list", cmd, "List all orders for the given project.")
+	}
 
 	if cmd, err := newProjectCreate(cfg); err != nil {
 		return nil, err
@@ -404,11 +496,23 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("tag/create", cmd, "Create a new tag.")
 	}
 
-	r.Register("tag/delete", newTagDelete(cfg), "Delete an existing tag.")
+	if cmd, err := newTagDelete(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("tag/delete", cmd, "Delete an existing tag.")
+	}
 
-	r.Register("tag/show", newTagShow(cfg), "Get details and progress information on a single tag for a given project.")
+	if cmd, err := newTagShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("tag/show", cmd, "Get details and progress information on a single tag for a given project.")
+	}
 
-	r.Register("tags/list", newTagsList(cfg), "List all tags for the given project.")
+	if cmd, err := newTagsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("tags/list", cmd, "List all tags for the given project.")
+	}
 
 	if cmd, err := newTranslationCreate(cfg); err != nil {
 		return nil, err
@@ -416,7 +520,11 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("translation/create", cmd, "Create a translation.")
 	}
 
-	r.Register("translation/show", newTranslationShow(cfg), "Get details on a single translation.")
+	if cmd, err := newTranslationShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/show", cmd, "Get details on a single translation.")
+	}
 
 	if cmd, err := newTranslationUpdate(cfg); err != nil {
 		return nil, err
@@ -484,11 +592,23 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("upload/show", cmd, "View details and summary for a single upload.")
 	}
 
-	r.Register("uploads/list", newUploadsList(cfg), "List all uploads for the given project.")
+	if cmd, err := newUploadsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("uploads/list", cmd, "List all uploads for the given project.")
+	}
 
-	r.Register("version/show", newVersionShow(cfg), "Get details on a single version.")
+	if cmd, err := newVersionShow(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("version/show", cmd, "Get details on a single version.")
+	}
 
-	r.Register("versions/list", newVersionsList(cfg), "List all versions for the given translation.")
+	if cmd, err := newVersionsList(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("versions/list", cmd, "List all versions for the given translation.")
+	}
 
 	if cmd, err := newWebhookCreate(cfg); err != nil {
 		return nil, err
@@ -1312,27 +1432,36 @@ func (cmd *CommentCreate) Run() error {
 type CommentDelete struct {
 	phraseapp.Config
 
+	phraseapp.CommentDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newCommentDelete(cfg *phraseapp.Config) *CommentDelete {
+func newCommentDelete(cfg *phraseapp.Config) (*CommentDelete, error) {
 
 	actionCommentDelete := &CommentDelete{Config: *cfg}
 	actionCommentDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionCommentDelete
+	val, defaultsPresent := actionCommentDelete.Config.Defaults["comment/delete"]
+	if defaultsPresent {
+		if err := actionCommentDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentDelete, nil
 }
 
 func (cmd *CommentDelete) Run() error {
+	params := &cmd.CommentDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.CommentDelete(cmd.ProjectID, cmd.KeyID, cmd.ID)
+	err = client.CommentDelete(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1344,27 +1473,36 @@ func (cmd *CommentDelete) Run() error {
 type CommentMarkCheck struct {
 	phraseapp.Config
 
+	phraseapp.CommentMarkCheckParams
+
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newCommentMarkCheck(cfg *phraseapp.Config) *CommentMarkCheck {
+func newCommentMarkCheck(cfg *phraseapp.Config) (*CommentMarkCheck, error) {
 
 	actionCommentMarkCheck := &CommentMarkCheck{Config: *cfg}
 	actionCommentMarkCheck.ProjectID = cfg.DefaultProjectID
 
-	return actionCommentMarkCheck
+	val, defaultsPresent := actionCommentMarkCheck.Config.Defaults["comment/mark/check"]
+	if defaultsPresent {
+		if err := actionCommentMarkCheck.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentMarkCheck, nil
 }
 
 func (cmd *CommentMarkCheck) Run() error {
+	params := &cmd.CommentMarkCheckParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.CommentMarkCheck(cmd.ProjectID, cmd.KeyID, cmd.ID)
+	err = client.CommentMarkCheck(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1376,27 +1514,36 @@ func (cmd *CommentMarkCheck) Run() error {
 type CommentMarkRead struct {
 	phraseapp.Config
 
+	phraseapp.CommentMarkReadParams
+
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newCommentMarkRead(cfg *phraseapp.Config) *CommentMarkRead {
+func newCommentMarkRead(cfg *phraseapp.Config) (*CommentMarkRead, error) {
 
 	actionCommentMarkRead := &CommentMarkRead{Config: *cfg}
 	actionCommentMarkRead.ProjectID = cfg.DefaultProjectID
 
-	return actionCommentMarkRead
+	val, defaultsPresent := actionCommentMarkRead.Config.Defaults["comment/mark/read"]
+	if defaultsPresent {
+		if err := actionCommentMarkRead.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentMarkRead, nil
 }
 
 func (cmd *CommentMarkRead) Run() error {
+	params := &cmd.CommentMarkReadParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.CommentMarkRead(cmd.ProjectID, cmd.KeyID, cmd.ID)
+	err = client.CommentMarkRead(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1408,27 +1555,36 @@ func (cmd *CommentMarkRead) Run() error {
 type CommentMarkUnread struct {
 	phraseapp.Config
 
+	phraseapp.CommentMarkUnreadParams
+
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newCommentMarkUnread(cfg *phraseapp.Config) *CommentMarkUnread {
+func newCommentMarkUnread(cfg *phraseapp.Config) (*CommentMarkUnread, error) {
 
 	actionCommentMarkUnread := &CommentMarkUnread{Config: *cfg}
 	actionCommentMarkUnread.ProjectID = cfg.DefaultProjectID
 
-	return actionCommentMarkUnread
+	val, defaultsPresent := actionCommentMarkUnread.Config.Defaults["comment/mark/unread"]
+	if defaultsPresent {
+		if err := actionCommentMarkUnread.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentMarkUnread, nil
 }
 
 func (cmd *CommentMarkUnread) Run() error {
+	params := &cmd.CommentMarkUnreadParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.CommentMarkUnread(cmd.ProjectID, cmd.KeyID, cmd.ID)
+	err = client.CommentMarkUnread(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1440,27 +1596,36 @@ func (cmd *CommentMarkUnread) Run() error {
 type CommentShow struct {
 	phraseapp.Config
 
+	phraseapp.CommentShowParams
+
 	ProjectID string `cli:"arg required"`
 	KeyID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newCommentShow(cfg *phraseapp.Config) *CommentShow {
+func newCommentShow(cfg *phraseapp.Config) (*CommentShow, error) {
 
 	actionCommentShow := &CommentShow{Config: *cfg}
 	actionCommentShow.ProjectID = cfg.DefaultProjectID
 
-	return actionCommentShow
+	val, defaultsPresent := actionCommentShow.Config.Defaults["comment/show"]
+	if defaultsPresent {
+		if err := actionCommentShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentShow, nil
 }
 
 func (cmd *CommentShow) Run() error {
+	params := &cmd.CommentShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.CommentShow(cmd.ProjectID, cmd.KeyID, cmd.ID)
+	res, err := client.CommentShow(cmd.ProjectID, cmd.KeyID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -1513,6 +1678,8 @@ func (cmd *CommentUpdate) Run() error {
 type CommentsList struct {
 	phraseapp.Config
 
+	phraseapp.CommentsListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
@@ -1520,7 +1687,7 @@ type CommentsList struct {
 	KeyID     string `cli:"arg required"`
 }
 
-func newCommentsList(cfg *phraseapp.Config) *CommentsList {
+func newCommentsList(cfg *phraseapp.Config) (*CommentsList, error) {
 
 	actionCommentsList := &CommentsList{Config: *cfg}
 	actionCommentsList.ProjectID = cfg.DefaultProjectID
@@ -1531,17 +1698,24 @@ func newCommentsList(cfg *phraseapp.Config) *CommentsList {
 		actionCommentsList.PerPage = *cfg.PerPage
 	}
 
-	return actionCommentsList
+	val, defaultsPresent := actionCommentsList.Config.Defaults["comments/list"]
+	if defaultsPresent {
+		if err := actionCommentsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionCommentsList, nil
 }
 
 func (cmd *CommentsList) Run() error {
+	params := &cmd.CommentsListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.CommentsList(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage)
+	res, err := client.CommentsList(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -2262,26 +2436,35 @@ func (cmd *InvitationsList) Run() error {
 type JobComplete struct {
 	phraseapp.Config
 
+	phraseapp.JobCompleteParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobComplete(cfg *phraseapp.Config) *JobComplete {
+func newJobComplete(cfg *phraseapp.Config) (*JobComplete, error) {
 
 	actionJobComplete := &JobComplete{Config: *cfg}
 	actionJobComplete.ProjectID = cfg.DefaultProjectID
 
-	return actionJobComplete
+	val, defaultsPresent := actionJobComplete.Config.Defaults["job/complete"]
+	if defaultsPresent {
+		if err := actionJobComplete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobComplete, nil
 }
 
 func (cmd *JobComplete) Run() error {
+	params := &cmd.JobCompleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobComplete(cmd.ProjectID, cmd.ID)
+	res, err := client.JobComplete(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2332,26 +2515,35 @@ func (cmd *JobCreate) Run() error {
 type JobDelete struct {
 	phraseapp.Config
 
+	phraseapp.JobDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobDelete(cfg *phraseapp.Config) *JobDelete {
+func newJobDelete(cfg *phraseapp.Config) (*JobDelete, error) {
 
 	actionJobDelete := &JobDelete{Config: *cfg}
 	actionJobDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionJobDelete
+	val, defaultsPresent := actionJobDelete.Config.Defaults["job/delete"]
+	if defaultsPresent {
+		if err := actionJobDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobDelete, nil
 }
 
 func (cmd *JobDelete) Run() error {
+	params := &cmd.JobDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.JobDelete(cmd.ProjectID, cmd.ID)
+	err = client.JobDelete(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2443,26 +2635,35 @@ func (cmd *JobKeysDelete) Run() error {
 type JobReopen struct {
 	phraseapp.Config
 
+	phraseapp.JobReopenParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobReopen(cfg *phraseapp.Config) *JobReopen {
+func newJobReopen(cfg *phraseapp.Config) (*JobReopen, error) {
 
 	actionJobReopen := &JobReopen{Config: *cfg}
 	actionJobReopen.ProjectID = cfg.DefaultProjectID
 
-	return actionJobReopen
+	val, defaultsPresent := actionJobReopen.Config.Defaults["job/reopen"]
+	if defaultsPresent {
+		if err := actionJobReopen.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobReopen, nil
 }
 
 func (cmd *JobReopen) Run() error {
+	params := &cmd.JobReopenParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobReopen(cmd.ProjectID, cmd.ID)
+	res, err := client.JobReopen(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2474,26 +2675,35 @@ func (cmd *JobReopen) Run() error {
 type JobShow struct {
 	phraseapp.Config
 
+	phraseapp.JobShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobShow(cfg *phraseapp.Config) *JobShow {
+func newJobShow(cfg *phraseapp.Config) (*JobShow, error) {
 
 	actionJobShow := &JobShow{Config: *cfg}
 	actionJobShow.ProjectID = cfg.DefaultProjectID
 
-	return actionJobShow
+	val, defaultsPresent := actionJobShow.Config.Defaults["job/show"]
+	if defaultsPresent {
+		if err := actionJobShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobShow, nil
 }
 
 func (cmd *JobShow) Run() error {
+	params := &cmd.JobShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobShow(cmd.ProjectID, cmd.ID)
+	res, err := client.JobShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2505,26 +2715,35 @@ func (cmd *JobShow) Run() error {
 type JobStart struct {
 	phraseapp.Config
 
+	phraseapp.JobStartParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobStart(cfg *phraseapp.Config) *JobStart {
+func newJobStart(cfg *phraseapp.Config) (*JobStart, error) {
 
 	actionJobStart := &JobStart{Config: *cfg}
 	actionJobStart.ProjectID = cfg.DefaultProjectID
 
-	return actionJobStart
+	val, defaultsPresent := actionJobStart.Config.Defaults["job/start"]
+	if defaultsPresent {
+		if err := actionJobStart.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobStart, nil
 }
 
 func (cmd *JobStart) Run() error {
+	params := &cmd.JobStartParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobStart(cmd.ProjectID, cmd.ID)
+	res, err := client.JobStart(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2576,27 +2795,36 @@ func (cmd *JobUpdate) Run() error {
 type JobLocaleComplete struct {
 	phraseapp.Config
 
+	phraseapp.JobLocaleCompleteParams
+
 	ProjectID string `cli:"arg required"`
 	JobID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobLocaleComplete(cfg *phraseapp.Config) *JobLocaleComplete {
+func newJobLocaleComplete(cfg *phraseapp.Config) (*JobLocaleComplete, error) {
 
 	actionJobLocaleComplete := &JobLocaleComplete{Config: *cfg}
 	actionJobLocaleComplete.ProjectID = cfg.DefaultProjectID
 
-	return actionJobLocaleComplete
+	val, defaultsPresent := actionJobLocaleComplete.Config.Defaults["job_locale/complete"]
+	if defaultsPresent {
+		if err := actionJobLocaleComplete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocaleComplete, nil
 }
 
 func (cmd *JobLocaleComplete) Run() error {
+	params := &cmd.JobLocaleCompleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobLocaleComplete(cmd.ProjectID, cmd.JobID, cmd.ID)
+	res, err := client.JobLocaleComplete(cmd.ProjectID, cmd.JobID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2608,27 +2836,36 @@ func (cmd *JobLocaleComplete) Run() error {
 type JobLocaleDelete struct {
 	phraseapp.Config
 
+	phraseapp.JobLocaleDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	JobID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobLocaleDelete(cfg *phraseapp.Config) *JobLocaleDelete {
+func newJobLocaleDelete(cfg *phraseapp.Config) (*JobLocaleDelete, error) {
 
 	actionJobLocaleDelete := &JobLocaleDelete{Config: *cfg}
 	actionJobLocaleDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionJobLocaleDelete
+	val, defaultsPresent := actionJobLocaleDelete.Config.Defaults["job_locale/delete"]
+	if defaultsPresent {
+		if err := actionJobLocaleDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocaleDelete, nil
 }
 
 func (cmd *JobLocaleDelete) Run() error {
+	params := &cmd.JobLocaleDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.JobLocaleDelete(cmd.ProjectID, cmd.JobID, cmd.ID)
+	err = client.JobLocaleDelete(cmd.ProjectID, cmd.JobID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2640,27 +2877,36 @@ func (cmd *JobLocaleDelete) Run() error {
 type JobLocaleReopen struct {
 	phraseapp.Config
 
+	phraseapp.JobLocaleReopenParams
+
 	ProjectID string `cli:"arg required"`
 	JobID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobLocaleReopen(cfg *phraseapp.Config) *JobLocaleReopen {
+func newJobLocaleReopen(cfg *phraseapp.Config) (*JobLocaleReopen, error) {
 
 	actionJobLocaleReopen := &JobLocaleReopen{Config: *cfg}
 	actionJobLocaleReopen.ProjectID = cfg.DefaultProjectID
 
-	return actionJobLocaleReopen
+	val, defaultsPresent := actionJobLocaleReopen.Config.Defaults["job_locale/reopen"]
+	if defaultsPresent {
+		if err := actionJobLocaleReopen.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocaleReopen, nil
 }
 
 func (cmd *JobLocaleReopen) Run() error {
+	params := &cmd.JobLocaleReopenParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobLocaleReopen(cmd.ProjectID, cmd.JobID, cmd.ID)
+	res, err := client.JobLocaleReopen(cmd.ProjectID, cmd.JobID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2672,27 +2918,36 @@ func (cmd *JobLocaleReopen) Run() error {
 type JobLocaleShow struct {
 	phraseapp.Config
 
+	phraseapp.JobLocaleShowParams
+
 	ProjectID string `cli:"arg required"`
 	JobID     string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newJobLocaleShow(cfg *phraseapp.Config) *JobLocaleShow {
+func newJobLocaleShow(cfg *phraseapp.Config) (*JobLocaleShow, error) {
 
 	actionJobLocaleShow := &JobLocaleShow{Config: *cfg}
 	actionJobLocaleShow.ProjectID = cfg.DefaultProjectID
 
-	return actionJobLocaleShow
+	val, defaultsPresent := actionJobLocaleShow.Config.Defaults["job_locale/show"]
+	if defaultsPresent {
+		if err := actionJobLocaleShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocaleShow, nil
 }
 
 func (cmd *JobLocaleShow) Run() error {
+	params := &cmd.JobLocaleShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobLocaleShow(cmd.ProjectID, cmd.JobID, cmd.ID)
+	res, err := client.JobLocaleShow(cmd.ProjectID, cmd.JobID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2785,6 +3040,8 @@ func (cmd *JobLocalesCreate) Run() error {
 type JobLocalesList struct {
 	phraseapp.Config
 
+	phraseapp.JobLocalesListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
@@ -2792,7 +3049,7 @@ type JobLocalesList struct {
 	JobID     string `cli:"arg required"`
 }
 
-func newJobLocalesList(cfg *phraseapp.Config) *JobLocalesList {
+func newJobLocalesList(cfg *phraseapp.Config) (*JobLocalesList, error) {
 
 	actionJobLocalesList := &JobLocalesList{Config: *cfg}
 	actionJobLocalesList.ProjectID = cfg.DefaultProjectID
@@ -2803,17 +3060,24 @@ func newJobLocalesList(cfg *phraseapp.Config) *JobLocalesList {
 		actionJobLocalesList.PerPage = *cfg.PerPage
 	}
 
-	return actionJobLocalesList
+	val, defaultsPresent := actionJobLocalesList.Config.Defaults["job_locales/list"]
+	if defaultsPresent {
+		if err := actionJobLocalesList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionJobLocalesList, nil
 }
 
 func (cmd *JobLocalesList) Run() error {
+	params := &cmd.JobLocalesListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.JobLocalesList(cmd.ProjectID, cmd.JobID, cmd.Page, cmd.PerPage)
+	res, err := client.JobLocalesList(cmd.ProjectID, cmd.JobID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -2912,26 +3176,35 @@ func (cmd *KeyCreate) Run() error {
 type KeyDelete struct {
 	phraseapp.Config
 
+	phraseapp.KeyDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newKeyDelete(cfg *phraseapp.Config) *KeyDelete {
+func newKeyDelete(cfg *phraseapp.Config) (*KeyDelete, error) {
 
 	actionKeyDelete := &KeyDelete{Config: *cfg}
 	actionKeyDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionKeyDelete
+	val, defaultsPresent := actionKeyDelete.Config.Defaults["key/delete"]
+	if defaultsPresent {
+		if err := actionKeyDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionKeyDelete, nil
 }
 
 func (cmd *KeyDelete) Run() error {
+	params := &cmd.KeyDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.KeyDelete(cmd.ProjectID, cmd.ID)
+	err = client.KeyDelete(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -2943,26 +3216,35 @@ func (cmd *KeyDelete) Run() error {
 type KeyShow struct {
 	phraseapp.Config
 
+	phraseapp.KeyShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newKeyShow(cfg *phraseapp.Config) *KeyShow {
+func newKeyShow(cfg *phraseapp.Config) (*KeyShow, error) {
 
 	actionKeyShow := &KeyShow{Config: *cfg}
 	actionKeyShow.ProjectID = cfg.DefaultProjectID
 
-	return actionKeyShow
+	val, defaultsPresent := actionKeyShow.Config.Defaults["key/show"]
+	if defaultsPresent {
+		if err := actionKeyShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionKeyShow, nil
 }
 
 func (cmd *KeyShow) Run() error {
+	params := &cmd.KeyShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.KeyShow(cmd.ProjectID, cmd.ID)
+	res, err := client.KeyShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3266,26 +3548,35 @@ func (cmd *LocaleCreate) Run() error {
 type LocaleDelete struct {
 	phraseapp.Config
 
+	phraseapp.LocaleDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newLocaleDelete(cfg *phraseapp.Config) *LocaleDelete {
+func newLocaleDelete(cfg *phraseapp.Config) (*LocaleDelete, error) {
 
 	actionLocaleDelete := &LocaleDelete{Config: *cfg}
 	actionLocaleDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionLocaleDelete
+	val, defaultsPresent := actionLocaleDelete.Config.Defaults["locale/delete"]
+	if defaultsPresent {
+		if err := actionLocaleDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionLocaleDelete, nil
 }
 
 func (cmd *LocaleDelete) Run() error {
+	params := &cmd.LocaleDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.LocaleDelete(cmd.ProjectID, cmd.ID)
+	err = client.LocaleDelete(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3606,26 +3897,35 @@ func (cmd *MembersList) Run() error {
 type OrderConfirm struct {
 	phraseapp.Config
 
+	phraseapp.OrderConfirmParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newOrderConfirm(cfg *phraseapp.Config) *OrderConfirm {
+func newOrderConfirm(cfg *phraseapp.Config) (*OrderConfirm, error) {
 
 	actionOrderConfirm := &OrderConfirm{Config: *cfg}
 	actionOrderConfirm.ProjectID = cfg.DefaultProjectID
 
-	return actionOrderConfirm
+	val, defaultsPresent := actionOrderConfirm.Config.Defaults["order/confirm"]
+	if defaultsPresent {
+		if err := actionOrderConfirm.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionOrderConfirm, nil
 }
 
 func (cmd *OrderConfirm) Run() error {
+	params := &cmd.OrderConfirmParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.OrderConfirm(cmd.ProjectID, cmd.ID)
+	res, err := client.OrderConfirm(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3676,26 +3976,35 @@ func (cmd *OrderCreate) Run() error {
 type OrderDelete struct {
 	phraseapp.Config
 
+	phraseapp.OrderDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newOrderDelete(cfg *phraseapp.Config) *OrderDelete {
+func newOrderDelete(cfg *phraseapp.Config) (*OrderDelete, error) {
 
 	actionOrderDelete := &OrderDelete{Config: *cfg}
 	actionOrderDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionOrderDelete
+	val, defaultsPresent := actionOrderDelete.Config.Defaults["order/delete"]
+	if defaultsPresent {
+		if err := actionOrderDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionOrderDelete, nil
 }
 
 func (cmd *OrderDelete) Run() error {
+	params := &cmd.OrderDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.OrderDelete(cmd.ProjectID, cmd.ID)
+	err = client.OrderDelete(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3707,26 +4016,35 @@ func (cmd *OrderDelete) Run() error {
 type OrderShow struct {
 	phraseapp.Config
 
+	phraseapp.OrderShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newOrderShow(cfg *phraseapp.Config) *OrderShow {
+func newOrderShow(cfg *phraseapp.Config) (*OrderShow, error) {
 
 	actionOrderShow := &OrderShow{Config: *cfg}
 	actionOrderShow.ProjectID = cfg.DefaultProjectID
 
-	return actionOrderShow
+	val, defaultsPresent := actionOrderShow.Config.Defaults["order/show"]
+	if defaultsPresent {
+		if err := actionOrderShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionOrderShow, nil
 }
 
 func (cmd *OrderShow) Run() error {
+	params := &cmd.OrderShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.OrderShow(cmd.ProjectID, cmd.ID)
+	res, err := client.OrderShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -3738,13 +4056,15 @@ func (cmd *OrderShow) Run() error {
 type OrdersList struct {
 	phraseapp.Config
 
+	phraseapp.OrdersListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
 }
 
-func newOrdersList(cfg *phraseapp.Config) *OrdersList {
+func newOrdersList(cfg *phraseapp.Config) (*OrdersList, error) {
 
 	actionOrdersList := &OrdersList{Config: *cfg}
 	actionOrdersList.ProjectID = cfg.DefaultProjectID
@@ -3755,17 +4075,24 @@ func newOrdersList(cfg *phraseapp.Config) *OrdersList {
 		actionOrdersList.PerPage = *cfg.PerPage
 	}
 
-	return actionOrdersList
+	val, defaultsPresent := actionOrdersList.Config.Defaults["orders/list"]
+	if defaultsPresent {
+		if err := actionOrdersList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionOrdersList, nil
 }
 
 func (cmd *OrdersList) Run() error {
+	params := &cmd.OrdersListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.OrdersList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.OrdersList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -4191,26 +4518,35 @@ func (cmd *TagCreate) Run() error {
 type TagDelete struct {
 	phraseapp.Config
 
+	phraseapp.TagDeleteParams
+
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
 }
 
-func newTagDelete(cfg *phraseapp.Config) *TagDelete {
+func newTagDelete(cfg *phraseapp.Config) (*TagDelete, error) {
 
 	actionTagDelete := &TagDelete{Config: *cfg}
 	actionTagDelete.ProjectID = cfg.DefaultProjectID
 
-	return actionTagDelete
+	val, defaultsPresent := actionTagDelete.Config.Defaults["tag/delete"]
+	if defaultsPresent {
+		if err := actionTagDelete.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTagDelete, nil
 }
 
 func (cmd *TagDelete) Run() error {
+	params := &cmd.TagDeleteParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	err = client.TagDelete(cmd.ProjectID, cmd.Name)
+	err = client.TagDelete(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
@@ -4222,26 +4558,35 @@ func (cmd *TagDelete) Run() error {
 type TagShow struct {
 	phraseapp.Config
 
+	phraseapp.TagShowParams
+
 	ProjectID string `cli:"arg required"`
 	Name      string `cli:"arg required"`
 }
 
-func newTagShow(cfg *phraseapp.Config) *TagShow {
+func newTagShow(cfg *phraseapp.Config) (*TagShow, error) {
 
 	actionTagShow := &TagShow{Config: *cfg}
 	actionTagShow.ProjectID = cfg.DefaultProjectID
 
-	return actionTagShow
+	val, defaultsPresent := actionTagShow.Config.Defaults["tag/show"]
+	if defaultsPresent {
+		if err := actionTagShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTagShow, nil
 }
 
 func (cmd *TagShow) Run() error {
+	params := &cmd.TagShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.TagShow(cmd.ProjectID, cmd.Name)
+	res, err := client.TagShow(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
@@ -4253,13 +4598,15 @@ func (cmd *TagShow) Run() error {
 type TagsList struct {
 	phraseapp.Config
 
+	phraseapp.TagsListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
 }
 
-func newTagsList(cfg *phraseapp.Config) *TagsList {
+func newTagsList(cfg *phraseapp.Config) (*TagsList, error) {
 
 	actionTagsList := &TagsList{Config: *cfg}
 	actionTagsList.ProjectID = cfg.DefaultProjectID
@@ -4270,17 +4617,24 @@ func newTagsList(cfg *phraseapp.Config) *TagsList {
 		actionTagsList.PerPage = *cfg.PerPage
 	}
 
-	return actionTagsList
+	val, defaultsPresent := actionTagsList.Config.Defaults["tags/list"]
+	if defaultsPresent {
+		if err := actionTagsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTagsList, nil
 }
 
 func (cmd *TagsList) Run() error {
+	params := &cmd.TagsListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.TagsList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.TagsList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -4331,26 +4685,35 @@ func (cmd *TranslationCreate) Run() error {
 type TranslationShow struct {
 	phraseapp.Config
 
+	phraseapp.TranslationShowParams
+
 	ProjectID string `cli:"arg required"`
 	ID        string `cli:"arg required"`
 }
 
-func newTranslationShow(cfg *phraseapp.Config) *TranslationShow {
+func newTranslationShow(cfg *phraseapp.Config) (*TranslationShow, error) {
 
 	actionTranslationShow := &TranslationShow{Config: *cfg}
 	actionTranslationShow.ProjectID = cfg.DefaultProjectID
 
-	return actionTranslationShow
+	val, defaultsPresent := actionTranslationShow.Config.Defaults["translation/show"]
+	if defaultsPresent {
+		if err := actionTranslationShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationShow, nil
 }
 
 func (cmd *TranslationShow) Run() error {
+	params := &cmd.TranslationShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.TranslationShow(cmd.ProjectID, cmd.ID)
+	res, err := client.TranslationShow(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -4834,13 +5197,15 @@ func (cmd *UploadShow) Run() error {
 type UploadsList struct {
 	phraseapp.Config
 
+	phraseapp.UploadsListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
 	ProjectID string `cli:"arg required"`
 }
 
-func newUploadsList(cfg *phraseapp.Config) *UploadsList {
+func newUploadsList(cfg *phraseapp.Config) (*UploadsList, error) {
 
 	actionUploadsList := &UploadsList{Config: *cfg}
 	actionUploadsList.ProjectID = cfg.DefaultProjectID
@@ -4851,17 +5216,24 @@ func newUploadsList(cfg *phraseapp.Config) *UploadsList {
 		actionUploadsList.PerPage = *cfg.PerPage
 	}
 
-	return actionUploadsList
+	val, defaultsPresent := actionUploadsList.Config.Defaults["uploads/list"]
+	if defaultsPresent {
+		if err := actionUploadsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionUploadsList, nil
 }
 
 func (cmd *UploadsList) Run() error {
+	params := &cmd.UploadsListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.UploadsList(cmd.ProjectID, cmd.Page, cmd.PerPage)
+	res, err := client.UploadsList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
@@ -4873,27 +5245,36 @@ func (cmd *UploadsList) Run() error {
 type VersionShow struct {
 	phraseapp.Config
 
+	phraseapp.VersionShowParams
+
 	ProjectID     string `cli:"arg required"`
 	TranslationID string `cli:"arg required"`
 	ID            string `cli:"arg required"`
 }
 
-func newVersionShow(cfg *phraseapp.Config) *VersionShow {
+func newVersionShow(cfg *phraseapp.Config) (*VersionShow, error) {
 
 	actionVersionShow := &VersionShow{Config: *cfg}
 	actionVersionShow.ProjectID = cfg.DefaultProjectID
 
-	return actionVersionShow
+	val, defaultsPresent := actionVersionShow.Config.Defaults["version/show"]
+	if defaultsPresent {
+		if err := actionVersionShow.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionVersionShow, nil
 }
 
 func (cmd *VersionShow) Run() error {
+	params := &cmd.VersionShowParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.VersionShow(cmd.ProjectID, cmd.TranslationID, cmd.ID)
+	res, err := client.VersionShow(cmd.ProjectID, cmd.TranslationID, cmd.ID, params)
 
 	if err != nil {
 		return err
@@ -4905,6 +5286,8 @@ func (cmd *VersionShow) Run() error {
 type VersionsList struct {
 	phraseapp.Config
 
+	phraseapp.VersionsListParams
+
 	Page    int `cli:"opt --page default=1"`
 	PerPage int `cli:"opt --per-page default=25"`
 
@@ -4912,7 +5295,7 @@ type VersionsList struct {
 	TranslationID string `cli:"arg required"`
 }
 
-func newVersionsList(cfg *phraseapp.Config) *VersionsList {
+func newVersionsList(cfg *phraseapp.Config) (*VersionsList, error) {
 
 	actionVersionsList := &VersionsList{Config: *cfg}
 	actionVersionsList.ProjectID = cfg.DefaultProjectID
@@ -4923,17 +5306,24 @@ func newVersionsList(cfg *phraseapp.Config) *VersionsList {
 		actionVersionsList.PerPage = *cfg.PerPage
 	}
 
-	return actionVersionsList
+	val, defaultsPresent := actionVersionsList.Config.Defaults["versions/list"]
+	if defaultsPresent {
+		if err := actionVersionsList.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionVersionsList, nil
 }
 
 func (cmd *VersionsList) Run() error {
+	params := &cmd.VersionsListParams
 
 	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.VersionsList(cmd.ProjectID, cmd.TranslationID, cmd.Page, cmd.PerPage)
+	res, err := client.VersionsList(cmd.ProjectID, cmd.TranslationID, cmd.Page, cmd.PerPage, params)
 
 	if err != nil {
 		return err
