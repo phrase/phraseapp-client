@@ -16,7 +16,7 @@ import (
 
 const (
 	RevisionDocs      = "732b1e2d93a671158c2ef8536bb39c7b76f73b66"
-	RevisionGenerator = "HEAD/2018-09-18T130804/kirchner"
+	RevisionGenerator = "HEAD/2018-10-02T103030/soenke"
 )
 
 type Account struct {
@@ -457,7 +457,6 @@ func (params *AuthorizationParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.ExpiresAt = &val
 
 		case "note":
@@ -465,9 +464,7 @@ func (params *AuthorizationParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Note = &escapedParam
+			params.Note = &val
 
 		case "scopes":
 			ok := false
@@ -495,9 +492,7 @@ func (params *BitbucketSyncParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.AccountID = &escapedParam
+			params.AccountID = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -519,9 +514,7 @@ func (params *BlacklistedKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -543,9 +536,7 @@ func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -568,18 +559,14 @@ func (params *CommentParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "message":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Message = &escapedParam
+			params.Message = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -602,18 +589,14 @@ func (params *GlossaryParams) ApplyValuesFromMap(defaults map[string]interface{}
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		case "project_ids":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.ProjectIDs = &escapedParam
+			params.ProjectIDs = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -636,18 +619,14 @@ func (params *GlossaryTermTranslationParams) ApplyValuesFromMap(defaults map[str
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Content = &escapedParam
+			params.Content = &val
 
 		case "locale_code":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleCode = &escapedParam
+			params.LocaleCode = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -672,7 +651,6 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.CaseSensitive = &val
 
 		case "description":
@@ -680,25 +658,20 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Description = &escapedParam
+			params.Description = &val
 
 		case "term":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Term = &escapedParam
+			params.Term = &val
 
 		case "translatable":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Translatable = &val
 
 		default:
@@ -723,18 +696,14 @@ func (params *JobLocaleParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "user_ids":
 			ok := false
@@ -767,25 +736,20 @@ func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "briefing":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Briefing = &escapedParam
+			params.Briefing = &val
 
 		case "due_date":
 			val, ok := v.(*time.Time)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.DueDate = &val
 
 		case "name":
@@ -793,9 +757,7 @@ func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		case "tags":
 			ok := false
@@ -843,52 +805,41 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "data_type":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.DataType = &escapedParam
+			params.DataType = &val
 
 		case "description":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Description = &escapedParam
+			params.Description = &val
 
 		case "localized_format_key":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocalizedFormatKey = &escapedParam
+			params.LocalizedFormatKey = &val
 
 		case "localized_format_string":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocalizedFormatString = &escapedParam
+			params.LocalizedFormatString = &val
 
 		case "max_characters_allowed":
 			val, ok := v.(int64)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.MaxCharactersAllowed = &val
 
 		case "name":
@@ -896,34 +847,27 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		case "name_plural":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.NamePlural = &escapedParam
+			params.NamePlural = &val
 
 		case "original_file":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.OriginalFile = &escapedParam
+			params.OriginalFile = &val
 
 		case "plural":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Plural = &val
 
 		case "remove_screenshot":
@@ -931,7 +875,6 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.RemoveScreenshot = &val
 
 		case "screenshot":
@@ -939,25 +882,20 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Screenshot = &escapedParam
+			params.Screenshot = &val
 
 		case "tags":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
+			params.Tags = &val
 
 		case "unformatted":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Unformatted = &val
 
 		case "xml_space_preserve":
@@ -965,7 +903,6 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.XmlSpacePreserve = &val
 
 		default:
@@ -997,7 +934,6 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Autotranslate = &val
 
 		case "branch":
@@ -1005,25 +941,20 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "code":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Code = &escapedParam
+			params.Code = &val
 
 		case "default":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Default = &val
 
 		case "main":
@@ -1031,7 +962,6 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Main = &val
 
 		case "name":
@@ -1039,16 +969,13 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		case "rtl":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Rtl = &val
 
 		case "source_locale_id":
@@ -1056,16 +983,13 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.SourceLocaleID = &escapedParam
+			params.SourceLocaleID = &val
 
 		case "unverify_new_translations":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.UnverifyNewTranslations = &val
 
 		case "unverify_updated_translations":
@@ -1073,7 +997,6 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.UnverifyUpdatedTranslations = &val
 
 		default:
@@ -1109,25 +1032,20 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "category":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Category = &escapedParam
+			params.Category = &val
 
 		case "include_untranslated_keys":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.IncludeUntranslatedKeys = &val
 
 		case "include_unverified_translations":
@@ -1135,7 +1053,6 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.IncludeUnverifiedTranslations = &val
 
 		case "lsp":
@@ -1143,25 +1060,20 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Lsp = &escapedParam
+			params.Lsp = &val
 
 		case "message":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Message = &escapedParam
+			params.Message = &val
 
 		case "priority":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Priority = &val
 
 		case "quality":
@@ -1169,7 +1081,6 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Quality = &val
 
 		case "source_locale_id":
@@ -1177,27 +1088,21 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.SourceLocaleID = &escapedParam
+			params.SourceLocaleID = &val
 
 		case "styleguide_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.StyleguideID = &escapedParam
+			params.StyleguideID = &val
 
 		case "tag":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tag = &escapedParam
+			params.Tag = &val
 
 		case "target_locale_ids":
 			ok := false
@@ -1210,16 +1115,13 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.TranslationType = &escapedParam
+			params.TranslationType = &val
 
 		case "unverify_translations_upon_delivery":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.UnverifyTranslationsUponDelivery = &val
 
 		default:
@@ -1247,43 +1149,34 @@ func (params *ProjectParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.AccountID = &escapedParam
+			params.AccountID = &val
 
 		case "main_format":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.MainFormat = &escapedParam
+			params.MainFormat = &val
 
 		case "name":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		case "project_image":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.ProjectImage = &escapedParam
+			params.ProjectImage = &val
 
 		case "remove_project_image":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.RemoveProjectImage = &val
 
 		case "shares_translation_memory":
@@ -1291,7 +1184,6 @@ func (params *ProjectParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.SharesTranslationMemory = &val
 
 		default:
@@ -1326,117 +1218,91 @@ func (params *StyleguideParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Audience = &escapedParam
+			params.Audience = &val
 
 		case "business":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Business = &escapedParam
+			params.Business = &val
 
 		case "company_branding":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.CompanyBranding = &escapedParam
+			params.CompanyBranding = &val
 
 		case "formatting":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Formatting = &escapedParam
+			params.Formatting = &val
 
 		case "glossary_terms":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.GlossaryTerms = &escapedParam
+			params.GlossaryTerms = &val
 
 		case "grammar_consistency":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.GrammarConsistency = &escapedParam
+			params.GrammarConsistency = &val
 
 		case "grammatical_person":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.GrammaticalPerson = &escapedParam
+			params.GrammaticalPerson = &val
 
 		case "literal_translation":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LiteralTranslation = &escapedParam
+			params.LiteralTranslation = &val
 
 		case "overall_tone":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.OverallTone = &escapedParam
+			params.OverallTone = &val
 
 		case "samples":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Samples = &escapedParam
+			params.Samples = &val
 
 		case "target_audience":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.TargetAudience = &escapedParam
+			params.TargetAudience = &val
 
 		case "title":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Title = &escapedParam
+			params.Title = &val
 
 		case "vocabulary_type":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.VocabularyType = &escapedParam
+			params.VocabularyType = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -1459,18 +1325,14 @@ func (params *TagParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "name":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -1498,25 +1360,20 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "content":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Content = &escapedParam
+			params.Content = &val
 
 		case "excluded":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Excluded = &val
 
 		case "key_id":
@@ -1524,34 +1381,27 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.KeyID = &escapedParam
+			params.KeyID = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "plural_suffix":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.PluralSuffix = &escapedParam
+			params.PluralSuffix = &val
 
 		case "unverified":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Unverified = &val
 
 		default:
@@ -1587,7 +1437,6 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Autotranslate = &val
 
 		case "branch":
@@ -1595,16 +1444,13 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "convert_emoji":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.ConvertEmoji = &val
 
 		case "file":
@@ -1612,27 +1458,21 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.File = &escapedParam
+			params.File = &val
 
 		case "file_encoding":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.FileEncoding = &escapedParam
+			params.FileEncoding = &val
 
 		case "file_format":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.FileFormat = &escapedParam
+			params.FileFormat = &val
 
 		case "format_options":
 			rval, err := ValidateIsRawMap(k, v)
@@ -1650,9 +1490,7 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "locale_mapping":
 			rval, err := ValidateIsRawMap(k, v)
@@ -1670,7 +1508,6 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.SkipUnverification = &val
 
 		case "skip_upload_tags":
@@ -1678,7 +1515,6 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.SkipUploadTags = &val
 
 		case "tags":
@@ -1686,16 +1522,13 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
+			params.Tags = &val
 
 		case "update_descriptions":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.UpdateDescriptions = &val
 
 		case "update_translations":
@@ -1703,7 +1536,6 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.UpdateTranslations = &val
 
 		default:
@@ -1729,7 +1561,6 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Active = &val
 
 		case "callback_url":
@@ -1737,27 +1568,21 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.CallbackUrl = &escapedParam
+			params.CallbackUrl = &val
 
 		case "description":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Description = &escapedParam
+			params.Description = &val
 
 		case "events":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Events = &escapedParam
+			params.Events = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2237,9 +2062,7 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Strategy = &escapedParam
+			params.Strategy = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2401,9 +2224,7 @@ func (params *CommentDeleteParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2449,9 +2270,7 @@ func (params *CommentMarkCheckParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2497,9 +2316,7 @@ func (params *CommentMarkReadParams) ApplyValuesFromMap(defaults map[string]inte
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2545,9 +2362,7 @@ func (params *CommentMarkUnreadParams) ApplyValuesFromMap(defaults map[string]in
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2593,9 +2408,7 @@ func (params *CommentShowParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -2681,9 +2494,7 @@ func (params *CommentsListParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3117,18 +2928,14 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Email = &escapedParam
+			params.Email = &val
 
 		case "locale_ids":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleIDs = &escapedParam
+			params.LocaleIDs = &val
 
 		case "permissions":
 			rval, err := ValidateIsRawMap(k, v)
@@ -3146,18 +2953,14 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.ProjectIDs = &escapedParam
+			params.ProjectIDs = &val
 
 		case "role":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Role = &escapedParam
+			params.Role = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3284,9 +3087,7 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleIDs = &escapedParam
+			params.LocaleIDs = &val
 
 		case "permissions":
 			rval, err := ValidateIsRawMap(k, v)
@@ -3304,18 +3105,14 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.ProjectIDs = &escapedParam
+			params.ProjectIDs = &val
 
 		case "role":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Role = &escapedParam
+			params.Role = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3395,9 +3192,7 @@ func (params *JobCompleteParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3483,9 +3278,7 @@ func (params *JobDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3532,9 +3325,7 @@ func (params *JobKeysCreateParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "translation_key_ids":
 			ok := false
@@ -3595,9 +3386,7 @@ func (params *JobKeysDeleteParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "translation_key_ids":
 			ok := false
@@ -3649,9 +3438,7 @@ func (params *JobReopenParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3705,9 +3492,7 @@ func (params *JobShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3761,9 +3546,7 @@ func (params *JobStartParams) ApplyValuesFromMap(defaults map[string]interface{}
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3820,25 +3603,20 @@ func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "briefing":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Briefing = &escapedParam
+			params.Briefing = &val
 
 		case "due_date":
 			val, ok := v.(*time.Time)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.DueDate = &val
 
 		case "name":
@@ -3846,9 +3624,7 @@ func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Name = &escapedParam
+			params.Name = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3902,9 +3678,7 @@ func (params *JobLocaleCompleteParams) ApplyValuesFromMap(defaults map[string]in
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -3958,9 +3732,7 @@ func (params *JobLocaleDeleteParams) ApplyValuesFromMap(defaults map[string]inte
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4006,9 +3778,7 @@ func (params *JobLocaleReopenParams) ApplyValuesFromMap(defaults map[string]inte
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4062,9 +3832,7 @@ func (params *JobLocaleShowParams) ApplyValuesFromMap(defaults map[string]interf
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4182,9 +3950,7 @@ func (params *JobLocalesListParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4241,36 +4007,28 @@ func (params *JobsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.AssignedTo = &escapedParam
+			params.AssignedTo = &val
 
 		case "branch":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "owned_by":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.OwnedBy = &escapedParam
+			params.OwnedBy = &val
 
 		case "state":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.State = &escapedParam
+			params.State = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4473,9 +4231,7 @@ func (params *KeyDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4521,9 +4277,7 @@ func (params *KeyShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4728,27 +4482,21 @@ func (params *KeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4806,45 +4554,35 @@ func (params *KeysListParams) ApplyValuesFromMap(defaults map[string]interface{}
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4902,45 +4640,35 @@ func (params *KeysSearchParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -4997,36 +4725,28 @@ func (params *KeysTagParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "tags":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
+			params.Tags = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5083,36 +4803,28 @@ func (params *KeysUntagParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleID = &escapedParam
+			params.LocaleID = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "tags":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
+			params.Tags = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5198,9 +4910,7 @@ func (params *LocaleDeleteParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5258,9 +4968,7 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "convert_emoji":
 			ok := false
@@ -5273,27 +4981,21 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Encoding = &escapedParam
+			params.Encoding = &val
 
 		case "fallback_locale_id":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.FallbackLocaleID = &escapedParam
+			params.FallbackLocaleID = &val
 
 		case "file_format":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.FileFormat = &escapedParam
+			params.FileFormat = &val
 
 		case "format_options":
 			rval, err := ValidateIsRawMap(k, v)
@@ -5341,18 +5043,14 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tag = &escapedParam
+			params.Tag = &val
 
 		case "tags":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Tags = &escapedParam
+			params.Tags = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5407,9 +5105,7 @@ func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5495,9 +5191,7 @@ func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5598,9 +5292,7 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.LocaleIDs = &escapedParam
+			params.LocaleIDs = &val
 
 		case "permissions":
 			rval, err := ValidateIsRawMap(k, v)
@@ -5618,18 +5310,14 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.ProjectIDs = &escapedParam
+			params.ProjectIDs = &val
 
 		case "role":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Role = &escapedParam
+			params.Role = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5709,9 +5397,7 @@ func (params *OrderConfirmParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5797,9 +5483,7 @@ func (params *OrderDeleteParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5845,9 +5529,7 @@ func (params *OrderShowParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5901,9 +5583,7 @@ func (params *OrdersListParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6391,9 +6071,7 @@ func (params *TagDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6439,9 +6117,7 @@ func (params *TagShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6495,9 +6171,7 @@ func (params *TagsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6583,9 +6257,7 @@ func (params *TranslationShowParams) ApplyValuesFromMap(defaults map[string]inte
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6643,25 +6315,20 @@ func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]in
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "content":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Content = &escapedParam
+			params.Content = &val
 
 		case "excluded":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Excluded = &val
 
 		case "plural_suffix":
@@ -6669,16 +6336,13 @@ func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]in
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.PluralSuffix = &escapedParam
+			params.PluralSuffix = &val
 
 		case "unverified":
 			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
 			params.Unverified = &val
 
 		default:
@@ -6736,36 +6400,28 @@ func (params *TranslationsByKeyParams) ApplyValuesFromMap(defaults map[string]in
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6822,36 +6478,28 @@ func (params *TranslationsByLocaleParams) ApplyValuesFromMap(defaults map[string
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6908,36 +6556,28 @@ func (params *TranslationsExcludeParams) ApplyValuesFromMap(defaults map[string]
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -6994,36 +6634,28 @@ func (params *TranslationsIncludeParams) ApplyValuesFromMap(defaults map[string]
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7080,36 +6712,28 @@ func (params *TranslationsListParams) ApplyValuesFromMap(defaults map[string]int
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7166,36 +6790,28 @@ func (params *TranslationsSearchParams) ApplyValuesFromMap(defaults map[string]i
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7252,36 +6868,28 @@ func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7338,36 +6946,28 @@ func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]i
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		case "order":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Order = &escapedParam
+			params.Order = &val
 
 		case "q":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Q = &escapedParam
+			params.Q = &val
 
 		case "sort":
 			val, ok := v.(string)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Sort = &escapedParam
+			params.Sort = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7567,9 +7167,7 @@ func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7623,9 +7221,7 @@ func (params *UploadsListParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7679,9 +7275,7 @@ func (params *VersionShowParams) ApplyValuesFromMap(defaults map[string]interfac
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -7735,9 +7329,7 @@ func (params *VersionsListParams) ApplyValuesFromMap(defaults map[string]interfa
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
-
-			escapedParam := url.QueryEscape(val)
-			params.Branch = &escapedParam
+			params.Branch = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
