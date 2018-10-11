@@ -156,17 +156,18 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 			return nil, err
 		}
 
-		localeFile, err := createLocaleFile(target, remoteLocale)
-		if err != nil {
-			return nil, err
+		for _, tag := range target.GetTags() {
+			localeFile, err := createLocaleFile(target, remoteLocale, tag)
+			if err != nil {
+				return nil, err
+			}
+
+			files = append(files, localeFile)
 		}
-
-		files = append(files, localeFile)
-
 	} else if placeholders.ContainsLocalePlaceholder(target.File) {
 		// multiple locales were requested
 		for _, remoteLocale := range target.RemoteLocales {
-			localeFile, err := createLocaleFile(target, remoteLocale)
+			localeFile, err := createLocaleFile(target, remoteLocale, "")
 			if err != nil {
 				return nil, err
 			}
@@ -190,12 +191,12 @@ func waitForRateLimit(rateLimitError *phraseapp.RateLimitingError) {
 	}
 }
 
-func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale) (*LocaleFile, error) {
+func createLocaleFile(target *Target, remoteLocale *phraseapp.Locale, tag string) (*LocaleFile, error) {
 	localeFile := &LocaleFile{
 		Name:       remoteLocale.Name,
 		ID:         remoteLocale.ID,
 		Code:       remoteLocale.Code,
-		Tag:        target.GetTag(),
+		Tag:        tag,
 		FileFormat: target.GetFormat(),
 		Path:       target.File,
 	}
