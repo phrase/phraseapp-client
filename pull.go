@@ -176,7 +176,7 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 		}
 	} else {
 		// no local files match remote locale
-		return nil, fmt.Errorf("could not find any files on your system that matches the locales for porject %q", target.ProjectID)
+		return nil, fmt.Errorf("could not find any files on your system that matches the locales for project %q", target.ProjectID)
 	}
 
 	return files, nil
