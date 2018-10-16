@@ -88,9 +88,9 @@ func containsAmbiguousLocaleInformation(target *Target) error {
 }
 
 func containsInvalidTagInformation(target *Target) error {
-	if target.GetTag() == "" && placeholders.ContainsTagPlaceholder(target.File) {
+	if len(target.GetTags()) == 0 && placeholders.ContainsTagPlaceholder(target.File) {
 		// tag provided but no params
-		return fmt.Errorf("Using <tag> placeholder but no tags were provided. Please specify a 'tag: \"my_tag\"' in the params section.")
+		return fmt.Errorf("Using <tag> placeholder but no tags were provided. Please specify 'tags: \"my_tag\"' in the params section.")
 	}
 	return nil
 }
@@ -135,11 +135,20 @@ func (t *Target) GetLocaleID() string {
 	return ""
 }
 
-func (t *Target) GetTag() string {
-	if t.Params != nil && t.Params.Tag != nil {
-		return *t.Params.Tag
+func (t *Target) GetTags() []string {
+	tagList := []string{}
+	var tagsParam string
+	if t.Params != nil && t.Params.Tags != nil {
+		tagsParam = *t.Params.Tags
+	} else if t.Params != nil && t.Params.Tag != nil {
+		tagsParam = *t.Params.Tag
 	}
-	return ""
+
+	if tagsParam != "" {
+		tagsParam = strings.Replace(tagsParam, " ", "", -1)
+		tagList = strings.Split(tagsParam, ",")
+	}
+	return tagList
 }
 
 func TargetsFromConfig(config phraseapp.Config) (Targets, error) {
