@@ -156,13 +156,22 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 			return nil, err
 		}
 
-		for _, tag := range target.GetTags() {
-			localeFile, err := createLocaleFile(target, remoteLocale, tag)
+		if len(target.GetTags()) == 0 {
+			localeFile, err := createLocaleFile(target, remoteLocale, "")
 			if err != nil {
 				return nil, err
 			}
 
 			files = append(files, localeFile)
+		} else {
+			for _, tag := range target.GetTags() {
+				localeFile, err := createLocaleFile(target, remoteLocale, tag)
+				if err != nil {
+					return nil, err
+				}
+
+				files = append(files, localeFile)
+			}
 		}
 	} else if placeholders.ContainsLocalePlaceholder(target.File) {
 		// multiple locales were requested
