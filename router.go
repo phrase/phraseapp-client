@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "732b1e2d93a671158c2ef8536bb39c7b76f73b66"
-	RevisionGenerator = "HEAD/2018-09-18T132212/kirchner"
+	RevisionDocs      = "f4f82ef6536bb47049b766b4b5b0748a4df05383"
+	RevisionGenerator = "HEAD/2018-10-22T144042/stefan"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -571,13 +571,13 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	if cmd, err := newTranslationsUnverify(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("translations/unverify", cmd, "<div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Mark translations matching query as unverified.")
+		r.Register("translations/unverify", cmd, "Mark translations matching query as unverified.")
 	}
 
 	if cmd, err := newTranslationsVerify(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("translations/verify", cmd, "<div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Verify translations matching query.")
+		r.Register("translations/verify", cmd, "Verify translations matching query.")
 	}
 
 	if cmd, err := newUploadCreate(cfg); err != nil {
