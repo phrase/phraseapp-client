@@ -32,26 +32,45 @@ type Credentials struct {
 // NewClient initializes a new client.
 // Uses PHRASEAPP_HOST and PHRASEAPP_ACCESS_TOKEN environment variables for host and access token with specified in environment.
 func NewClient(credentials Credentials, debug bool) (*Client, error) {
+	credentials.init()
 	client := &Client{
 		Credentials: credentials,
 		debug:       debug,
 	}
 
-	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
-	if envToken != "" && credentials.Token == "" && credentials.Username == "" {
-		client.Credentials.Token = envToken
+	return client, nil
+}
+
+// EnableCaching for API requests on disk via etags
+func (client *Client) EnableCaching(config CacheConfig) error {
+	cache, err := newHTTPCacheClient(client.debug, config)
+	if err != nil {
+		return err
 	}
 
-	if client.Credentials.Host == "" {
+	client.Transport = cache
+	return nil
+}
+
+// DisableCaching for API requests
+func (client *Client) DisableCaching() {
+	client.Transport = nil
+}
+
+func (c *Credentials) init() {
+	envToken := os.Getenv("PHRASEAPP_ACCESS_TOKEN")
+	if envToken != "" && c.Token == "" && c.Username == "" {
+		c.Token = envToken
+	}
+
+	if c.Host == "" {
 		envHost := os.Getenv("PHRASEAPP_HOST")
 		if envHost != "" {
-			client.Credentials.Host = envHost
+			c.Host = envHost
 		} else {
-			client.Credentials.Host = "https://api.phraseapp.com"
+			c.Host = "https://api.phraseapp.com"
 		}
 	}
-
-	return client, nil
 }
 
 func (client *Client) authenticate(req *http.Request) error {

@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "732b1e2d93a671158c2ef8536bb39c7b76f73b66"
-	RevisionGenerator = "HEAD/2018-10-02T103030/soenke"
+	RevisionDocs      = "f4f82ef6536bb47049b766b4b5b0748a4df05383"
+	RevisionGenerator = "HEAD/2018-10-22T141421/stefan"
 )
 
 type Account struct {
@@ -4946,16 +4946,16 @@ func (client *Client) LocaleDelete(project_id, id string, params *LocaleDeletePa
 
 type LocaleDownloadParams struct {
 	Branch                        *string           `json:"branch,omitempty"  cli:"opt --branch"`
-	ConvertEmoji                  bool              `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
+	ConvertEmoji                  *bool             `json:"convert_emoji,omitempty"  cli:"opt --convert-emoji"`
 	Encoding                      *string           `json:"encoding,omitempty"  cli:"opt --encoding"`
 	FallbackLocaleID              *string           `json:"fallback_locale_id,omitempty"  cli:"opt --fallback-locale-id"`
 	FileFormat                    *string           `json:"file_format,omitempty"  cli:"opt --file-format"`
 	FormatOptions                 map[string]string `json:"format_options,omitempty"  cli:"opt --format-options"`
-	IncludeEmptyTranslations      bool              `json:"include_empty_translations,omitempty"  cli:"opt --include-empty-translations"`
-	IncludeTranslatedKeys         bool              `json:"include_translated_keys,omitempty"  cli:"opt --include-translated-keys"`
-	IncludeUnverifiedTranslations bool              `json:"include_unverified_translations,omitempty"  cli:"opt --include-unverified-translations"`
-	KeepNotranslateTags           bool              `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
-	SkipUnverifiedTranslations    bool              `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
+	IncludeEmptyTranslations      *bool             `json:"include_empty_translations,omitempty"  cli:"opt --include-empty-translations"`
+	IncludeTranslatedKeys         *bool             `json:"include_translated_keys,omitempty"  cli:"opt --include-translated-keys"`
+	IncludeUnverifiedTranslations *bool             `json:"include_unverified_translations,omitempty"  cli:"opt --include-unverified-translations"`
+	KeepNotranslateTags           *bool             `json:"keep_notranslate_tags,omitempty"  cli:"opt --keep-notranslate-tags"`
+	SkipUnverifiedTranslations    *bool             `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
 	Tag                           *string           `json:"tag,omitempty"  cli:"opt --tag"`
 	Tags                          *string           `json:"tags,omitempty"  cli:"opt --tags"`
 }
@@ -4971,11 +4971,12 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			params.Branch = &val
 
 		case "convert_emoji":
-			ok := false
-			params.ConvertEmoji, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.ConvertEmoji = &val
+
 		case "encoding":
 			val, ok := v.(string)
 			if !ok {
@@ -5009,35 +5010,40 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 			params.FormatOptions = val
 
 		case "include_empty_translations":
-			ok := false
-			params.IncludeEmptyTranslations, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.IncludeEmptyTranslations = &val
+
 		case "include_translated_keys":
-			ok := false
-			params.IncludeTranslatedKeys, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.IncludeTranslatedKeys = &val
+
 		case "include_unverified_translations":
-			ok := false
-			params.IncludeUnverifiedTranslations, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.IncludeUnverifiedTranslations = &val
+
 		case "keep_notranslate_tags":
-			ok := false
-			params.KeepNotranslateTags, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.KeepNotranslateTags = &val
+
 		case "skip_unverified_translations":
-			ok := false
-			params.SkipUnverifiedTranslations, ok = v.(bool)
+			val, ok := v.(bool)
 			if !ok {
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
+			params.SkipUnverifiedTranslations = &val
+
 		case "tag":
 			val, ok := v.(string)
 			if !ok {
@@ -6899,7 +6905,7 @@ func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string
 	return nil
 }
 
-// <div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Mark translations matching query as unverified.
+// Mark translations matching query as unverified.
 func (client *Client) TranslationsUnverify(project_id string, params *TranslationsUnverifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
@@ -6977,7 +6983,7 @@ func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
-// <div class='alert alert-info'>Only available in the <a href='https://phraseapp.com/pricing' target='_blank'>Control Package</a>.</div>Verify translations matching query.
+// Verify translations matching query.
 func (client *Client) TranslationsVerify(project_id string, params *TranslationsVerifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
 	err := func() error {
