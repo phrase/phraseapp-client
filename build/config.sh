@@ -15,8 +15,3 @@ if [[ -z $LIBRARY_REVISION ]]; then
   echo "unable to get library revision"
   exit 1
 fi
-
-if [[ -z $VERSION ]]; then
-  # try to fetch the most recent version and use <version>-dev
-  export VERSION=$(git log --pretty=format:'%d' | grep -o 'tag: .*' | cut -d ')' -f 1 | awk '{ print $2 }' | sed -s 's/,$//g' | head -n 1)-dev
-fi
