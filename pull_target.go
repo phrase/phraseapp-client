@@ -148,6 +148,7 @@ func (t *Target) GetTags() []string {
 		tagsParam = strings.Replace(tagsParam, " ", "", -1)
 		tagList = strings.Split(tagsParam, ",")
 	}
+
 	return tagList
 }
 

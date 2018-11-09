@@ -156,38 +156,50 @@ func (target *Target) LocaleFiles() (LocaleFiles, error) {
 			return nil, err
 		}
 
-		if len(target.GetTags()) == 0 {
-			localeFile, err := createLocaleFile(target, remoteLocale, "")
-			if err != nil {
-				return nil, err
-			}
-
-			files = append(files, localeFile)
-		} else {
-			for _, tag := range target.GetTags() {
-				localeFile, err := createLocaleFile(target, remoteLocale, tag)
-				if err != nil {
-					return nil, err
-				}
-
-				files = append(files, localeFile)
-			}
+		localeFiles, err := target.createLocaleFiles(remoteLocale)
+		if err != nil {
+			return nil, err
 		}
+
+		files = append(files, localeFiles...)
 	} else if placeholders.ContainsLocalePlaceholder(target.File) {
 		// multiple locales were requested
 		for _, remoteLocale := range target.RemoteLocales {
-			localeFile, err := createLocaleFile(target, remoteLocale, "")
+			localesFiles, err := target.createLocaleFiles(remoteLocale)
 			if err != nil {
 				return nil, err
 			}
 
-			files = append(files, localeFile)
+			files = append(files, localesFiles...)
 		}
 	} else {
 		// no local files match remote locale
 		return nil, fmt.Errorf("could not find any files on your system that matches the locales for project %q", target.ProjectID)
 	}
 
+	return files, nil
+}
+
+func (target *Target) createLocaleFiles(remoteLocale *phraseapp.Locale) (LocaleFiles, error) {
+	files := []*LocaleFile{}
+	tags := target.GetTags()
+	if len(tags) == 0 {
+		localeFile, err := createLocaleFile(target, remoteLocale, "")
+		if err != nil {
+			return nil, err
+		}
+
+		files = append(files, localeFile)
+	} else {
+		for _, tag := range tags {
+			localeFile, err := createLocaleFile(target, remoteLocale, tag)
+			if err != nil {
+				return nil, err
+			}
+
+			files = append(files, localeFile)
+		}
+	}
 	return files, nil
 }
 
