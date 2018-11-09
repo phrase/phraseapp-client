@@ -61,7 +61,7 @@ func TestResolvedPath(t *testing.T) {
 	}
 }
 
-func TestLocaleFilesWithMultipleTags(t *testing.T) {
+func TestLocaleFiles__PlaceholdersWithLocaleID(t *testing.T) {
 	target := &Target{
 		File:          "./tests/<locale_code>/<tag>.yml",
 		ProjectID:     "project-id",
@@ -90,5 +90,44 @@ func TestLocaleFilesWithMultipleTags(t *testing.T) {
 
 	if !strings.HasSuffix(files[1].Path, "/tests/en/abc2.yml") {
 		t.Errorf("File path is '%s' and should end with '%s'", files[1].Path, "/tests/en/abc2.yml")
+	}
+}
+
+func TestLocaleFiles__PlaceholdersWithoutLocaleID(t *testing.T) {
+	target := &Target{
+		File:          "./tests/<locale_code>/<tag>.yml",
+		ProjectID:     "project-id",
+		AccessToken:   "access-token",
+		FileFormat:    "yml",
+		Params:        new(PullParams),
+		RemoteLocales: getBaseLocales(),
+	}
+	tags := "abc,abc2"
+	target.Params.Tags = &tags
+
+	files, err := target.LocaleFiles()
+	if err != nil {
+		t.Errorf(err.Error())
+		t.Fail()
+	}
+
+	if len(files) != 4 {
+		t.Errorf("Expected 4 files and and not %d", len(files))
+	}
+
+	if !strings.HasSuffix(files[0].Path, "/tests/en/abc.yml") {
+		t.Errorf("File path is '%s' and should end with '%s'", files[0].Path, "/tests/en/abc.yml")
+	}
+
+	if !strings.HasSuffix(files[1].Path, "/tests/en/abc2.yml") {
+		t.Errorf("File path is '%s' and should end with '%s'", files[1].Path, "/tests/en/abc2.yml")
+	}
+
+	if !strings.HasSuffix(files[2].Path, "/tests/de/abc.yml") {
+		t.Errorf("File path is '%s' and should end with '%s'", files[0].Path, "/tests/de/abc.yml")
+	}
+
+	if !strings.HasSuffix(files[3].Path, "/tests/de/abc2.yml") {
+		t.Errorf("File path is '%s' and should end with '%s'", files[1].Path, "/tests/de/abc2.yml")
 	}
 }
