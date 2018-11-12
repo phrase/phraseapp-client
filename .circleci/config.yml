@@ -1,13 +1,25 @@
 version: 2
 jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/phrase/phraseapp-client
+    steps:
+      - checkout
+      - run: make all
+
   release:
     docker:
       - image: circleci/golang:1.11
     steps:
       - checkout
+      - setup_remote_docker
       - run: make release
 workflows:
   version: 2
+  test:
+    jobs:
+      - test
   release:
     jobs:
       - release:
