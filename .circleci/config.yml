@@ -5,7 +5,7 @@ jobs:
       - image: circleci/golang:1.11
     steps:
       - checkout
-      - run: curl -sL https://git.io/goreleaser | bash
+      - run: make release
 workflows:
   version: 2
   release:
