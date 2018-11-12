@@ -1,12 +1,5 @@
 package shared
 
-import "fmt"
-
 const (
-	DocsBaseUrl   = "https://phraseapp.com/docs"
-	DocsConfigUrl = DocsBaseUrl + "/developers/cli/configuration"
+	DocsConfigUrl = "https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/configuration"
 )
-
-func DocsFormatsUrl(formatName string) string {
-	return fmt.Sprintf("%s/guides/formats/%s", DocsBaseUrl, formatName)
-}
