@@ -29,7 +29,7 @@ func Validate(file, formatName, formatExtension string) error {
 	if formatExtension != "" && formatExtension != fileExtension {
 		return fmt.Errorf(
 			"File extension %q does not equal %q (format: %q) for file %q.\nFor more information see %s",
-			fileExtension, formatExtension, formatName, file, shared.DocsFormatsUrl(formatName),
+			fileExtension, formatExtension, formatName, file, "https://help.phraseapp.com/supported-formats",
 		)
 	}
 
