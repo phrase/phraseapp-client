@@ -14,7 +14,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: make release
+      - run: ./build/release.sh
 workflows:
   version: 2
   test:
@@ -25,6 +25,5 @@ workflows:
       - release:
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              only:
+                - master
