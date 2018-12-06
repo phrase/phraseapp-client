@@ -21,6 +21,17 @@ const (
 type PullCommand struct {
 	phraseapp.Config
 	Branch string `cli:"opt --branch"`
+	Tags   string `cli:"opt --tags"`
+}
+
+func (cmd *PullCommand) getTags() []string {
+	tagList := []string{}
+	if cmd.Tags != "" {
+		tags := strings.Replace(cmd.Tags, " ", "", -1)
+		tagList = strings.Split(tags, ",")
+	}
+
+	return tagList
 }
 
 func (cmd *PullCommand) Run() error {
@@ -34,7 +45,7 @@ func (cmd *PullCommand) Run() error {
 		return err
 	}
 
-	targets, err := TargetsFromConfig(cmd.Config)
+	targets, err := TargetsFromConfig(cmd)
 	if err != nil {
 		return err
 	}

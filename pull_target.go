@@ -152,8 +152,8 @@ func (t *Target) GetTags() []string {
 	return tagList
 }
 
-func TargetsFromConfig(config phraseapp.Config) (Targets, error) {
-	if config.Targets == nil || len(config.Targets) == 0 {
+func TargetsFromConfig(cmd PullCommand) (Targets, error) {
+	if cmd.Config.Targets == nil || len(cmd.Config.Targets) == 0 {
 		return nil, fmt.Errorf("no targets for download specified")
 	}
 
@@ -166,16 +166,19 @@ func TargetsFromConfig(config phraseapp.Config) (Targets, error) {
 	}
 	tgts := tmp.Targets
 
-	projectId := config.DefaultProjectID
+	projectID := config.DefaultProjectID
 	fileFormat := config.DefaultFileFormat
 
 	validTargets := []*Target{}
 	for _, target := range tgts {
+		// TODO filter by tag
+		// target.GetTags()
+		// cmd.getTags()
 		if target == nil {
 			continue
 		}
 		if target.ProjectID == "" {
-			target.ProjectID = projectId
+			target.ProjectID = projectID
 		}
 		if target.FileFormat == "" {
 			target.FileFormat = fileFormat
