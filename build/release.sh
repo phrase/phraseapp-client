@@ -3,19 +3,19 @@
 set -eo pipefail
 
 # validate that master is checked out and head points to origin/master
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ $BRANCH != 'master' ]; then
-    echo "Not on master branch. Aborting"
-    exit 1
-fi
+# BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# if [ $BRANCH != 'master' ]; then
+#     echo "Not on master branch. Aborting"
+#     exit 1
+# fi
 
- HEADHASH=$(git rev-parse HEAD)
- UPSTREAMHASH=$(git rev-parse master@{upstream})
+# HEADHASH=$(git rev-parse HEAD)
+# UPSTREAMHASH=$(git rev-parse master@{upstream})
 
- if [ "$HEADHASH" != "$UPSTREAMHASH" ]; then
-   echo "Not up to date with origin/master. Aborting"
-   exit 1
- fi
+# if [ "$HEADHASH" != "$UPSTREAMHASH" ]; then
+#     echo "Not up to date with origin/master. Aborting"
+#     exit 1
+# fi
 
 # Validate current tag against version
 current_tag=$(git describe --tags --abbrev=0)
@@ -50,11 +50,11 @@ release_id=$(echo $response | python -c "import sys, json; print json.load(sys.s
 
 if [ -z "$release_id" ]
 then
-      echo "Failed to create GitHub release"
-      echo $response
-      exit 1
+    echo "Failed to create GitHub release"
+    echo $response
+    exit 1
 else
-      echo "New release created created with id: ${release_id}"
+    echo "New release created created with id: ${release_id}"
 fi
 
 # Upload artifacts

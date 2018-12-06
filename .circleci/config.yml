@@ -13,7 +13,8 @@ jobs:
       - image: circleci/golang:1.11
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 18.05.0-ce
       - run: ./build/release.sh
 workflows:
   version: 2
@@ -22,8 +23,4 @@ workflows:
       - test
   release:
     jobs:
-      - release:
-          filters:
-            branches:
-              only:
-                - master
+      - release
