@@ -95,7 +95,7 @@ func (cfg *Config) UnmarshalYAML(unmarshal func(i interface{}) error) error {
 		"host":         &cfg.Credentials.Host,
 		"debug":        &cfg.Debug,
 		"page":         &cfg.Page,
-		"perpage":      &cfg.PerPage,
+		"per_page":     &cfg.PerPage,
 		"project_id":   &cfg.DefaultProjectID,
 		"file_format":  &cfg.DefaultFileFormat,
 		"push":         &cfg.Sources,
