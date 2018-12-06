@@ -20,10 +20,10 @@ workflows:
   test:
     jobs:
       - test
-  release:
-    jobs:
-      - release:
-          filters:
-            branches:
-              only:
-                - master
+  # release:
+  #   jobs:
+  #     - release:
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
