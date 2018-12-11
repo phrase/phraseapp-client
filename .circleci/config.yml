@@ -9,21 +9,25 @@ jobs:
       - run: make all
 
   release:
-    docker:
-      - image: circleci/golang:1.11
+    machine: true
     steps:
       - checkout
-      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install realpath
       - run: ./build/release.sh
+
 workflows:
   version: 2
-  test:
+  main:
     jobs:
       - test
-  # release:
-  #   jobs:
-  #     - release:
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+      - release:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
