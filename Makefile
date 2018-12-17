@@ -24,3 +24,4 @@ release:
 
 dist:
 	sh build/build.sh
+	sh build/innosetup/create_installer.sh
