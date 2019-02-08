@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "f4f82ef6536bb47049b766b4b5b0748a4df05383"
-	RevisionGenerator = "HEAD/2018-10-22T141421/stefan"
+	RevisionDocs      = "cf9c93b944382e16fa7b30acaebc002b51629b47"
+	RevisionGenerator = "HEAD/2019-02-08T145310/soenke"
 )
 
 type Account struct {
@@ -94,6 +94,26 @@ type Comment struct {
 	Message   string       `json:"message"`
 	UpdatedAt *time.Time   `json:"updated_at"`
 	User      *UserPreview `json:"user"`
+}
+
+type Distribution struct {
+	CreatedAt *time.Time        `json:"created_at"`
+	DeletedAt *time.Time        `json:"deleted_at"`
+	ID        string            `json:"id"`
+	Name      string            `json:"name"`
+	Platforms []string          `json:"platforms"`
+	Project   *ProjectShort     `json:"project"`
+	Releases  []*ReleasePreview `json:"releases"`
+}
+
+type DistributionPreview struct {
+	CreatedAt    *time.Time    `json:"created_at"`
+	DeletedAt    *time.Time    `json:"deleted_at"`
+	ID           string        `json:"id"`
+	Name         string        `json:"name"`
+	Platforms    []string      `json:"platforms"`
+	Project      *ProjectShort `json:"project"`
+	ReleaseCount int64         `json:"release_count"`
 }
 
 type Format struct {
@@ -259,6 +279,53 @@ type ProjectShort struct {
 	MainFormat string     `json:"main_format"`
 	Name       string     `json:"name"`
 	UpdatedAt  *time.Time `json:"updated_at"`
+}
+
+type Release struct {
+	AppMaxVersion string           `json:"app_max_version"`
+	AppMinVersion string           `json:"app_min_version"`
+	CreatedAt     *time.Time       `json:"created_at"`
+	Description   string           `json:"description"`
+	Environments  []string         `json:"environments"`
+	ID            string           `json:"id"`
+	Locales       []*LocalePreview `json:"locales"`
+	Platforms     []string         `json:"platforms"`
+	Project       *ProjectShort    `json:"project"`
+	UpdatedAt     *time.Time       `json:"updated_at"`
+	Version       int64            `json:"version"`
+}
+
+type ReleasePreview struct {
+	AppMaxVersion string        `json:"app_max_version"`
+	AppMinVersion string        `json:"app_min_version"`
+	CreatedAt     *time.Time    `json:"created_at"`
+	Description   string        `json:"description"`
+	Environments  []string      `json:"environments"`
+	ID            string        `json:"id"`
+	LocaleCodes   []string      `json:"locale_codes"`
+	Platforms     []string      `json:"platforms"`
+	Project       *ProjectShort `json:"project"`
+	UpdatedAt     *time.Time    `json:"updated_at"`
+	Version       int64         `json:"version"`
+}
+
+type Screenshot struct {
+	CreatedAt     *time.Time `json:"created_at"`
+	Description   string     `json:"description"`
+	ID            string     `json:"id"`
+	MarkersCount  int64      `json:"markers_count"`
+	Name          string     `json:"name"`
+	ScreenshotUrl string     `json:"screenshot_url"`
+	UpdatedAt     *time.Time `json:"updated_at"`
+}
+
+type ScreenshotMarker struct {
+	CreatedAt        *time.Time      `json:"created_at"`
+	ID               string          `json:"id"`
+	Presentation     string          `json:"presentation"`
+	PresentationType string          `json:"presentation_type"`
+	TranslationKey   *TranslationKey `json:"translation_key"`
+	UpdatedAt        *time.Time      `json:"updated_at"`
 }
 
 type StatisticsListItem struct {
@@ -567,6 +634,59 @@ func (params *CommentParams) ApplyValuesFromMap(defaults map[string]interface{})
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Message = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type DistributionsParams struct {
+	FallbackToDefaultLocale     *bool    `json:"fallback_to_default_locale,omitempty"  cli:"opt --fallback-to-default-locale"`
+	FallbackToNonRegionalLocale *bool    `json:"fallback_to_non_regional_locale,omitempty"  cli:"opt --fallback-to-non-regional-locale"`
+	Name                        *string  `json:"name,omitempty"  cli:"opt --name"`
+	Platforms                   []string `json:"platforms,omitempty"  cli:"opt --platforms"`
+	ProjectID                   *string  `json:"project_id,omitempty"  cli:"opt --project-id"`
+}
+
+func (params *DistributionsParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "fallback_to_default_locale":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.FallbackToDefaultLocale = &val
+
+		case "fallback_to_non_regional_locale":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.FallbackToNonRegionalLocale = &val
+
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		case "platforms":
+			ok := false
+			params.Platforms, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		case "project_id":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.ProjectID = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -1194,6 +1314,111 @@ func (params *ProjectParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+type ReleasesParams struct {
+	Branch      *string  `json:"branch,omitempty"  cli:"opt --branch"`
+	Description *string  `json:"description,omitempty"  cli:"opt --description"`
+	Platforms   []string `json:"platforms,omitempty"  cli:"opt --platforms"`
+}
+
+func (params *ReleasesParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		case "description":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Description = &val
+
+		case "platforms":
+			ok := false
+			params.Platforms, ok = v.([]string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type ScreenshotMarkerParams struct {
+	KeyID        *string `json:"key_id,omitempty"  cli:"opt --key-id"`
+	Presentation *string `json:"presentation,omitempty"  cli:"opt --presentation"`
+}
+
+func (params *ScreenshotMarkerParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "key_id":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.KeyID = &val
+
+		case "presentation":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Presentation = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+type ScreenshotParams struct {
+	Description *string `json:"description,omitempty"  cli:"opt --description"`
+	Filename    *string `json:"filename,omitempty"  cli:"opt --filename"`
+	Name        *string `json:"name,omitempty"  cli:"opt --name"`
+}
+
+func (params *ScreenshotParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "description":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Description = &val
+
+		case "filename":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Filename = &val
+
+		case "name":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Name = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
 type StyleguideParams struct {
 	Audience           *string `json:"audience,omitempty"  cli:"opt --audience"`
 	Business           *string `json:"business,omitempty"  cli:"opt --business"`
@@ -1422,6 +1647,7 @@ type UploadParams struct {
 	FormatOptions      map[string]string `json:"format_options,omitempty"  cli:"opt --format-options"`
 	LocaleID           *string           `json:"locale_id,omitempty"  cli:"opt --locale-id"`
 	LocaleMapping      map[string]string `json:"locale_mapping,omitempty"  cli:"opt --locale-mapping"`
+	MarkReviewed       *bool             `json:"mark_reviewed,omitempty"  cli:"opt --mark-reviewed"`
 	SkipUnverification *bool             `json:"skip_unverification,omitempty"  cli:"opt --skip-unverification"`
 	SkipUploadTags     *bool             `json:"skip_upload_tags,omitempty"  cli:"opt --skip-upload-tags"`
 	Tags               *string           `json:"tags,omitempty"  cli:"opt --tags"`
@@ -1502,6 +1728,13 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 				return err
 			}
 			params.LocaleMapping = val
+
+		case "mark_reviewed":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.MarkReviewed = &val
 
 		case "skip_unverification":
 			val, ok := v.(bool)
@@ -2518,6 +2751,140 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int,
 		}
 
 		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new distribution.
+func (client *Client) DistributionCreate(account_id string, params *DistributionsParams) (*Distribution, error) {
+	retVal := new(Distribution)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions", url.QueryEscape(account_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing distribution.
+func (client *Client) DistributionDelete(account_id, id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single distribution.
+func (client *Client) DistributionShow(account_id, id string) (*Distribution, error) {
+	retVal := new(Distribution)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing distribution.
+func (client *Client) DistributionUpdate(account_id, id string, params *DistributionsParams) (*Distribution, error) {
+	retVal := new(Distribution)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s", url.QueryEscape(account_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all distributions for the given account.
+func (client *Client) DistributionsList(account_id string, page, perPage int) ([]*DistributionPreview, error) {
+	retVal := []*DistributionPreview{}
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions", url.QueryEscape(account_id))
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -4958,6 +5325,7 @@ type LocaleDownloadParams struct {
 	SkipUnverifiedTranslations    *bool             `json:"skip_unverified_translations,omitempty"  cli:"opt --skip-unverified-translations"`
 	Tag                           *string           `json:"tag,omitempty"  cli:"opt --tag"`
 	Tags                          *string           `json:"tags,omitempty"  cli:"opt --tags"`
+	UseLastReviewedVersion        *bool             `json:"use_last_reviewed_version,omitempty"  cli:"opt --use-last-reviewed-version"`
 }
 
 func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
@@ -5057,6 +5425,13 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 				return fmt.Errorf(cfgValueErrStr, k, v)
 			}
 			params.Tags = &val
+
+		case "use_last_reviewed_version":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.UseLastReviewedVersion = &val
 
 		default:
 			return fmt.Errorf(cfgInvalidKeyErrStr, k)
@@ -5853,6 +6228,500 @@ func (client *Client) ProjectsList(page, perPage int) ([]*Project, error) {
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects")
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new release.
+func (client *Client) ReleaseCreate(account_id, distribution_id string, params *ReleasesParams) (*Release, error) {
+	retVal := new(Release)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases", url.QueryEscape(account_id), url.QueryEscape(distribution_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing release.
+func (client *Client) ReleaseDelete(account_id, distribution_id, id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Publish a release for production.
+func (client *Client) ReleasePublish(account_id, distribution_id, id string) (*Release, error) {
+	retVal := new(Release)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s/publish", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("POST", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Get details on a single release.
+func (client *Client) ReleaseShow(account_id, distribution_id, id string) (*Release, error) {
+	retVal := new(Release)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing release.
+func (client *Client) ReleaseUpdate(account_id, distribution_id, id string, params *ReleasesParams) (*Release, error) {
+	retVal := new(Release)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all releases for the given distribution.
+func (client *Client) ReleasesList(account_id, distribution_id string, page, perPage int) ([]*ReleasePreview, error) {
+	retVal := []*ReleasePreview{}
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases", url.QueryEscape(account_id), url.QueryEscape(distribution_id))
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new screenshot.
+func (client *Client) ScreenshotCreate(project_id string, params *ScreenshotParams) (*Screenshot, error) {
+	retVal := new(Screenshot)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots", url.QueryEscape(project_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		writer := multipart.NewWriter(paramsBuf)
+		ctype := writer.FormDataContentType()
+
+		if params.Description != nil {
+			err := writer.WriteField("description", *params.Description)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Filename != nil {
+			part, err := writer.CreateFormFile("filename", filepath.Base(*params.Filename))
+			if err != nil {
+				return err
+			}
+			file, err := os.Open(*params.Filename)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(part, file)
+			if err != nil {
+				return err
+			}
+			err = file.Close()
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Name != nil {
+			err := writer.WriteField("name", *params.Name)
+			if err != nil {
+				return err
+			}
+		}
+		err := writer.WriteField("utf8", "✓")
+		writer.Close()
+
+		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing screenshot.
+func (client *Client) ScreenshotDelete(project_id, id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single screenshot for a given project.
+func (client *Client) ScreenshotShow(project_id, id string) (*Screenshot, error) {
+	retVal := new(Screenshot)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing screenshot.
+func (client *Client) ScreenshotUpdate(project_id, id string, params *ScreenshotParams) (*Screenshot, error) {
+	retVal := new(Screenshot)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		writer := multipart.NewWriter(paramsBuf)
+		ctype := writer.FormDataContentType()
+
+		if params.Description != nil {
+			err := writer.WriteField("description", *params.Description)
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Filename != nil {
+			part, err := writer.CreateFormFile("filename", filepath.Base(*params.Filename))
+			if err != nil {
+				return err
+			}
+			file, err := os.Open(*params.Filename)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(part, file)
+			if err != nil {
+				return err
+			}
+			err = file.Close()
+			if err != nil {
+				return err
+			}
+		}
+
+		if params.Name != nil {
+			err := writer.WriteField("name", *params.Name)
+			if err != nil {
+				return err
+			}
+		}
+		err := writer.WriteField("utf8", "✓")
+		writer.Close()
+
+		rc, err := client.sendRequest("PATCH", url, ctype, paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Create a new screenshot marker.
+func (client *Client) ScreenshotMarkerCreate(project_id, screenshot_id string, params *ScreenshotMarkerParams) (*ScreenshotMarker, error) {
+	retVal := new(ScreenshotMarker)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(screenshot_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Delete an existing screenshot marker.
+func (client *Client) ScreenshotMarkerDelete(project_id, screenshot_id string) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(screenshot_id))
+
+		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
+// Get details on a single screenshot marker for a given project.
+func (client *Client) ScreenshotMarkerShow(project_id, screenshot_id, id string) (*ScreenshotMarker, error) {
+	retVal := new(ScreenshotMarker)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers/%s", url.QueryEscape(project_id), url.QueryEscape(screenshot_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequest("GET", url, "", nil, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// Update an existing screenshot marker.
+func (client *Client) ScreenshotMarkerUpdate(project_id, screenshot_id string, params *ScreenshotMarkerParams) (*ScreenshotMarker, error) {
+	retVal := new(ScreenshotMarker)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(screenshot_id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all screenshot markers for the given project.
+func (client *Client) ScreenshotMarkersList(project_id, id string, page, perPage int) ([]*ScreenshotMarker, error) {
+	retVal := []*ScreenshotMarker{}
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+// List all screenshots for the given project.
+func (client *Client) ScreenshotsList(project_id string, page, perPage int) ([]*Screenshot, error) {
+	retVal := []*Screenshot{}
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/screenshots", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
 		if err != nil {
@@ -6827,7 +7696,7 @@ func (params *TranslationsSearchParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
-// List translations for the given project if you exceed GET request limitations on translations list. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.
+// Search translations for the given project. Provides the same search interface as <code>translations#index</code> but allows POST requests to avoid limitations imposed by GET requests. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.
 func (client *Client) TranslationsSearch(project_id string, page, perPage int, params *TranslationsSearchParams) ([]*Translation, error) {
 	retVal := []*Translation{}
 	err := func() error {
@@ -7102,6 +7971,13 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 				if err != nil {
 					return err
 				}
+			}
+		}
+
+		if params.MarkReviewed != nil {
+			err := writer.WriteField("mark_reviewed", strconv.FormatBool(*params.MarkReviewed))
+			if err != nil {
+				return err
 			}
 		}
 

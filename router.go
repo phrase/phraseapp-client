@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "f4f82ef6536bb47049b766b4b5b0748a4df05383"
-	RevisionGenerator = "HEAD/2018-10-22T144042/stefan"
+	RevisionDocs      = "cf9c93b944382e16fa7b30acaebc002b51629b47"
+	RevisionGenerator = "HEAD/2019-02-08T150138/soenke"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -145,6 +145,24 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	} else {
 		r.Register("comments/list", cmd, "List all comments for a key.")
 	}
+
+	if cmd, err := newDistributionCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("distribution/create", cmd, "Create a new distribution.")
+	}
+
+	r.Register("distribution/delete", newDistributionDelete(cfg), "Delete an existing distribution.")
+
+	r.Register("distribution/show", newDistributionShow(cfg), "Get details on a single distribution.")
+
+	if cmd, err := newDistributionUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("distribution/update", cmd, "Update an existing distribution.")
+	}
+
+	r.Register("distributions/list", newDistributionsList(cfg), "List all distributions for the given account.")
 
 	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
 
@@ -470,6 +488,62 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("projects/list", newProjectsList(cfg), "List all projects the current user has access to.")
 
+	if cmd, err := newReleaseCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("release/create", cmd, "Create a new release.")
+	}
+
+	r.Register("release/delete", newReleaseDelete(cfg), "Delete an existing release.")
+
+	r.Register("release/publish", newReleasePublish(cfg), "Publish a release for production.")
+
+	r.Register("release/show", newReleaseShow(cfg), "Get details on a single release.")
+
+	if cmd, err := newReleaseUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("release/update", cmd, "Update an existing release.")
+	}
+
+	r.Register("releases/list", newReleasesList(cfg), "List all releases for the given distribution.")
+
+	if cmd, err := newScreenshotCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("screenshot/create", cmd, "Create a new screenshot.")
+	}
+
+	r.Register("screenshot/delete", newScreenshotDelete(cfg), "Delete an existing screenshot.")
+
+	r.Register("screenshot/show", newScreenshotShow(cfg), "Get details on a single screenshot for a given project.")
+
+	if cmd, err := newScreenshotUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("screenshot/update", cmd, "Update an existing screenshot.")
+	}
+
+	if cmd, err := newScreenshotMarkerCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("screenshot_marker/create", cmd, "Create a new screenshot marker.")
+	}
+
+	r.Register("screenshot_marker/delete", newScreenshotMarkerDelete(cfg), "Delete an existing screenshot marker.")
+
+	r.Register("screenshot_marker/show", newScreenshotMarkerShow(cfg), "Get details on a single screenshot marker for a given project.")
+
+	if cmd, err := newScreenshotMarkerUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("screenshot_marker/update", cmd, "Update an existing screenshot marker.")
+	}
+
+	r.Register("screenshot_markers/list", newScreenshotMarkersList(cfg), "List all screenshot markers for the given project.")
+
+	r.Register("screenshots/list", newScreenshotsList(cfg), "List all screenshots for the given project.")
+
 	r.Register("show/user", newShowUser(cfg), "Show details for current User.")
 
 	if cmd, err := newStyleguideCreate(cfg); err != nil {
@@ -565,7 +639,7 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	if cmd, err := newTranslationsSearch(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("translations/search", cmd, "List translations for the given project if you exceed GET request limitations on translations list. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
+		r.Register("translations/search", cmd, "Search translations for the given project. Provides the same search interface as <code>translations#index</code> but allows POST requests to avoid limitations imposed by GET requests. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
 	}
 
 	if cmd, err := newTranslationsUnverify(cfg); err != nil {
@@ -1716,6 +1790,181 @@ func (cmd *CommentsList) Run() error {
 	}
 
 	res, err := client.CommentsList(cmd.ProjectID, cmd.KeyID, cmd.Page, cmd.PerPage, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type DistributionCreate struct {
+	phraseapp.Config
+
+	phraseapp.DistributionsParams
+
+	AccountID string `cli:"arg required"`
+}
+
+func newDistributionCreate(cfg *phraseapp.Config) (*DistributionCreate, error) {
+
+	actionDistributionCreate := &DistributionCreate{Config: *cfg}
+
+	val, defaultsPresent := actionDistributionCreate.Config.Defaults["distribution/create"]
+	if defaultsPresent {
+		if err := actionDistributionCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionDistributionCreate, nil
+}
+
+func (cmd *DistributionCreate) Run() error {
+	params := &cmd.DistributionsParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DistributionCreate(cmd.AccountID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type DistributionDelete struct {
+	phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newDistributionDelete(cfg *phraseapp.Config) *DistributionDelete {
+
+	actionDistributionDelete := &DistributionDelete{Config: *cfg}
+
+	return actionDistributionDelete
+}
+
+func (cmd *DistributionDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.DistributionDelete(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type DistributionShow struct {
+	phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newDistributionShow(cfg *phraseapp.Config) *DistributionShow {
+
+	actionDistributionShow := &DistributionShow{Config: *cfg}
+
+	return actionDistributionShow
+}
+
+func (cmd *DistributionShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DistributionShow(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type DistributionUpdate struct {
+	phraseapp.Config
+
+	phraseapp.DistributionsParams
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newDistributionUpdate(cfg *phraseapp.Config) (*DistributionUpdate, error) {
+
+	actionDistributionUpdate := &DistributionUpdate{Config: *cfg}
+
+	val, defaultsPresent := actionDistributionUpdate.Config.Defaults["distribution/update"]
+	if defaultsPresent {
+		if err := actionDistributionUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionDistributionUpdate, nil
+}
+
+func (cmd *DistributionUpdate) Run() error {
+	params := &cmd.DistributionsParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DistributionUpdate(cmd.AccountID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type DistributionsList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+}
+
+func newDistributionsList(cfg *phraseapp.Config) *DistributionsList {
+
+	actionDistributionsList := &DistributionsList{Config: *cfg}
+	if cfg.Page != nil {
+		actionDistributionsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionDistributionsList.PerPage = *cfg.PerPage
+	}
+
+	return actionDistributionsList
+}
+
+func (cmd *DistributionsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DistributionsList(cmd.AccountID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
@@ -4261,6 +4510,580 @@ func (cmd *ProjectsList) Run() error {
 	}
 
 	res, err := client.ProjectsList(cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ReleaseCreate struct {
+	phraseapp.Config
+
+	phraseapp.ReleasesParams
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+}
+
+func newReleaseCreate(cfg *phraseapp.Config) (*ReleaseCreate, error) {
+
+	actionReleaseCreate := &ReleaseCreate{Config: *cfg}
+
+	val, defaultsPresent := actionReleaseCreate.Config.Defaults["release/create"]
+	if defaultsPresent {
+		if err := actionReleaseCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionReleaseCreate, nil
+}
+
+func (cmd *ReleaseCreate) Run() error {
+	params := &cmd.ReleasesParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ReleaseCreate(cmd.AccountID, cmd.DistributionID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ReleaseDelete struct {
+	phraseapp.Config
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+	ID             string `cli:"arg required"`
+}
+
+func newReleaseDelete(cfg *phraseapp.Config) *ReleaseDelete {
+
+	actionReleaseDelete := &ReleaseDelete{Config: *cfg}
+
+	return actionReleaseDelete
+}
+
+func (cmd *ReleaseDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.ReleaseDelete(cmd.AccountID, cmd.DistributionID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ReleasePublish struct {
+	phraseapp.Config
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+	ID             string `cli:"arg required"`
+}
+
+func newReleasePublish(cfg *phraseapp.Config) *ReleasePublish {
+
+	actionReleasePublish := &ReleasePublish{Config: *cfg}
+
+	return actionReleasePublish
+}
+
+func (cmd *ReleasePublish) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ReleasePublish(cmd.AccountID, cmd.DistributionID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ReleaseShow struct {
+	phraseapp.Config
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+	ID             string `cli:"arg required"`
+}
+
+func newReleaseShow(cfg *phraseapp.Config) *ReleaseShow {
+
+	actionReleaseShow := &ReleaseShow{Config: *cfg}
+
+	return actionReleaseShow
+}
+
+func (cmd *ReleaseShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ReleaseShow(cmd.AccountID, cmd.DistributionID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ReleaseUpdate struct {
+	phraseapp.Config
+
+	phraseapp.ReleasesParams
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+	ID             string `cli:"arg required"`
+}
+
+func newReleaseUpdate(cfg *phraseapp.Config) (*ReleaseUpdate, error) {
+
+	actionReleaseUpdate := &ReleaseUpdate{Config: *cfg}
+
+	val, defaultsPresent := actionReleaseUpdate.Config.Defaults["release/update"]
+	if defaultsPresent {
+		if err := actionReleaseUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionReleaseUpdate, nil
+}
+
+func (cmd *ReleaseUpdate) Run() error {
+	params := &cmd.ReleasesParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ReleaseUpdate(cmd.AccountID, cmd.DistributionID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ReleasesList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID      string `cli:"arg required"`
+	DistributionID string `cli:"arg required"`
+}
+
+func newReleasesList(cfg *phraseapp.Config) *ReleasesList {
+
+	actionReleasesList := &ReleasesList{Config: *cfg}
+	if cfg.Page != nil {
+		actionReleasesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionReleasesList.PerPage = *cfg.PerPage
+	}
+
+	return actionReleasesList
+}
+
+func (cmd *ReleasesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ReleasesList(cmd.AccountID, cmd.DistributionID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotCreate struct {
+	phraseapp.Config
+
+	phraseapp.ScreenshotParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newScreenshotCreate(cfg *phraseapp.Config) (*ScreenshotCreate, error) {
+
+	actionScreenshotCreate := &ScreenshotCreate{Config: *cfg}
+	actionScreenshotCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionScreenshotCreate.Config.Defaults["screenshot/create"]
+	if defaultsPresent {
+		if err := actionScreenshotCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionScreenshotCreate, nil
+}
+
+func (cmd *ScreenshotCreate) Run() error {
+	params := &cmd.ScreenshotParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotCreate(cmd.ProjectID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotDelete struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newScreenshotDelete(cfg *phraseapp.Config) *ScreenshotDelete {
+
+	actionScreenshotDelete := &ScreenshotDelete{Config: *cfg}
+	actionScreenshotDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionScreenshotDelete
+}
+
+func (cmd *ScreenshotDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.ScreenshotDelete(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ScreenshotShow struct {
+	phraseapp.Config
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newScreenshotShow(cfg *phraseapp.Config) *ScreenshotShow {
+
+	actionScreenshotShow := &ScreenshotShow{Config: *cfg}
+	actionScreenshotShow.ProjectID = cfg.DefaultProjectID
+
+	return actionScreenshotShow
+}
+
+func (cmd *ScreenshotShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotShow(cmd.ProjectID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotUpdate struct {
+	phraseapp.Config
+
+	phraseapp.ScreenshotParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newScreenshotUpdate(cfg *phraseapp.Config) (*ScreenshotUpdate, error) {
+
+	actionScreenshotUpdate := &ScreenshotUpdate{Config: *cfg}
+	actionScreenshotUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionScreenshotUpdate.Config.Defaults["screenshot/update"]
+	if defaultsPresent {
+		if err := actionScreenshotUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionScreenshotUpdate, nil
+}
+
+func (cmd *ScreenshotUpdate) Run() error {
+	params := &cmd.ScreenshotParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotMarkerCreate struct {
+	phraseapp.Config
+
+	phraseapp.ScreenshotMarkerParams
+
+	ProjectID    string `cli:"arg required"`
+	ScreenshotID string `cli:"arg required"`
+}
+
+func newScreenshotMarkerCreate(cfg *phraseapp.Config) (*ScreenshotMarkerCreate, error) {
+
+	actionScreenshotMarkerCreate := &ScreenshotMarkerCreate{Config: *cfg}
+	actionScreenshotMarkerCreate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionScreenshotMarkerCreate.Config.Defaults["screenshot_marker/create"]
+	if defaultsPresent {
+		if err := actionScreenshotMarkerCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionScreenshotMarkerCreate, nil
+}
+
+func (cmd *ScreenshotMarkerCreate) Run() error {
+	params := &cmd.ScreenshotMarkerParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotMarkerCreate(cmd.ProjectID, cmd.ScreenshotID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotMarkerDelete struct {
+	phraseapp.Config
+
+	ProjectID    string `cli:"arg required"`
+	ScreenshotID string `cli:"arg required"`
+}
+
+func newScreenshotMarkerDelete(cfg *phraseapp.Config) *ScreenshotMarkerDelete {
+
+	actionScreenshotMarkerDelete := &ScreenshotMarkerDelete{Config: *cfg}
+	actionScreenshotMarkerDelete.ProjectID = cfg.DefaultProjectID
+
+	return actionScreenshotMarkerDelete
+}
+
+func (cmd *ScreenshotMarkerDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.ScreenshotMarkerDelete(cmd.ProjectID, cmd.ScreenshotID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ScreenshotMarkerShow struct {
+	phraseapp.Config
+
+	ProjectID    string `cli:"arg required"`
+	ScreenshotID string `cli:"arg required"`
+	ID           string `cli:"arg required"`
+}
+
+func newScreenshotMarkerShow(cfg *phraseapp.Config) *ScreenshotMarkerShow {
+
+	actionScreenshotMarkerShow := &ScreenshotMarkerShow{Config: *cfg}
+	actionScreenshotMarkerShow.ProjectID = cfg.DefaultProjectID
+
+	return actionScreenshotMarkerShow
+}
+
+func (cmd *ScreenshotMarkerShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotMarkerShow(cmd.ProjectID, cmd.ScreenshotID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotMarkerUpdate struct {
+	phraseapp.Config
+
+	phraseapp.ScreenshotMarkerParams
+
+	ProjectID    string `cli:"arg required"`
+	ScreenshotID string `cli:"arg required"`
+}
+
+func newScreenshotMarkerUpdate(cfg *phraseapp.Config) (*ScreenshotMarkerUpdate, error) {
+
+	actionScreenshotMarkerUpdate := &ScreenshotMarkerUpdate{Config: *cfg}
+	actionScreenshotMarkerUpdate.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionScreenshotMarkerUpdate.Config.Defaults["screenshot_marker/update"]
+	if defaultsPresent {
+		if err := actionScreenshotMarkerUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionScreenshotMarkerUpdate, nil
+}
+
+func (cmd *ScreenshotMarkerUpdate) Run() error {
+	params := &cmd.ScreenshotMarkerParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotMarkerUpdate(cmd.ProjectID, cmd.ScreenshotID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotMarkersList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newScreenshotMarkersList(cfg *phraseapp.Config) *ScreenshotMarkersList {
+
+	actionScreenshotMarkersList := &ScreenshotMarkersList{Config: *cfg}
+	actionScreenshotMarkersList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionScreenshotMarkersList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionScreenshotMarkersList.PerPage = *cfg.PerPage
+	}
+
+	return actionScreenshotMarkersList
+}
+
+func (cmd *ScreenshotMarkersList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotMarkersList(cmd.ProjectID, cmd.ID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type ScreenshotsList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newScreenshotsList(cfg *phraseapp.Config) *ScreenshotsList {
+
+	actionScreenshotsList := &ScreenshotsList{Config: *cfg}
+	actionScreenshotsList.ProjectID = cfg.DefaultProjectID
+	if cfg.Page != nil {
+		actionScreenshotsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionScreenshotsList.PerPage = *cfg.PerPage
+	}
+
+	return actionScreenshotsList
+}
+
+func (cmd *ScreenshotsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.ScreenshotsList(cmd.ProjectID, cmd.Page, cmd.PerPage)
 
 	if err != nil {
 		return err
