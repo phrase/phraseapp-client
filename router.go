@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "cf9c93b944382e16fa7b30acaebc002b51629b47"
-	RevisionGenerator = "HEAD/2019-02-08T150138/soenke"
+	RevisionDocs      = "597800251a7422fbb65ebb04abb824bd5c8d7b08"
+	RevisionGenerator = "HEAD/2019-05-21T104508/soenke"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -634,6 +634,12 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		return nil, err
 	} else {
 		r.Register("translations/list", cmd, "List translations for the given project. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.")
+	}
+
+	if cmd, err := newTranslationsReview(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translations/review", cmd, "Review translations matching query.")
 	}
 
 	if cmd, err := newTranslationsSearch(cfg); err != nil {
@@ -5801,6 +5807,45 @@ func (cmd *TranslationsList) Run() error {
 	}
 
 	res, err := client.TranslationsList(cmd.ProjectID, cmd.Page, cmd.PerPage, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type TranslationsReview struct {
+	phraseapp.Config
+
+	phraseapp.TranslationsReviewParams
+
+	ProjectID string `cli:"arg required"`
+}
+
+func newTranslationsReview(cfg *phraseapp.Config) (*TranslationsReview, error) {
+
+	actionTranslationsReview := &TranslationsReview{Config: *cfg}
+	actionTranslationsReview.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationsReview.Config.Defaults["translations/review"]
+	if defaultsPresent {
+		if err := actionTranslationsReview.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationsReview, nil
+}
+
+func (cmd *TranslationsReview) Run() error {
+	params := &cmd.TranslationsReviewParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationsReview(cmd.ProjectID, params)
 
 	if err != nil {
 		return err
