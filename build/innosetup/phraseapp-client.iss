@@ -22,6 +22,7 @@ OutputBaseFilename=phraseapp_setup
 SetupIconFile=parrot.ico
 Compression=lzma
 SolidCompression=yes
+WizardStyle=modern
 
 [Files]
 Source: "../../dist/phraseapp_windows_amd64.exe"; DestDir: "{app}"; DestName: "phraseapp.exe"; Flags: ignoreversion
