@@ -2,71 +2,98 @@
 
 
 [[projects]]
+  digest = "1:1343a2963481a305ca4d051e84bc2abd16b601ee22ed324f8d605de1adb291b0"
   name = "github.com/bgentry/speakeasy"
   packages = ["."]
+  pruneopts = "UT"
   revision = "4aabc24848ce5fd31929f7d1e4ea74d3709c14cd"
   version = "v0.1.0"
 
 [[projects]]
+  digest = "1:0ef770954bca104ee99b3b6b7f9b240605ac03517d9f98cbc1893daa03f3c038"
   name = "github.com/coreos/go-semver"
   packages = ["semver"]
+  pruneopts = "UT"
   revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
   version = "v0.2.0"
 
 [[projects]]
+  digest = "1:e921c3d4324ffdcb4fd39d5f47a832f2112d44731a5f21d8ae0ccfe82e608711"
   name = "github.com/daviddengcn/go-colortext"
   packages = ["."]
+  pruneopts = "UT"
   revision = "17e75f6184bc9e727756cd0d82e0af58b1fc7191"
   version = "1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:e75960b70dfb23347f5fb90e6bd61991b0250f71dc7d7962a77371b843eb183d"
   name = "github.com/dynport/dgtk"
   packages = [
     "cli",
-    "tagparse"
+    "tagparse",
   ]
+  pruneopts = "UT"
   revision = "3360a73d8ca97fec1e8f5c14fcbe20255b71eb31"
 
 [[projects]]
   branch = "master"
+  digest = "1:0bfbe13936953a98ae3cfe8ed6670d396ad81edf069a806d2f6515d7bb6950df"
   name = "github.com/google/btree"
   packages = ["."]
+  pruneopts = "UT"
   revision = "4030bb1f1f0c35b30ca7009e9ebd06849dd45306"
 
 [[projects]]
+  digest = "1:b6bbd2f9e0724bd81890c8644259f920c6d61c08453978faff0bebd25f3e7d3e"
   name = "github.com/jpillora/backoff"
   packages = ["."]
+  pruneopts = "UT"
   revision = "8eab2debe79d12b7bd3d10653910df25fa9552ba"
   version = "1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:3bf17a6e6eaa6ad24152148a631d18662f7212e21637c2699bff3369b7f00fa2"
   name = "github.com/petar/GoLLRB"
   packages = ["llrb"]
+  pruneopts = "UT"
   revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
 
 [[projects]]
+  digest = "1:0e7775ebbcf00d8dd28ac663614af924411c868dca3d5aa762af0fae3808d852"
   name = "github.com/peterbourgon/diskv"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:5e64dcdcce9a71759b5989b8ac3f4d1e415ce98166d8a2b6434fb61cd03d850b"
   name = "github.com/phrase/phraseapp-go"
   packages = ["phraseapp"]
-  revision = "58c49e81509da741a29e96b4bddb7eb59620e256"
+  pruneopts = "UT"
+  revision = "700406d0fbd2d105712a20170097b7cb871acfa7"
 
 [[projects]]
+  digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "16d17b3a65d3905d27223c58d9199553019894eb3166ab7204fd0f40e5405a4e"
+  input-imports = [
+    "github.com/coreos/go-semver/semver",
+    "github.com/daviddengcn/go-colortext",
+    "github.com/dynport/dgtk/cli",
+    "github.com/jpillora/backoff",
+    "github.com/phrase/phraseapp-go/phraseapp",
+    "gopkg.in/yaml.v2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
