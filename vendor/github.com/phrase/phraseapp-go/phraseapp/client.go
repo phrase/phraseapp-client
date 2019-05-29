@@ -120,6 +120,34 @@ func (client *Client) sendRequestPaginated(method, urlPath, contentType string, 
 	return resp.Body, nil
 }
 
+func (client *Client) sendGetRequestPaginated(urlPath string, params map[string]string, expectedStatus, page, perPage int) (io.ReadCloser, error) {
+	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
+	if err != nil {
+		return nil, err
+	}
+
+	addPagination(endpointURL, page, perPage)
+
+	req, err := client.buildRequest("GET", endpointURL, nil, "")
+	if err != nil {
+		return nil, err
+	}
+
+	values := req.URL.Query()
+	for key, value := range params {
+		values.Add(key, value)
+	}
+
+	req.URL.RawQuery = values.Encode()
+	resp, err := client.send(req, expectedStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
+
 func (client *Client) sendRequest(method, urlPath, contentType string, body io.Reader, expectedStatus int) (io.ReadCloser, error) {
 	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
 	if err != nil {
@@ -137,6 +165,31 @@ func (client *Client) sendRequest(method, urlPath, contentType string, body io.R
 	}
 	return resp.Body, nil
 }
+
+func (client *Client) sendGetRequest(urlPath string, params map[string]string, expectedStatus int) (io.ReadCloser, error) {
+	endpointURL, err := url.Parse(client.Credentials.Host + urlPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := client.buildRequest("GET", endpointURL, nil, "")
+	if err != nil {
+		return nil, err
+	}
+
+	values := req.URL.Query()
+	for key, value := range params {
+		values.Add(key, value)
+	}
+
+	req.URL.RawQuery = values.Encode()
+	resp, err := client.send(req, expectedStatus)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
 
 func (client *Client) send(req *http.Request, expectedStatus int) (*http.Response, error) {
 	err := client.authenticate(req)

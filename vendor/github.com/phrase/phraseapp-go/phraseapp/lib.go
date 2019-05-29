@@ -16,7 +16,7 @@ import (
 
 const (
 	RevisionDocs      = "597800251a7422fbb65ebb04abb824bd5c8d7b08"
-	RevisionGenerator = "HEAD/2019-05-21T102929/soenke"
+	RevisionGenerator = "HEAD/2019-05-23T174450/soenke"
 )
 
 type Account struct {
@@ -547,6 +547,16 @@ func (params *AuthorizationParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *AuthorizationParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Note != nil && *params.Note != "" {
+		queryParams["note"] = *params.Note
+	}
+
+	return queryParams
+}
+
 type BitbucketSyncParams struct {
 	AccountID *string `json:"account_id,omitempty"  cli:"opt --account-id"`
 }
@@ -567,6 +577,16 @@ func (params *BitbucketSyncParams) ApplyValuesFromMap(defaults map[string]interf
 	}
 
 	return nil
+}
+
+func (params *BitbucketSyncParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.AccountID != nil && *params.AccountID != "" {
+		queryParams["account_id"] = *params.AccountID
+	}
+
+	return queryParams
 }
 
 type BlacklistedKeyParams struct {
@@ -591,6 +611,16 @@ func (params *BlacklistedKeyParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+func (params *BlacklistedKeyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
+}
+
 type BranchParams struct {
 	Name *string `json:"name,omitempty"  cli:"opt --name"`
 }
@@ -611,6 +641,16 @@ func (params *BranchParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 	}
 
 	return nil
+}
+
+func (params *BranchParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
 }
 
 type CommentParams struct {
@@ -641,6 +681,20 @@ func (params *CommentParams) ApplyValuesFromMap(defaults map[string]interface{})
 	}
 
 	return nil
+}
+
+func (params *CommentParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Message != nil && *params.Message != "" {
+		queryParams["message"] = *params.Message
+	}
+
+	return queryParams
 }
 
 type DistributionsParams struct {
@@ -696,6 +750,28 @@ func (params *DistributionsParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *DistributionsParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.FallbackToDefaultLocale != nil {
+		queryParams["fallback_to_default_locale"] = strconv.FormatBool(*params.FallbackToDefaultLocale)
+	}
+
+	if params.FallbackToNonRegionalLocale != nil {
+		queryParams["fallback_to_non_regional_locale"] = strconv.FormatBool(*params.FallbackToNonRegionalLocale)
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	if params.ProjectID != nil && *params.ProjectID != "" {
+		queryParams["project_id"] = *params.ProjectID
+	}
+
+	return queryParams
+}
+
 type GlossaryParams struct {
 	Name       *string `json:"name,omitempty"  cli:"opt --name"`
 	ProjectIDs *string `json:"project_ids,omitempty"  cli:"opt --project-ids"`
@@ -726,6 +802,20 @@ func (params *GlossaryParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *GlossaryParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	if params.ProjectIDs != nil && *params.ProjectIDs != "" {
+		queryParams["project_ids"] = *params.ProjectIDs
+	}
+
+	return queryParams
+}
+
 type GlossaryTermTranslationParams struct {
 	Content    *string `json:"content,omitempty"  cli:"opt --content"`
 	LocaleCode *string `json:"locale_code,omitempty"  cli:"opt --locale-code"`
@@ -754,6 +844,20 @@ func (params *GlossaryTermTranslationParams) ApplyValuesFromMap(defaults map[str
 	}
 
 	return nil
+}
+
+func (params *GlossaryTermTranslationParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Content != nil && *params.Content != "" {
+		queryParams["content"] = *params.Content
+	}
+
+	if params.LocaleCode != nil && *params.LocaleCode != "" {
+		queryParams["locale_code"] = *params.LocaleCode
+	}
+
+	return queryParams
 }
 
 type GlossaryTermParams struct {
@@ -802,6 +906,28 @@ func (params *GlossaryTermParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *GlossaryTermParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.CaseSensitive != nil {
+		queryParams["case_sensitive"] = strconv.FormatBool(*params.CaseSensitive)
+	}
+
+	if params.Description != nil && *params.Description != "" {
+		queryParams["description"] = *params.Description
+	}
+
+	if params.Term != nil && *params.Term != "" {
+		queryParams["term"] = *params.Term
+	}
+
+	if params.Translatable != nil {
+		queryParams["translatable"] = strconv.FormatBool(*params.Translatable)
+	}
+
+	return queryParams
+}
+
 type JobLocaleParams struct {
 	Branch   *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	LocaleID *string  `json:"locale_id,omitempty"  cli:"opt --locale-id"`
@@ -837,6 +963,20 @@ func (params *JobLocaleParams) ApplyValuesFromMap(defaults map[string]interface{
 	}
 
 	return nil
+}
+
+func (params *JobLocaleParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.LocaleID != nil && *params.LocaleID != "" {
+		queryParams["locale_id"] = *params.LocaleID
+	}
+
+	return queryParams
 }
 
 type JobParams struct {
@@ -897,6 +1037,24 @@ func (params *JobParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 	}
 
 	return nil
+}
+
+func (params *JobParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Briefing != nil && *params.Briefing != "" {
+		queryParams["briefing"] = *params.Briefing
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
 }
 
 type TranslationKeyParams struct {
@@ -1033,6 +1191,64 @@ func (params *TranslationKeyParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+func (params *TranslationKeyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.DataType != nil && *params.DataType != "" {
+		queryParams["data_type"] = *params.DataType
+	}
+
+	if params.Description != nil && *params.Description != "" {
+		queryParams["description"] = *params.Description
+	}
+
+	if params.LocalizedFormatKey != nil && *params.LocalizedFormatKey != "" {
+		queryParams["localized_format_key"] = *params.LocalizedFormatKey
+	}
+
+	if params.LocalizedFormatString != nil && *params.LocalizedFormatString != "" {
+		queryParams["localized_format_string"] = *params.LocalizedFormatString
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	if params.NamePlural != nil && *params.NamePlural != "" {
+		queryParams["name_plural"] = *params.NamePlural
+	}
+
+	if params.OriginalFile != nil && *params.OriginalFile != "" {
+		queryParams["original_file"] = *params.OriginalFile
+	}
+
+	if params.Plural != nil {
+		queryParams["plural"] = strconv.FormatBool(*params.Plural)
+	}
+
+	if params.RemoveScreenshot != nil {
+		queryParams["remove_screenshot"] = strconv.FormatBool(*params.RemoveScreenshot)
+	}
+
+	if params.Tags != nil && *params.Tags != "" {
+		queryParams["tags"] = *params.Tags
+	}
+
+	if params.Unformatted != nil {
+		queryParams["unformatted"] = strconv.FormatBool(*params.Unformatted)
+	}
+
+	if params.XmlSpacePreserve != nil {
+		queryParams["xml_space_preserve"] = strconv.FormatBool(*params.XmlSpacePreserve)
+	}
+
+	return queryParams
+}
+
 type LocaleParams struct {
 	Autotranslate               *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
 	Branch                      *string `json:"branch,omitempty"  cli:"opt --branch"`
@@ -1125,6 +1341,48 @@ func (params *LocaleParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 	}
 
 	return nil
+}
+
+func (params *LocaleParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Autotranslate != nil {
+		queryParams["autotranslate"] = strconv.FormatBool(*params.Autotranslate)
+	}
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Code != nil && *params.Code != "" {
+		queryParams["code"] = *params.Code
+	}
+
+	if params.Default != nil {
+		queryParams["default"] = strconv.FormatBool(*params.Default)
+	}
+
+	if params.Main != nil {
+		queryParams["main"] = strconv.FormatBool(*params.Main)
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	if params.Rtl != nil {
+		queryParams["rtl"] = strconv.FormatBool(*params.Rtl)
+	}
+
+	if params.UnverifyNewTranslations != nil {
+		queryParams["unverify_new_translations"] = strconv.FormatBool(*params.UnverifyNewTranslations)
+	}
+
+	if params.UnverifyUpdatedTranslations != nil {
+		queryParams["unverify_updated_translations"] = strconv.FormatBool(*params.UnverifyUpdatedTranslations)
+	}
+
+	return queryParams
 }
 
 type TranslationOrderParams struct {
@@ -1252,6 +1510,56 @@ func (params *TranslationOrderParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
+func (params *TranslationOrderParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Category != nil && *params.Category != "" {
+		queryParams["category"] = *params.Category
+	}
+
+	if params.IncludeUntranslatedKeys != nil {
+		queryParams["include_untranslated_keys"] = strconv.FormatBool(*params.IncludeUntranslatedKeys)
+	}
+
+	if params.IncludeUnverifiedTranslations != nil {
+		queryParams["include_unverified_translations"] = strconv.FormatBool(*params.IncludeUnverifiedTranslations)
+	}
+
+	if params.Lsp != nil && *params.Lsp != "" {
+		queryParams["lsp"] = *params.Lsp
+	}
+
+	if params.Message != nil && *params.Message != "" {
+		queryParams["message"] = *params.Message
+	}
+
+	if params.Priority != nil {
+		queryParams["priority"] = strconv.FormatBool(*params.Priority)
+	}
+
+	if params.Quality != nil {
+		queryParams["quality"] = strconv.FormatBool(*params.Quality)
+	}
+
+	if params.Tag != nil && *params.Tag != "" {
+		queryParams["tag"] = *params.Tag
+	}
+
+	if params.TranslationType != nil && *params.TranslationType != "" {
+		queryParams["translation_type"] = *params.TranslationType
+	}
+
+	if params.UnverifyTranslationsUponDelivery != nil {
+		queryParams["unverify_translations_upon_delivery"] = strconv.FormatBool(*params.UnverifyTranslationsUponDelivery)
+	}
+
+	return queryParams
+}
+
 type ProjectParams struct {
 	AccountID               *string `json:"account_id,omitempty"  cli:"opt --account-id"`
 	MainFormat              *string `json:"main_format,omitempty"  cli:"opt --main-format"`
@@ -1314,6 +1622,32 @@ func (params *ProjectParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *ProjectParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.AccountID != nil && *params.AccountID != "" {
+		queryParams["account_id"] = *params.AccountID
+	}
+
+	if params.MainFormat != nil && *params.MainFormat != "" {
+		queryParams["main_format"] = *params.MainFormat
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	if params.RemoveProjectImage != nil {
+		queryParams["remove_project_image"] = strconv.FormatBool(*params.RemoveProjectImage)
+	}
+
+	if params.SharesTranslationMemory != nil {
+		queryParams["shares_translation_memory"] = strconv.FormatBool(*params.SharesTranslationMemory)
+	}
+
+	return queryParams
+}
+
 type ReleasesParams struct {
 	Branch      *string  `json:"branch,omitempty"  cli:"opt --branch"`
 	Description *string  `json:"description,omitempty"  cli:"opt --description"`
@@ -1351,6 +1685,20 @@ func (params *ReleasesParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *ReleasesParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Description != nil && *params.Description != "" {
+		queryParams["description"] = *params.Description
+	}
+
+	return queryParams
+}
+
 type ScreenshotMarkerParams struct {
 	KeyID        *string `json:"key_id,omitempty"  cli:"opt --key-id"`
 	Presentation *string `json:"presentation,omitempty"  cli:"opt --presentation"`
@@ -1379,6 +1727,16 @@ func (params *ScreenshotMarkerParams) ApplyValuesFromMap(defaults map[string]int
 	}
 
 	return nil
+}
+
+func (params *ScreenshotMarkerParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Presentation != nil && *params.Presentation != "" {
+		queryParams["presentation"] = *params.Presentation
+	}
+
+	return queryParams
 }
 
 type ScreenshotParams struct {
@@ -1417,6 +1775,20 @@ func (params *ScreenshotParams) ApplyValuesFromMap(defaults map[string]interface
 	}
 
 	return nil
+}
+
+func (params *ScreenshotParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Description != nil && *params.Description != "" {
+		queryParams["description"] = *params.Description
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
 }
 
 type StyleguideParams struct {
@@ -1537,6 +1909,64 @@ func (params *StyleguideParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *StyleguideParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Audience != nil && *params.Audience != "" {
+		queryParams["audience"] = *params.Audience
+	}
+
+	if params.Business != nil && *params.Business != "" {
+		queryParams["business"] = *params.Business
+	}
+
+	if params.CompanyBranding != nil && *params.CompanyBranding != "" {
+		queryParams["company_branding"] = *params.CompanyBranding
+	}
+
+	if params.Formatting != nil && *params.Formatting != "" {
+		queryParams["formatting"] = *params.Formatting
+	}
+
+	if params.GlossaryTerms != nil && *params.GlossaryTerms != "" {
+		queryParams["glossary_terms"] = *params.GlossaryTerms
+	}
+
+	if params.GrammarConsistency != nil && *params.GrammarConsistency != "" {
+		queryParams["grammar_consistency"] = *params.GrammarConsistency
+	}
+
+	if params.GrammaticalPerson != nil && *params.GrammaticalPerson != "" {
+		queryParams["grammatical_person"] = *params.GrammaticalPerson
+	}
+
+	if params.LiteralTranslation != nil && *params.LiteralTranslation != "" {
+		queryParams["literal_translation"] = *params.LiteralTranslation
+	}
+
+	if params.OverallTone != nil && *params.OverallTone != "" {
+		queryParams["overall_tone"] = *params.OverallTone
+	}
+
+	if params.Samples != nil && *params.Samples != "" {
+		queryParams["samples"] = *params.Samples
+	}
+
+	if params.TargetAudience != nil && *params.TargetAudience != "" {
+		queryParams["target_audience"] = *params.TargetAudience
+	}
+
+	if params.Title != nil && *params.Title != "" {
+		queryParams["title"] = *params.Title
+	}
+
+	if params.VocabularyType != nil && *params.VocabularyType != "" {
+		queryParams["vocabulary_type"] = *params.VocabularyType
+	}
+
+	return queryParams
+}
+
 type TagParams struct {
 	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
 	Name   *string `json:"name,omitempty"  cli:"opt --name"`
@@ -1565,6 +1995,20 @@ func (params *TagParams) ApplyValuesFromMap(defaults map[string]interface{}) err
 	}
 
 	return nil
+}
+
+func (params *TagParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
 }
 
 type TranslationParams struct {
@@ -1635,6 +2079,32 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 	}
 
 	return nil
+}
+
+func (params *TranslationParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Content != nil && *params.Content != "" {
+		queryParams["content"] = *params.Content
+	}
+
+	if params.Excluded != nil {
+		queryParams["excluded"] = strconv.FormatBool(*params.Excluded)
+	}
+
+	if params.PluralSuffix != nil && *params.PluralSuffix != "" {
+		queryParams["plural_suffix"] = *params.PluralSuffix
+	}
+
+	if params.Unverified != nil {
+		queryParams["unverified"] = strconv.FormatBool(*params.Unverified)
+	}
+
+	return queryParams
 }
 
 type UploadParams struct {
@@ -1779,6 +2249,64 @@ func (params *UploadParams) ApplyValuesFromMap(defaults map[string]interface{}) 
 	return nil
 }
 
+func (params *UploadParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Autotranslate != nil {
+		queryParams["autotranslate"] = strconv.FormatBool(*params.Autotranslate)
+	}
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.ConvertEmoji != nil {
+		queryParams["convert_emoji"] = strconv.FormatBool(*params.ConvertEmoji)
+	}
+
+	if params.FileEncoding != nil && *params.FileEncoding != "" {
+		queryParams["file_encoding"] = *params.FileEncoding
+	}
+
+	if params.FileFormat != nil && *params.FileFormat != "" {
+		queryParams["file_format"] = *params.FileFormat
+	}
+
+	for key, value := range convertMapToQueryParams("format_options", params.FormatOptions) {
+		queryParams[key] = value
+	}
+
+	for key, value := range convertMapToQueryParams("locale_mapping", params.LocaleMapping) {
+		queryParams[key] = value
+	}
+
+	if params.MarkReviewed != nil {
+		queryParams["mark_reviewed"] = strconv.FormatBool(*params.MarkReviewed)
+	}
+
+	if params.SkipUnverification != nil {
+		queryParams["skip_unverification"] = strconv.FormatBool(*params.SkipUnverification)
+	}
+
+	if params.SkipUploadTags != nil {
+		queryParams["skip_upload_tags"] = strconv.FormatBool(*params.SkipUploadTags)
+	}
+
+	if params.Tags != nil && *params.Tags != "" {
+		queryParams["tags"] = *params.Tags
+	}
+
+	if params.UpdateDescriptions != nil {
+		queryParams["update_descriptions"] = strconv.FormatBool(*params.UpdateDescriptions)
+	}
+
+	if params.UpdateTranslations != nil {
+		queryParams["update_translations"] = strconv.FormatBool(*params.UpdateTranslations)
+	}
+
+	return queryParams
+}
+
 type WebhookParams struct {
 	Active      *bool   `json:"active,omitempty"  cli:"opt --active"`
 	CallbackUrl *string `json:"callback_url,omitempty"  cli:"opt --callback-url"`
@@ -1825,6 +2353,28 @@ func (params *WebhookParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *WebhookParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Active != nil {
+		queryParams["active"] = strconv.FormatBool(*params.Active)
+	}
+
+	if params.CallbackUrl != nil && *params.CallbackUrl != "" {
+		queryParams["callback_url"] = *params.CallbackUrl
+	}
+
+	if params.Description != nil && *params.Description != "" {
+		queryParams["description"] = *params.Description
+	}
+
+	if params.Events != nil && *params.Events != "" {
+		queryParams["events"] = *params.Events
+	}
+
+	return queryParams
+}
+
 // Get details on a single account.
 func (client *Client) AccountShow(id string) (*AccountDetails, error) {
 	retVal := new(AccountDetails)
@@ -1833,6 +2383,7 @@ func (client *Client) AccountShow(id string) (*AccountDetails, error) {
 		url := fmt.Sprintf("/v2/accounts/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -1859,6 +2410,7 @@ func (client *Client) AccountsList(page, perPage int) ([]*Account, error) {
 		url := fmt.Sprintf("/v2/accounts")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -1891,6 +2443,7 @@ func (client *Client) AuthorizationCreate(params *AuthorizationParams) (*Authori
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -1917,6 +2470,7 @@ func (client *Client) AuthorizationDelete(id string) error {
 		url := fmt.Sprintf("/v2/authorizations/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -1935,6 +2489,7 @@ func (client *Client) AuthorizationShow(id string) (*Authorization, error) {
 		url := fmt.Sprintf("/v2/authorizations/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -1967,6 +2522,7 @@ func (client *Client) AuthorizationUpdate(id string, params *AuthorizationParams
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -1993,6 +2549,7 @@ func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, e
 		url := fmt.Sprintf("/v2/authorizations")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2025,6 +2582,7 @@ func (client *Client) BitbucketSyncExport(id string, params *BitbucketSyncParams
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2057,6 +2615,7 @@ func (client *Client) BitbucketSyncImport(id string, params *BitbucketSyncParams
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2074,13 +2633,8 @@ func (client *Client) BitbucketSyncsList(page, perPage int, params *BitbucketSyn
 
 		url := fmt.Sprintf("/v2/bitbucket_syncs")
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -2113,6 +2667,7 @@ func (client *Client) BlacklistedKeyCreate(project_id string, params *Blackliste
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -2139,6 +2694,7 @@ func (client *Client) BlacklistedKeyDelete(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2157,6 +2713,7 @@ func (client *Client) BlacklistedKeyShow(project_id, id string) (*BlacklistedKey
 		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2189,6 +2746,7 @@ func (client *Client) BlacklistedKeyUpdate(project_id, id string, params *Blackl
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2215,6 +2773,7 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 		url := fmt.Sprintf("/v2/projects/%s/blacklisted_keys", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2233,6 +2792,25 @@ func (client *Client) BlacklistedKeysList(project_id string, page, perPage int) 
 	return retVal, err
 }
 
+// Compare branch with main branch.
+func (client *Client) BranchCompare(project_id, id string, params *BranchParams) error {
+
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/branches/%s/compare", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		return nil
+	}()
+	return err
+}
+
 // Create a new branch.
 func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Branch, error) {
 	retVal := new(Branch)
@@ -2247,6 +2825,7 @@ func (client *Client) BranchCreate(project_id string, params *BranchParams) (*Br
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -2273,6 +2852,7 @@ func (client *Client) BranchDelete(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2305,6 +2885,16 @@ func (params *BranchMergeParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *BranchMergeParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Strategy != nil && *params.Strategy != "" {
+		queryParams["strategy"] = *params.Strategy
+	}
+
+	return queryParams
+}
+
 // Merge an existing branch.
 func (client *Client) BranchMerge(project_id, id string, params *BranchMergeParams) error {
 
@@ -2319,6 +2909,7 @@ func (client *Client) BranchMerge(project_id, id string, params *BranchMergePara
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2337,6 +2928,7 @@ func (client *Client) BranchShow(project_id, id string) (*Branch, error) {
 		url := fmt.Sprintf("/v2/projects/%s/branches/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2369,6 +2961,7 @@ func (client *Client) BranchUpdate(project_id, id string, params *BranchParams) 
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2395,6 +2988,7 @@ func (client *Client) BranchesList(project_id string, page, perPage int) ([]*Bra
 		url := fmt.Sprintf("/v2/projects/%s/branches", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2427,6 +3021,7 @@ func (client *Client) CommentCreate(project_id, key_id string, params *CommentPa
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -2467,6 +3062,16 @@ func (params *CommentDeleteParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *CommentDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing comment.
 func (client *Client) CommentDelete(project_id, key_id, id string, params *CommentDeleteParams) error {
 
@@ -2481,6 +3086,7 @@ func (client *Client) CommentDelete(project_id, key_id, id string, params *Comme
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2513,6 +3119,16 @@ func (params *CommentMarkCheckParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
+func (params *CommentMarkCheckParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Check if comment was marked as read. Returns 204 if read, 404 if unread.
 func (client *Client) CommentMarkCheck(project_id, key_id, id string, params *CommentMarkCheckParams) error {
 
@@ -2520,13 +3136,8 @@ func (client *Client) CommentMarkCheck(project_id, key_id, id string, params *Co
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s/read", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 204)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 204)
 		if err != nil {
 			return err
 		}
@@ -2559,6 +3170,16 @@ func (params *CommentMarkReadParams) ApplyValuesFromMap(defaults map[string]inte
 	return nil
 }
 
+func (params *CommentMarkReadParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a comment as read.
 func (client *Client) CommentMarkRead(project_id, key_id, id string, params *CommentMarkReadParams) error {
 
@@ -2573,6 +3194,7 @@ func (client *Client) CommentMarkRead(project_id, key_id, id string, params *Com
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2605,6 +3227,16 @@ func (params *CommentMarkUnreadParams) ApplyValuesFromMap(defaults map[string]in
 	return nil
 }
 
+func (params *CommentMarkUnreadParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a comment as unread.
 func (client *Client) CommentMarkUnread(project_id, key_id, id string, params *CommentMarkUnreadParams) error {
 
@@ -2619,6 +3251,7 @@ func (client *Client) CommentMarkUnread(project_id, key_id, id string, params *C
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2651,6 +3284,16 @@ func (params *CommentShowParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *CommentShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single comment.
 func (client *Client) CommentShow(project_id, key_id, id string, params *CommentShowParams) (*Comment, error) {
 	retVal := new(Comment)
@@ -2658,13 +3301,8 @@ func (client *Client) CommentShow(project_id, key_id, id string, params *Comment
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments/%s", url.QueryEscape(project_id), url.QueryEscape(key_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -2697,6 +3335,7 @@ func (client *Client) CommentUpdate(project_id, key_id, id string, params *Comme
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2737,6 +3376,16 @@ func (params *CommentsListParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *CommentsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all comments for a key.
 func (client *Client) CommentsList(project_id, key_id string, page, perPage int, params *CommentsListParams) ([]*Comment, error) {
 	retVal := []*Comment{}
@@ -2744,13 +3393,8 @@ func (client *Client) CommentsList(project_id, key_id string, page, perPage int,
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/comments", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -2783,6 +3427,7 @@ func (client *Client) DistributionCreate(account_id string, params *Distribution
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -2809,6 +3454,7 @@ func (client *Client) DistributionDelete(account_id, id string) error {
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -2827,6 +3473,7 @@ func (client *Client) DistributionShow(account_id, id string) (*Distribution, er
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2859,6 +3506,7 @@ func (client *Client) DistributionUpdate(account_id, id string, params *Distribu
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -2885,6 +3533,7 @@ func (client *Client) DistributionsList(account_id string, page, perPage int) ([
 		url := fmt.Sprintf("/v2/accounts/%s/distributions", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2911,6 +3560,7 @@ func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 		url := fmt.Sprintf("/v2/formats")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2937,6 +3587,7 @@ func (client *Client) GlossariesList(account_id string, page, perPage int) ([]*G
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -2969,6 +3620,7 @@ func (client *Client) GlossaryCreate(account_id string, params *GlossaryParams) 
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -2995,6 +3647,7 @@ func (client *Client) GlossaryDelete(account_id, id string) error {
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3013,6 +3666,7 @@ func (client *Client) GlossaryShow(account_id, id string) (*Glossary, error) {
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3045,6 +3699,7 @@ func (client *Client) GlossaryUpdate(account_id, id string, params *GlossaryPara
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3077,6 +3732,7 @@ func (client *Client) GlossaryTermCreate(account_id, glossary_id string, params 
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -3103,6 +3759,7 @@ func (client *Client) GlossaryTermDelete(account_id, glossary_id, id string) err
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3121,6 +3778,7 @@ func (client *Client) GlossaryTermShow(account_id, glossary_id, id string) (*Glo
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3153,6 +3811,7 @@ func (client *Client) GlossaryTermUpdate(account_id, glossary_id, id string, par
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3185,6 +3844,7 @@ func (client *Client) GlossaryTermTranslationCreate(account_id, glossary_id, ter
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -3211,6 +3871,7 @@ func (client *Client) GlossaryTermTranslationDelete(account_id, glossary_id, ter
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms/%s/translations/%s", url.QueryEscape(account_id), url.QueryEscape(glossary_id), url.QueryEscape(term_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3235,6 +3896,7 @@ func (client *Client) GlossaryTermTranslationUpdate(account_id, glossary_id, ter
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3261,6 +3923,7 @@ func (client *Client) GlossaryTermsList(account_id, glossary_id string, page, pe
 		url := fmt.Sprintf("/v2/accounts/%s/glossaries/%s/terms", url.QueryEscape(account_id), url.QueryEscape(glossary_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -3337,6 +4000,32 @@ func (params *InvitationCreateParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
+func (params *InvitationCreateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Email != nil && *params.Email != "" {
+		queryParams["email"] = *params.Email
+	}
+
+	if params.LocaleIDs != nil && *params.LocaleIDs != "" {
+		queryParams["locale_ids"] = *params.LocaleIDs
+	}
+
+	for key, value := range convertMapToQueryParams("permissions", params.Permissions) {
+		queryParams[key] = value
+	}
+
+	if params.ProjectIDs != nil && *params.ProjectIDs != "" {
+		queryParams["project_ids"] = *params.ProjectIDs
+	}
+
+	if params.Role != nil && *params.Role != "" {
+		queryParams["role"] = *params.Role
+	}
+
+	return queryParams
+}
+
 // Invite a person to an account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationCreate(account_id string, params *InvitationCreateParams) (*Invitation, error) {
 	retVal := new(Invitation)
@@ -3351,6 +4040,7 @@ func (client *Client) InvitationCreate(account_id string, params *InvitationCrea
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -3377,6 +4067,7 @@ func (client *Client) InvitationDelete(account_id, id string) error {
 		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3395,6 +4086,7 @@ func (client *Client) InvitationResend(account_id, id string) (*Invitation, erro
 		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s/resend", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3421,6 +4113,7 @@ func (client *Client) InvitationShow(account_id, id string) (*Invitation, error)
 		url := fmt.Sprintf("/v2/accounts/%s/invitations/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3489,6 +4182,28 @@ func (params *InvitationUpdateParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
+func (params *InvitationUpdateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.LocaleIDs != nil && *params.LocaleIDs != "" {
+		queryParams["locale_ids"] = *params.LocaleIDs
+	}
+
+	for key, value := range convertMapToQueryParams("permissions", params.Permissions) {
+		queryParams[key] = value
+	}
+
+	if params.ProjectIDs != nil && *params.ProjectIDs != "" {
+		queryParams["project_ids"] = *params.ProjectIDs
+	}
+
+	if params.Role != nil && *params.Role != "" {
+		queryParams["role"] = *params.Role
+	}
+
+	return queryParams
+}
+
 // Update an existing invitation (must not be accepted yet). The <code>email</code> cannot be updated. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) InvitationUpdate(account_id, id string, params *InvitationUpdateParams) (*Invitation, error) {
 	retVal := new(Invitation)
@@ -3503,6 +4218,7 @@ func (client *Client) InvitationUpdate(account_id, id string, params *Invitation
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3529,6 +4245,7 @@ func (client *Client) InvitationsList(account_id string, page, perPage int) ([]*
 		url := fmt.Sprintf("/v2/accounts/%s/invitations", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -3569,6 +4286,16 @@ func (params *JobCompleteParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *JobCompleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a job as completed.
 func (client *Client) JobComplete(project_id, id string, params *JobCompleteParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3583,6 +4310,7 @@ func (client *Client) JobComplete(project_id, id string, params *JobCompletePara
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3615,6 +4343,7 @@ func (client *Client) JobCreate(project_id string, params *JobParams) (*JobDetai
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -3655,6 +4384,16 @@ func (params *JobDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *JobDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing job.
 func (client *Client) JobDelete(project_id, id string, params *JobDeleteParams) error {
 
@@ -3669,6 +4408,7 @@ func (client *Client) JobDelete(project_id, id string, params *JobDeleteParams) 
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3708,6 +4448,16 @@ func (params *JobKeysCreateParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *JobKeysCreateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Add multiple keys to a existing job.
 func (client *Client) JobKeysCreate(project_id, id string, params *JobKeysCreateParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3722,6 +4472,7 @@ func (client *Client) JobKeysCreate(project_id, id string, params *JobKeysCreate
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3769,6 +4520,16 @@ func (params *JobKeysDeleteParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *JobKeysDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Remove multiple keys from existing job.
 func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDeleteParams) error {
 
@@ -3783,6 +4544,7 @@ func (client *Client) JobKeysDelete(project_id, id string, params *JobKeysDelete
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -3815,6 +4577,16 @@ func (params *JobReopenParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *JobReopenParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a job as uncompleted.
 func (client *Client) JobReopen(project_id, id string, params *JobReopenParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3829,6 +4601,7 @@ func (client *Client) JobReopen(project_id, id string, params *JobReopenParams) 
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -3869,6 +4642,16 @@ func (params *JobShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *JobShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single job for a given project.
 func (client *Client) JobShow(project_id, id string, params *JobShowParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3876,13 +4659,8 @@ func (client *Client) JobShow(project_id, id string, params *JobShowParams) (*Jo
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -3923,6 +4701,16 @@ func (params *JobStartParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *JobStartParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Starts an existing job in state draft.
 func (client *Client) JobStart(project_id, id string, params *JobStartParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -3937,6 +4725,7 @@ func (client *Client) JobStart(project_id, id string, params *JobStartParams) (*
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4001,6 +4790,24 @@ func (params *JobUpdateParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *JobUpdateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Briefing != nil && *params.Briefing != "" {
+		queryParams["briefing"] = *params.Briefing
+	}
+
+	if params.Name != nil && *params.Name != "" {
+		queryParams["name"] = *params.Name
+	}
+
+	return queryParams
+}
+
 // Update an existing job.
 func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) (*JobDetails, error) {
 	retVal := new(JobDetails)
@@ -4015,6 +4822,7 @@ func (client *Client) JobUpdate(project_id, id string, params *JobUpdateParams) 
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4055,6 +4863,16 @@ func (params *JobLocaleCompleteParams) ApplyValuesFromMap(defaults map[string]in
 	return nil
 }
 
+func (params *JobLocaleCompleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a job locale as completed.
 func (client *Client) JobLocaleComplete(project_id, job_id, id string, params *JobLocaleCompleteParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
@@ -4069,6 +4887,7 @@ func (client *Client) JobLocaleComplete(project_id, job_id, id string, params *J
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4109,6 +4928,16 @@ func (params *JobLocaleDeleteParams) ApplyValuesFromMap(defaults map[string]inte
 	return nil
 }
 
+func (params *JobLocaleDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing job locale.
 func (client *Client) JobLocaleDelete(project_id, job_id, id string, params *JobLocaleDeleteParams) error {
 
@@ -4123,6 +4952,7 @@ func (client *Client) JobLocaleDelete(project_id, job_id, id string, params *Job
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -4155,6 +4985,16 @@ func (params *JobLocaleReopenParams) ApplyValuesFromMap(defaults map[string]inte
 	return nil
 }
 
+func (params *JobLocaleReopenParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Mark a job locale as uncompleted.
 func (client *Client) JobLocaleReopen(project_id, job_id, id string, params *JobLocaleReopenParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
@@ -4169,6 +5009,7 @@ func (client *Client) JobLocaleReopen(project_id, job_id, id string, params *Job
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4209,6 +5050,16 @@ func (params *JobLocaleShowParams) ApplyValuesFromMap(defaults map[string]interf
 	return nil
 }
 
+func (params *JobLocaleShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get a single job locale for a given job.
 func (client *Client) JobLocaleShow(project_id, job_id, id string, params *JobLocaleShowParams) (*JobLocale, error) {
 	retVal := new(JobLocale)
@@ -4216,13 +5067,8 @@ func (client *Client) JobLocaleShow(project_id, job_id, id string, params *JobLo
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locale/%s", url.QueryEscape(project_id), url.QueryEscape(job_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -4255,6 +5101,7 @@ func (client *Client) JobLocaleUpdate(project_id, job_id, id string, params *Job
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4287,6 +5134,7 @@ func (client *Client) JobLocalesCreate(project_id, job_id string, params *JobLoc
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -4327,6 +5175,16 @@ func (params *JobLocalesListParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+func (params *JobLocalesListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all job locales for a given job.
 func (client *Client) JobLocalesList(project_id, job_id string, page, perPage int, params *JobLocalesListParams) ([]*JobLocale, error) {
 	retVal := []*JobLocale{}
@@ -4334,13 +5192,8 @@ func (client *Client) JobLocalesList(project_id, job_id string, page, perPage in
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs/%s/locales", url.QueryEscape(project_id), url.QueryEscape(job_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -4405,6 +5258,28 @@ func (params *JobsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *JobsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.AssignedTo != nil && *params.AssignedTo != "" {
+		queryParams["assigned_to"] = *params.AssignedTo
+	}
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.OwnedBy != nil && *params.OwnedBy != "" {
+		queryParams["owned_by"] = *params.OwnedBy
+	}
+
+	if params.State != nil && *params.State != "" {
+		queryParams["state"] = *params.State
+	}
+
+	return queryParams
+}
+
 // List all jobs for the given project.
 func (client *Client) JobsList(project_id string, page, perPage int, params *JobsListParams) ([]*Job, error) {
 	retVal := []*Job{}
@@ -4412,13 +5287,8 @@ func (client *Client) JobsList(project_id string, page, perPage int, params *Job
 
 		url := fmt.Sprintf("/v2/projects/%s/jobs", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -4568,6 +5438,7 @@ func (client *Client) KeyCreate(project_id string, params *TranslationKeyParams)
 		writer.Close()
 
 		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -4608,6 +5479,16 @@ func (params *KeyDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *KeyDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing key.
 func (client *Client) KeyDelete(project_id, id string, params *KeyDeleteParams) error {
 
@@ -4622,6 +5503,7 @@ func (client *Client) KeyDelete(project_id, id string, params *KeyDeleteParams) 
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -4654,6 +5536,16 @@ func (params *KeyShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *KeyShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single key for a given project.
 func (client *Client) KeyShow(project_id, id string, params *KeyShowParams) (*TranslationKeyDetails, error) {
 	retVal := new(TranslationKeyDetails)
@@ -4661,13 +5553,8 @@ func (client *Client) KeyShow(project_id, id string, params *KeyShowParams) (*Tr
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -4817,6 +5704,7 @@ func (client *Client) KeyUpdate(project_id, id string, params *TranslationKeyPar
 		writer.Close()
 
 		rc, err := client.sendRequest("PATCH", url, ctype, paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4873,6 +5761,20 @@ func (params *KeysDeleteParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *KeysDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	return queryParams
+}
+
 // Delete all keys matching query. Same constraints as list. Please limit the number of affected keys to about 1,000 as you might experience timeouts otherwise.
 func (client *Client) KeysDelete(project_id string, params *KeysDeleteParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
@@ -4887,6 +5789,7 @@ func (client *Client) KeysDelete(project_id string, params *KeysDeleteParams) (*
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -4959,6 +5862,28 @@ func (params *KeysListParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *KeysListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // List all keys for the given project. Alternatively you can POST requests to /search.
 func (client *Client) KeysList(project_id string, page, perPage int, params *KeysListParams) ([]*TranslationKey, error) {
 	retVal := []*TranslationKey{}
@@ -4966,13 +5891,8 @@ func (client *Client) KeysList(project_id string, page, perPage int, params *Key
 
 		url := fmt.Sprintf("/v2/projects/%s/keys", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -5045,6 +5965,28 @@ func (params *KeysSearchParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *KeysSearchParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Search keys for the given project matching query.
 func (client *Client) KeysSearch(project_id string, page, perPage int, params *KeysSearchParams) ([]*TranslationKey, error) {
 	retVal := []*TranslationKey{}
@@ -5059,6 +6001,7 @@ func (client *Client) KeysSearch(project_id string, page, perPage int, params *K
 		}
 
 		rc, err := client.sendRequestPaginated("POST", url, "application/json", paramsBuf, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -5123,6 +6066,24 @@ func (params *KeysTagParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *KeysTagParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Tags != nil && *params.Tags != "" {
+		queryParams["tags"] = *params.Tags
+	}
+
+	return queryParams
+}
+
 // Tags all keys matching query. Same constraints as list.
 func (client *Client) KeysTag(project_id string, params *KeysTagParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
@@ -5137,6 +6098,7 @@ func (client *Client) KeysTag(project_id string, params *KeysTagParams) (*Affect
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5201,6 +6163,24 @@ func (params *KeysUntagParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *KeysUntagParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Tags != nil && *params.Tags != "" {
+		queryParams["tags"] = *params.Tags
+	}
+
+	return queryParams
+}
+
 // Removes specified tags from keys matching query.
 func (client *Client) KeysUntag(project_id string, params *KeysUntagParams) (*AffectedResources, error) {
 	retVal := new(AffectedResources)
@@ -5215,6 +6195,7 @@ func (client *Client) KeysUntag(project_id string, params *KeysUntagParams) (*Af
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5247,6 +6228,7 @@ func (client *Client) LocaleCreate(project_id string, params *LocaleParams) (*Lo
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -5287,6 +6269,16 @@ func (params *LocaleDeleteParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *LocaleDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing locale.
 func (client *Client) LocaleDelete(project_id, id string, params *LocaleDeleteParams) error {
 
@@ -5301,6 +6293,7 @@ func (client *Client) LocaleDelete(project_id, id string, params *LocaleDeletePa
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -5441,6 +6434,68 @@ func (params *LocaleDownloadParams) ApplyValuesFromMap(defaults map[string]inter
 	return nil
 }
 
+func (params *LocaleDownloadParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.ConvertEmoji != nil {
+		queryParams["convert_emoji"] = strconv.FormatBool(*params.ConvertEmoji)
+	}
+
+	if params.Encoding != nil && *params.Encoding != "" {
+		queryParams["encoding"] = *params.Encoding
+	}
+
+	if params.FallbackLocaleID != nil && *params.FallbackLocaleID != "" {
+		queryParams["fallback_locale_id"] = *params.FallbackLocaleID
+	}
+
+	if params.FileFormat != nil && *params.FileFormat != "" {
+		queryParams["file_format"] = *params.FileFormat
+	}
+
+	for key, value := range convertMapToQueryParams("format_options", params.FormatOptions) {
+		queryParams[key] = value
+	}
+
+	if params.IncludeEmptyTranslations != nil {
+		queryParams["include_empty_translations"] = strconv.FormatBool(*params.IncludeEmptyTranslations)
+	}
+
+	if params.IncludeTranslatedKeys != nil {
+		queryParams["include_translated_keys"] = strconv.FormatBool(*params.IncludeTranslatedKeys)
+	}
+
+	if params.IncludeUnverifiedTranslations != nil {
+		queryParams["include_unverified_translations"] = strconv.FormatBool(*params.IncludeUnverifiedTranslations)
+	}
+
+	if params.KeepNotranslateTags != nil {
+		queryParams["keep_notranslate_tags"] = strconv.FormatBool(*params.KeepNotranslateTags)
+	}
+
+	if params.SkipUnverifiedTranslations != nil {
+		queryParams["skip_unverified_translations"] = strconv.FormatBool(*params.SkipUnverifiedTranslations)
+	}
+
+	if params.Tag != nil && *params.Tag != "" {
+		queryParams["tag"] = *params.Tag
+	}
+
+	if params.Tags != nil && *params.Tags != "" {
+		queryParams["tags"] = *params.Tags
+	}
+
+	if params.UseLastReviewedVersion != nil {
+		queryParams["use_last_reviewed_version"] = strconv.FormatBool(*params.UseLastReviewedVersion)
+	}
+
+	return queryParams
+}
+
 // Download a locale in a specific file format.
 func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownloadParams) ([]byte, error) {
 	retVal := []byte{}
@@ -5448,13 +6503,8 @@ func (client *Client) LocaleDownload(project_id, id string, params *LocaleDownlo
 
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s/download", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5496,6 +6546,16 @@ func (params *LocaleShowParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *LocaleShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single locale for a given project.
 func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams) (*LocaleDetails, error) {
 	retVal := new(LocaleDetails)
@@ -5503,13 +6563,8 @@ func (client *Client) LocaleShow(project_id, id string, params *LocaleShowParams
 
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5542,6 +6597,7 @@ func (client *Client) LocaleUpdate(project_id, id string, params *LocaleParams) 
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5582,6 +6638,16 @@ func (params *LocalesListParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *LocalesListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all locales for the given project.
 func (client *Client) LocalesList(project_id string, page, perPage int, params *LocalesListParams) ([]*Locale, error) {
 	retVal := []*Locale{}
@@ -5589,13 +6655,8 @@ func (client *Client) LocalesList(project_id string, page, perPage int, params *
 
 		url := fmt.Sprintf("/v2/projects/%s/locales", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -5622,6 +6683,7 @@ func (client *Client) MemberDelete(account_id, id string) error {
 		url := fmt.Sprintf("/v2/accounts/%s/members/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -5640,6 +6702,7 @@ func (client *Client) MemberShow(account_id, id string) (*Member, error) {
 		url := fmt.Sprintf("/v2/accounts/%s/members/%s", url.QueryEscape(account_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5708,6 +6771,28 @@ func (params *MemberUpdateParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *MemberUpdateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.LocaleIDs != nil && *params.LocaleIDs != "" {
+		queryParams["locale_ids"] = *params.LocaleIDs
+	}
+
+	for key, value := range convertMapToQueryParams("permissions", params.Permissions) {
+		queryParams[key] = value
+	}
+
+	if params.ProjectIDs != nil && *params.ProjectIDs != "" {
+		queryParams["project_ids"] = *params.ProjectIDs
+	}
+
+	if params.Role != nil && *params.Role != "" {
+		queryParams["role"] = *params.Role
+	}
+
+	return queryParams
+}
+
 // Update user permissions in the account. Developers and translators need <code>project_ids</code> and <code>locale_ids</code> assigned to access them. Access token scope must include <code>team.manage</code>.
 func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdateParams) (*Member, error) {
 	retVal := new(Member)
@@ -5722,6 +6807,7 @@ func (client *Client) MemberUpdate(account_id, id string, params *MemberUpdatePa
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5748,6 +6834,7 @@ func (client *Client) MembersList(account_id string, page, perPage int) ([]*Memb
 		url := fmt.Sprintf("/v2/accounts/%s/members", url.QueryEscape(account_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -5788,6 +6875,16 @@ func (params *OrderConfirmParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *OrderConfirmParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Confirm an existing order and send it to the provider for translation. Same constraints as for create.
 func (client *Client) OrderConfirm(project_id, id string, params *OrderConfirmParams) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
@@ -5802,6 +6899,7 @@ func (client *Client) OrderConfirm(project_id, id string, params *OrderConfirmPa
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -5834,6 +6932,7 @@ func (client *Client) OrderCreate(project_id string, params *TranslationOrderPar
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -5874,6 +6973,16 @@ func (params *OrderDeleteParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *OrderDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Cancel an existing order. Must not yet be confirmed.
 func (client *Client) OrderDelete(project_id, id string, params *OrderDeleteParams) error {
 
@@ -5888,6 +6997,7 @@ func (client *Client) OrderDelete(project_id, id string, params *OrderDeletePara
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -5920,6 +7030,16 @@ func (params *OrderShowParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *OrderShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single order.
 func (client *Client) OrderShow(project_id, id string, params *OrderShowParams) (*TranslationOrder, error) {
 	retVal := new(TranslationOrder)
@@ -5927,13 +7047,8 @@ func (client *Client) OrderShow(project_id, id string, params *OrderShowParams) 
 
 		url := fmt.Sprintf("/v2/projects/%s/orders/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -5974,6 +7089,16 @@ func (params *OrdersListParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *OrdersListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all orders for the given project.
 func (client *Client) OrdersList(project_id string, page, perPage int, params *OrdersListParams) ([]*TranslationOrder, error) {
 	retVal := []*TranslationOrder{}
@@ -5981,13 +7106,8 @@ func (client *Client) OrdersList(project_id string, page, perPage int, params *O
 
 		url := fmt.Sprintf("/v2/projects/%s/orders", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -6074,6 +7194,7 @@ func (client *Client) ProjectCreate(params *ProjectParams) (*ProjectDetails, err
 		writer.Close()
 
 		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6100,6 +7221,7 @@ func (client *Client) ProjectDelete(id string) error {
 		url := fmt.Sprintf("/v2/projects/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -6118,6 +7240,7 @@ func (client *Client) ProjectShow(id string) (*ProjectDetails, error) {
 		url := fmt.Sprintf("/v2/projects/%s", url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6204,6 +7327,7 @@ func (client *Client) ProjectUpdate(id string, params *ProjectParams) (*ProjectD
 		writer.Close()
 
 		rc, err := client.sendRequest("PATCH", url, ctype, paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6230,6 +7354,7 @@ func (client *Client) ProjectsList(page, perPage int) ([]*Project, error) {
 		url := fmt.Sprintf("/v2/projects")
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -6262,6 +7387,7 @@ func (client *Client) ReleaseCreate(account_id, distribution_id string, params *
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6288,6 +7414,7 @@ func (client *Client) ReleaseDelete(account_id, distribution_id, id string) erro
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -6306,6 +7433,7 @@ func (client *Client) ReleasePublish(account_id, distribution_id, id string) (*R
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s/publish", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6332,6 +7460,7 @@ func (client *Client) ReleaseShow(account_id, distribution_id, id string) (*Rele
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases/%s", url.QueryEscape(account_id), url.QueryEscape(distribution_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6364,6 +7493,7 @@ func (client *Client) ReleaseUpdate(account_id, distribution_id, id string, para
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6390,6 +7520,7 @@ func (client *Client) ReleasesList(account_id, distribution_id string, page, per
 		url := fmt.Sprintf("/v2/accounts/%s/distributions/%s/releases", url.QueryEscape(account_id), url.QueryEscape(distribution_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -6455,6 +7586,7 @@ func (client *Client) ScreenshotCreate(project_id string, params *ScreenshotPara
 		writer.Close()
 
 		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6481,6 +7613,7 @@ func (client *Client) ScreenshotDelete(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -6499,6 +7632,7 @@ func (client *Client) ScreenshotShow(project_id, id string) (*Screenshot, error)
 		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6564,6 +7698,7 @@ func (client *Client) ScreenshotUpdate(project_id, id string, params *Screenshot
 		writer.Close()
 
 		rc, err := client.sendRequest("PATCH", url, ctype, paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6596,6 +7731,7 @@ func (client *Client) ScreenshotMarkerCreate(project_id, screenshot_id string, p
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6622,6 +7758,7 @@ func (client *Client) ScreenshotMarkerDelete(project_id, screenshot_id string) e
 		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(screenshot_id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -6640,6 +7777,7 @@ func (client *Client) ScreenshotMarkerShow(project_id, screenshot_id, id string)
 		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers/%s", url.QueryEscape(project_id), url.QueryEscape(screenshot_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6672,6 +7810,7 @@ func (client *Client) ScreenshotMarkerUpdate(project_id, screenshot_id string, p
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6698,6 +7837,7 @@ func (client *Client) ScreenshotMarkersList(project_id, id string, page, perPage
 		url := fmt.Sprintf("/v2/projects/%s/screenshots/%s/markers", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -6724,6 +7864,7 @@ func (client *Client) ScreenshotsList(project_id string, page, perPage int) ([]*
 		url := fmt.Sprintf("/v2/projects/%s/screenshots", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -6750,6 +7891,7 @@ func (client *Client) ShowUser() (*User, error) {
 		url := fmt.Sprintf("/v2/user")
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6782,6 +7924,7 @@ func (client *Client) StyleguideCreate(project_id string, params *StyleguidePara
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6808,6 +7951,7 @@ func (client *Client) StyleguideDelete(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -6826,6 +7970,7 @@ func (client *Client) StyleguideShow(project_id, id string) (*StyleguideDetails,
 		url := fmt.Sprintf("/v2/projects/%s/styleguides/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6858,6 +8003,7 @@ func (client *Client) StyleguideUpdate(project_id, id string, params *Styleguide
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -6884,6 +8030,7 @@ func (client *Client) StyleguidesList(project_id string, page, perPage int) ([]*
 		url := fmt.Sprintf("/v2/projects/%s/styleguides", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -6916,6 +8063,7 @@ func (client *Client) TagCreate(project_id string, params *TagParams) (*TagWithS
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -6956,6 +8104,16 @@ func (params *TagDeleteParams) ApplyValuesFromMap(defaults map[string]interface{
 	return nil
 }
 
+func (params *TagDeleteParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Delete an existing tag.
 func (client *Client) TagDelete(project_id, name string, params *TagDeleteParams) error {
 
@@ -6970,6 +8128,7 @@ func (client *Client) TagDelete(project_id, name string, params *TagDeleteParams
 		}
 
 		rc, err := client.sendRequest("DELETE", url, "application/json", paramsBuf, 204)
+
 		if err != nil {
 			return err
 		}
@@ -7002,6 +8161,16 @@ func (params *TagShowParams) ApplyValuesFromMap(defaults map[string]interface{})
 	return nil
 }
 
+func (params *TagShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details and progress information on a single tag for a given project.
 func (client *Client) TagShow(project_id, name string, params *TagShowParams) (*TagWithStats, error) {
 	retVal := new(TagWithStats)
@@ -7009,13 +8178,8 @@ func (client *Client) TagShow(project_id, name string, params *TagShowParams) (*
 
 		url := fmt.Sprintf("/v2/projects/%s/tags/%s", url.QueryEscape(project_id), url.QueryEscape(name))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -7056,6 +8220,16 @@ func (params *TagsListParams) ApplyValuesFromMap(defaults map[string]interface{}
 	return nil
 }
 
+func (params *TagsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all tags for the given project.
 func (client *Client) TagsList(project_id string, page, perPage int, params *TagsListParams) ([]*Tag, error) {
 	retVal := []*Tag{}
@@ -7063,13 +8237,8 @@ func (client *Client) TagsList(project_id string, page, perPage int, params *Tag
 
 		url := fmt.Sprintf("/v2/projects/%s/tags", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -7102,6 +8271,7 @@ func (client *Client) TranslationCreate(project_id string, params *TranslationPa
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -7142,6 +8312,16 @@ func (params *TranslationShowParams) ApplyValuesFromMap(defaults map[string]inte
 	return nil
 }
 
+func (params *TranslationShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single translation.
 func (client *Client) TranslationShow(project_id, id string, params *TranslationShowParams) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
@@ -7149,13 +8329,8 @@ func (client *Client) TranslationShow(project_id, id string, params *Translation
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -7228,6 +8403,32 @@ func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]in
 	return nil
 }
 
+func (params *TranslationUpdateParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Content != nil && *params.Content != "" {
+		queryParams["content"] = *params.Content
+	}
+
+	if params.Excluded != nil {
+		queryParams["excluded"] = strconv.FormatBool(*params.Excluded)
+	}
+
+	if params.PluralSuffix != nil && *params.PluralSuffix != "" {
+		queryParams["plural_suffix"] = *params.PluralSuffix
+	}
+
+	if params.Unverified != nil {
+		queryParams["unverified"] = strconv.FormatBool(*params.Unverified)
+	}
+
+	return queryParams
+}
+
 // Update an existing translation.
 func (client *Client) TranslationUpdate(project_id, id string, params *TranslationUpdateParams) (*TranslationDetails, error) {
 	retVal := new(TranslationDetails)
@@ -7242,6 +8443,7 @@ func (client *Client) TranslationUpdate(project_id, id string, params *Translati
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -7306,6 +8508,28 @@ func (params *TranslationsByKeyParams) ApplyValuesFromMap(defaults map[string]in
 	return nil
 }
 
+func (params *TranslationsByKeyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // List translations for a specific key.
 func (client *Client) TranslationsByKey(project_id, key_id string, page, perPage int, params *TranslationsByKeyParams) ([]*Translation, error) {
 	retVal := []*Translation{}
@@ -7313,13 +8537,8 @@ func (client *Client) TranslationsByKey(project_id, key_id string, page, perPage
 
 		url := fmt.Sprintf("/v2/projects/%s/keys/%s/translations", url.QueryEscape(project_id), url.QueryEscape(key_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -7384,6 +8603,28 @@ func (params *TranslationsByLocaleParams) ApplyValuesFromMap(defaults map[string
 	return nil
 }
 
+func (params *TranslationsByLocaleParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // List translations for a specific locale. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.
 func (client *Client) TranslationsByLocale(project_id, locale_id string, page, perPage int, params *TranslationsByLocaleParams) ([]*Translation, error) {
 	retVal := []*Translation{}
@@ -7391,13 +8632,8 @@ func (client *Client) TranslationsByLocale(project_id, locale_id string, page, p
 
 		url := fmt.Sprintf("/v2/projects/%s/locales/%s/translations", url.QueryEscape(project_id), url.QueryEscape(locale_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -7462,6 +8698,28 @@ func (params *TranslationsExcludeParams) ApplyValuesFromMap(defaults map[string]
 	return nil
 }
 
+func (params *TranslationsExcludeParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Exclude translations matching query from locale export.
 func (client *Client) TranslationsExclude(project_id string, params *TranslationsExcludeParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
@@ -7476,6 +8734,7 @@ func (client *Client) TranslationsExclude(project_id string, params *Translation
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -7540,6 +8799,28 @@ func (params *TranslationsIncludeParams) ApplyValuesFromMap(defaults map[string]
 	return nil
 }
 
+func (params *TranslationsIncludeParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Include translations matching query in locale export.
 func (client *Client) TranslationsInclude(project_id string, params *TranslationsIncludeParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
@@ -7554,6 +8835,7 @@ func (client *Client) TranslationsInclude(project_id string, params *Translation
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -7618,6 +8900,28 @@ func (params *TranslationsListParams) ApplyValuesFromMap(defaults map[string]int
 	return nil
 }
 
+func (params *TranslationsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // List translations for the given project. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.
 func (client *Client) TranslationsList(project_id string, page, perPage int, params *TranslationsListParams) ([]*Translation, error) {
 	retVal := []*Translation{}
@@ -7625,13 +8929,8 @@ func (client *Client) TranslationsList(project_id string, page, perPage int, par
 
 		url := fmt.Sprintf("/v2/projects/%s/translations", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -7680,6 +8979,20 @@ func (params *TranslationsReviewParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
+func (params *TranslationsReviewParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	return queryParams
+}
+
 // Review translations matching query.
 func (client *Client) TranslationsReview(project_id string, params *TranslationsReviewParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
@@ -7694,6 +9007,7 @@ func (client *Client) TranslationsReview(project_id string, params *Translations
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -7758,6 +9072,28 @@ func (params *TranslationsSearchParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
+func (params *TranslationsSearchParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Search translations for the given project. Provides the same search interface as <code>translations#index</code> but allows POST requests to avoid limitations imposed by GET requests. If you want to download all translations for one locale we recommend to use the <code>locales#download</code> endpoint.
 func (client *Client) TranslationsSearch(project_id string, page, perPage int, params *TranslationsSearchParams) ([]*Translation, error) {
 	retVal := []*Translation{}
@@ -7772,6 +9108,7 @@ func (client *Client) TranslationsSearch(project_id string, page, perPage int, p
 		}
 
 		rc, err := client.sendRequestPaginated("POST", url, "application/json", paramsBuf, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -7836,6 +9173,28 @@ func (params *TranslationsUnverifyParams) ApplyValuesFromMap(defaults map[string
 	return nil
 }
 
+func (params *TranslationsUnverifyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Mark translations matching query as unverified.
 func (client *Client) TranslationsUnverify(project_id string, params *TranslationsUnverifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
@@ -7850,6 +9209,7 @@ func (client *Client) TranslationsUnverify(project_id string, params *Translatio
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -7914,6 +9274,28 @@ func (params *TranslationsVerifyParams) ApplyValuesFromMap(defaults map[string]i
 	return nil
 }
 
+func (params *TranslationsVerifyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	if params.Order != nil && *params.Order != "" {
+		queryParams["order"] = *params.Order
+	}
+
+	if params.Q != nil && *params.Q != "" {
+		queryParams["q"] = *params.Q
+	}
+
+	if params.Sort != nil && *params.Sort != "" {
+		queryParams["sort"] = *params.Sort
+	}
+
+	return queryParams
+}
+
 // Verify translations matching query.
 func (client *Client) TranslationsVerify(project_id string, params *TranslationsVerifyParams) (*AffectedCount, error) {
 	retVal := new(AffectedCount)
@@ -7928,6 +9310,7 @@ func (client *Client) TranslationsVerify(project_id string, params *Translations
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -8081,6 +9464,7 @@ func (client *Client) UploadCreate(project_id string, params *UploadParams) (*Up
 		writer.Close()
 
 		rc, err := client.sendRequest("POST", url, ctype, paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -8121,6 +9505,16 @@ func (params *UploadShowParams) ApplyValuesFromMap(defaults map[string]interface
 	return nil
 }
 
+func (params *UploadShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // View details and summary for a single upload.
 func (client *Client) UploadShow(project_id, id string, params *UploadShowParams) (*Upload, error) {
 	retVal := new(Upload)
@@ -8128,13 +9522,8 @@ func (client *Client) UploadShow(project_id, id string, params *UploadShowParams
 
 		url := fmt.Sprintf("/v2/projects/%s/uploads/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -8175,6 +9564,16 @@ func (params *UploadsListParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *UploadsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all uploads for the given project.
 func (client *Client) UploadsList(project_id string, page, perPage int, params *UploadsListParams) ([]*Upload, error) {
 	retVal := []*Upload{}
@@ -8182,13 +9581,8 @@ func (client *Client) UploadsList(project_id string, page, perPage int, params *
 
 		url := fmt.Sprintf("/v2/projects/%s/uploads", url.QueryEscape(project_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -8229,6 +9623,16 @@ func (params *VersionShowParams) ApplyValuesFromMap(defaults map[string]interfac
 	return nil
 }
 
+func (params *VersionShowParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // Get details on a single version.
 func (client *Client) VersionShow(project_id, translation_id, id string, params *VersionShowParams) (*TranslationVersionWithUser, error) {
 	retVal := new(TranslationVersionWithUser)
@@ -8236,13 +9640,8 @@ func (client *Client) VersionShow(project_id, translation_id, id string, params 
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions/%s", url.QueryEscape(project_id), url.QueryEscape(translation_id), url.QueryEscape(id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequest(url, params.QueryParams(), 200)
 
-		rc, err := client.sendRequest("GET", url, "application/json", paramsBuf, 200)
 		if err != nil {
 			return err
 		}
@@ -8283,6 +9682,16 @@ func (params *VersionsListParams) ApplyValuesFromMap(defaults map[string]interfa
 	return nil
 }
 
+func (params *VersionsListParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
 // List all versions for the given translation.
 func (client *Client) VersionsList(project_id, translation_id string, page, perPage int, params *VersionsListParams) ([]*TranslationVersion, error) {
 	retVal := []*TranslationVersion{}
@@ -8290,13 +9699,8 @@ func (client *Client) VersionsList(project_id, translation_id string, page, perP
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s/versions", url.QueryEscape(project_id), url.QueryEscape(translation_id))
 
-		paramsBuf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(paramsBuf).Encode(&params)
-		if err != nil {
-			return err
-		}
+		rc, err := client.sendGetRequestPaginated(url, params.QueryParams(), 200, page, perPage)
 
-		rc, err := client.sendRequestPaginated("GET", url, "application/json", paramsBuf, 200, page, perPage)
 		if err != nil {
 			return err
 		}
@@ -8329,6 +9733,7 @@ func (client *Client) WebhookCreate(project_id string, params *WebhookParams) (*
 		}
 
 		rc, err := client.sendRequest("POST", url, "application/json", paramsBuf, 201)
+
 		if err != nil {
 			return err
 		}
@@ -8355,6 +9760,7 @@ func (client *Client) WebhookDelete(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("DELETE", url, "", nil, 204)
+
 		if err != nil {
 			return err
 		}
@@ -8373,6 +9779,7 @@ func (client *Client) WebhookShow(project_id, id string) (*Webhook, error) {
 		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("GET", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -8399,6 +9806,7 @@ func (client *Client) WebhookTest(project_id, id string) error {
 		url := fmt.Sprintf("/v2/projects/%s/webhooks/%s/test", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		rc, err := client.sendRequest("POST", url, "", nil, 200)
+
 		if err != nil {
 			return err
 		}
@@ -8423,6 +9831,7 @@ func (client *Client) WebhookUpdate(project_id, id string, params *WebhookParams
 		}
 
 		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
 		if err != nil {
 			return err
 		}
@@ -8449,6 +9858,7 @@ func (client *Client) WebhooksList(project_id string, page, perPage int) ([]*Web
 		url := fmt.Sprintf("/v2/projects/%s/webhooks", url.QueryEscape(project_id))
 
 		rc, err := client.sendRequestPaginated("GET", url, "", nil, 200, page, perPage)
+
 		if err != nil {
 			return err
 		}
@@ -8473,4 +9883,14 @@ func GetUserAgent() string {
 		agent = ua + "; " + agent
 	}
 	return agent
+}
+
+func convertMapToQueryParams(paramName string, params map[string]string) map[string]string {
+	queryParams := make(map[string]string)
+	for key, value := range params {
+		paramName := fmt.Sprintf("%s[%s]", paramName, key)
+		queryParams[paramName] = value
+	}
+
+	return queryParams
 }
