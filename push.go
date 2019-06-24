@@ -80,7 +80,7 @@ func (cmd *PushCommand) Run() error {
 					printCreateBranchQuestion(cmd.Branch)
 					text, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 
-					if strings.Contains(text, "n") || strings.Contains(text, "N") {
+					if !isYes(strings.TrimSpace(text)) {
 						return nil
 					}
 				}
@@ -414,4 +414,12 @@ func printCreateBranchQuestion(branch string) {
 	ct.ResetColor()
 	fmt.Printf("'.\nThere currently is no branch in PhraseApp with this name.\n\n")
 	fmt.Printf("Should we create a new branch in PhraseApp with the same name and push to it? [y/N]: ")
+}
+
+func isYes(text string) bool {
+	return text == "y" ||
+		text == "Y" ||
+		text == "yes" ||
+		text == "Yes" ||
+		text == "YES"
 }
