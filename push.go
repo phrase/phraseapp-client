@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	ct "github.com/daviddengcn/go-colortext"
 	"github.com/jpillora/backoff"
 	"github.com/phrase/phraseapp-client/internal/paths"
 	"github.com/phrase/phraseapp-client/internal/placeholders"
@@ -17,8 +19,9 @@ import (
 
 type PushCommand struct {
 	phraseapp.Config
-	Wait   bool   `cli:"opt --wait desc='Wait for files to be processed'"`
-	Branch string `cli:"opt --branch"`
+	Wait               bool   `cli:"opt --wait desc='Wait for files to be processed'"`
+	Branch             string `cli:"opt --branch"`
+	UseLocalBranchName bool   `cli:"opt --use-local-branch-name desc='push from the branch with the name of your currently checked out branch (git or mercurial)'"`
 }
 
 func (cmd *PushCommand) Run() error {
@@ -63,12 +66,27 @@ func (cmd *PushCommand) Run() error {
 		projectsAffected[source.ProjectID] = true
 	}
 
+	branchName, err := usedBranchName(cmd.UseLocalBranchName, cmd.Branch)
+	if err != nil {
+		return err
+	}
+	cmd.Branch = branchName
+
 	if cmd.Branch != "" {
 		for projectID := range projectsAffected {
 			_, err := client.BranchShow(projectID, cmd.Branch)
 			if err != nil {
-				branchPrams := &phraseapp.BranchParams{Name: &cmd.Branch}
-				branch, _ := client.BranchCreate(projectID, branchPrams)
+				if useLocalBranchName(cmd.UseLocalBranchName) {
+					printCreateBranchQuestion(cmd.Branch)
+					text, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+
+					if !isYes(strings.TrimSpace(text)) {
+						return nil
+					}
+				}
+
+				branchParams := &phraseapp.BranchParams{Name: &cmd.Branch}
+				branch, _ := client.BranchCreate(projectID, branchParams)
 
 				fmt.Println()
 
@@ -114,6 +132,7 @@ func (cmd *PushCommand) Run() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -386,4 +405,21 @@ func getBranchCreateResult(client *phraseapp.Client, projectID string, branch *p
 	}
 
 	return
+}
+
+func printCreateBranchQuestion(branch string) {
+	fmt.Printf("\nYou have currently checked out the branch '")
+	ct.ChangeColor(ct.Green, false, ct.None, false)
+	fmt.Printf("%s", branch)
+	ct.ResetColor()
+	fmt.Printf("'.\nThere currently is no branch in PhraseApp with this name.\n\n")
+	fmt.Printf("Should we create a new branch in PhraseApp with the same name and push to it? [y/N]: ")
+}
+
+func isYes(text string) bool {
+	return text == "y" ||
+		text == "Y" ||
+		text == "yes" ||
+		text == "Yes" ||
+		text == "YES"
 }

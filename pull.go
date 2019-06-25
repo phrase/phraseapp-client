@@ -20,7 +20,8 @@ const (
 
 type PullCommand struct {
 	phraseapp.Config
-	Branch string `cli:"opt --branch"`
+	Branch             string `cli:"opt --branch"`
+	UseLocalBranchName bool   `cli:"opt --use-local-branch-name desc='pull from the branch with the name of your currently checked out branch (git or mercurial)'"`
 }
 
 func (cmd *PullCommand) Run() error {
@@ -38,6 +39,12 @@ func (cmd *PullCommand) Run() error {
 	if err != nil {
 		return err
 	}
+
+	branchName, err := usedBranchName(cmd.UseLocalBranchName, cmd.Branch)
+	if err != nil {
+		return err
+	}
+	cmd.Branch = branchName
 
 	projectIdToLocales, err := LocalesForProjects(client, targets, cmd.Branch)
 	if err != nil {
