@@ -109,12 +109,12 @@ func (cmd *InitCommand) Run() error {
 
 func (cmd *InitCommand) askForToken() error {
 	print.Parrot()
-	fmt.Println("PhraseApp.com API Client Setup")
+	fmt.Println("phrase.com API Client Setup")
 	fmt.Println()
 
 	token := ""
 	for {
-		err := prompt.P("Please enter your API access token (you can generate one in your profile at phraseapp.com):", &token)
+		err := prompt.P("Please enter your API access token (you can generate one in your profile at phrase.com):", &token)
 		if err != nil {
 			continue
 		}

@@ -15,7 +15,7 @@ import (
 	"github.com/phrase/phraseapp-client/internal/stringz"
 )
 
-const downloadPageURL = "https://phraseapp.com/en/cli"
+const downloadPageURL = "https://phrase.com/cli"
 
 type Checker struct {
 	version              string
