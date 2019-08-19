@@ -2,7 +2,7 @@
 
 The PhraseApp Client is available for all major platforms and lets you access all API endpoints as well as easily sync your locale files between your source code and PhraseApp.
 
-Check out our [documentation for more information](https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/phraseapp-in-your-terminal).
+Check out our [documentation for more information](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/phraseapp-in-your-terminal).
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ This quick start will guide you through the basic steps to get up and running wi
 
 #### 1. Install
 
-[Download and install](https://phraseapp.com/cli) the client for your platform. See our [detailed installation guide](https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/installation) for more information.
+[Download and install](https://phrase.com/cli) the client for your platform. See our [detailed installation guide](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/installation) for more information.
 
 ##### Homebrew
 
@@ -30,13 +30,13 @@ Initialize your project by executing the `init` command. This lets you define yo
 
 #### 3. Upload your locale files
 
-Use the `push` command to upload your locale files from your defined [sources](https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/configuration#push):
+Use the `push` command to upload your locale files from your defined [sources](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/configuration#push):
 
     $ phraseapp push
 
 #### 4. Download your locale files
 
-Use the `pull` command to download the most recent locale files back into your project according to your [targets](https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/configuration#pull):
+Use the `pull` command to download the most recent locale files back into your project according to your [targets](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/configuration#pull):
 
     $ phraseapp pull
 
@@ -50,14 +50,14 @@ To see all supported options for a command, simple use the `--help` flag:
 
     $ phraseapp locales list --help
 
-See our [detailed guides](https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/phraseapp-in-your-terminal) for in-depth instructions on how to use the PhraseApp Client.
+See our [detailed guides](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/phraseapp-in-your-terminal) for in-depth instructions on how to use the PhraseApp Client.
 
 ## Contributing
 
 This tool and it's source code are auto-generated from templates that run against a API specification file. Therefore we can not accept any pull requests in this repository. Please use the GitHub Issue Tracker to report bugs.
 
 ## Further reading
-* [PhraseApp Client Download Page](https://phraseapp.com/cli)
+* [PhraseApp Client Download Page](https://phrase.com/cli)
 
 ## Licenses
 

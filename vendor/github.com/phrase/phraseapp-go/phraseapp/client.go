@@ -21,7 +21,7 @@ type Client struct {
 	debug       bool
 }
 
-// Credentials contains all information to authenticate against phraseapp.com or a custom host.
+// Credentials contains all information to authenticate against phrase.com or a custom host.
 type Credentials struct {
 	Username string `cli:"opt --username -u desc='username used for authentication'"`
 	Token    string `cli:"opt --access-token -t desc='access token used for authentication'"`
@@ -68,7 +68,7 @@ func (c *Credentials) init() {
 		if envHost != "" {
 			c.Host = envHost
 		} else {
-			c.Host = "https://api.phraseapp.com"
+			c.Host = "https://api.phrase.com"
 		}
 	}
 }

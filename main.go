@@ -12,7 +12,7 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const phraseAppSupport = "support@phraseapp.com"
+const phraseAppSupport = "support@phrase.com"
 
 var updateChecker = updatechecker.New(
 	PHRASEAPP_CLIENT_VERSION,

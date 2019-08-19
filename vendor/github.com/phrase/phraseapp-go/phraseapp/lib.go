@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "597800251a7422fbb65ebb04abb824bd5c8d7b08"
-	RevisionGenerator = "HEAD/2019-05-23T174450/soenke"
+	RevisionDocs      = "30c1e4d113aae5892057d9ecb894a367e196ac1b"
+	RevisionGenerator = "HEAD/2019-08-16T141535/soenke"
 )
 
 type Account struct {
@@ -2568,7 +2568,7 @@ func (client *Client) AuthorizationsList(page, perPage int) ([]*Authorization, e
 	return retVal, err
 }
 
-// Export translations from PhraseApp to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.
+// Export translations from Phrase to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.
 func (client *Client) BitbucketSyncExport(id string, params *BitbucketSyncParams) (*BitbucketSyncExportResponse, error) {
 	retVal := new(BitbucketSyncExportResponse)
 	err := func() error {
@@ -2601,7 +2601,7 @@ func (client *Client) BitbucketSyncExport(id string, params *BitbucketSyncParams
 	return retVal, err
 }
 
-// Import translations from Bitbucket to PhraseApp according to the .phraseapp.yml file within the Bitbucket repository.
+// Import translations from Bitbucket to Phrase according to the .phraseapp.yml file within the Bitbucket repository.
 func (client *Client) BitbucketSyncImport(id string, params *BitbucketSyncParams) error {
 
 	err := func() error {
@@ -2626,7 +2626,7 @@ func (client *Client) BitbucketSyncImport(id string, params *BitbucketSyncParams
 	return err
 }
 
-// List all Bitbucket repositories for which synchronisation with PhraseApp is activated.
+// List all Bitbucket repositories for which synchronisation with Phrase is activated.
 func (client *Client) BitbucketSyncsList(page, perPage int, params *BitbucketSyncParams) ([]*BitbucketSync, error) {
 	retVal := []*BitbucketSync{}
 	err := func() error {
@@ -3552,7 +3552,7 @@ func (client *Client) DistributionsList(account_id string, page, perPage int) ([
 	return retVal, err
 }
 
-// Get a handy list of all localization file formats supported in PhraseApp.
+// Get a handy list of all localization file formats supported in Phrase.
 func (client *Client) FormatsList(page, perPage int) ([]*Format, error) {
 	retVal := []*Format{}
 	err := func() error {
@@ -6675,7 +6675,7 @@ func (client *Client) LocalesList(project_id string, page, perPage int, params *
 	return retVal, err
 }
 
-// Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.
+// Remove a user from the account. The user will be removed from the account but not deleted from Phrase. Access token scope must include <code>team.manage</code>.
 func (client *Client) MemberDelete(account_id, id string) error {
 
 	err := func() error {

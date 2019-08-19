@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-const docsURL = `http://docs.phraseapp.com/api/v2/`
+const docsURL = `https://developers.phrase.com/api/`
 
 func further() string {
 	return fmt.Sprintf("\nFor further information see:\n%s", docsURL)

@@ -1,5 +1,5 @@
 package shared
 
 const (
-	DocsConfigUrl = "https://help.phraseapp.com/phraseapp-for-developers/phraseapp-client/configuration"
+	DocsConfigUrl = "https://help.phrase.com/phraseapp-for-developers/phraseapp-client/configuration"
 )
