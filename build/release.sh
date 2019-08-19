@@ -60,6 +60,7 @@ for file in "$DIST_DIR"/*; do
     echo "Uploading ${file}"
     asset="https://uploads.github.com/repos/phrase/phraseapp-client/releases/${release_id}/assets?name=$(basename "$file")&access_token=${GITHUB_TOKEN}"
     curl --data-binary @"$file" -H "Content-Type: application/octet-stream" $asset > /dev/null
+    echo Hash: $(sha256sum $file)
 done
 
 echo "Release successful"
