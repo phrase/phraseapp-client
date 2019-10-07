@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "30c1e4d113aae5892057d9ecb894a367e196ac1b"
-	RevisionGenerator = "HEAD/2019-08-16T141535/soenke"
+	RevisionDocs      = "43cdb66a8e5533d402453827af53cf837eaa29b9"
+	RevisionGenerator = "HEAD/2019-10-07T111628/soenke"
 )
 
 type Account struct {
@@ -400,6 +400,7 @@ type Translation struct {
 	Locale       *LocalePreview `json:"locale"`
 	Placeholders []string       `json:"placeholders"`
 	PluralSuffix string         `json:"plural_suffix"`
+	State        string         `json:"state"`
 	Unverified   bool           `json:"unverified"`
 	UpdatedAt    *time.Time     `json:"updated_at"`
 }
@@ -2012,18 +2013,26 @@ func (params *TagParams) QueryParams() map[string]string {
 }
 
 type TranslationParams struct {
-	Branch       *string `json:"branch,omitempty"  cli:"opt --branch"`
-	Content      *string `json:"content,omitempty"  cli:"opt --content"`
-	Excluded     *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
-	KeyID        *string `json:"key_id,omitempty"  cli:"opt --key-id"`
-	LocaleID     *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
-	PluralSuffix *string `json:"plural_suffix,omitempty"  cli:"opt --plural-suffix"`
-	Unverified   *bool   `json:"unverified,omitempty"  cli:"opt --unverified"`
+	Autotranslate *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+	Branch        *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Content       *string `json:"content,omitempty"  cli:"opt --content"`
+	Excluded      *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
+	KeyID         *string `json:"key_id,omitempty"  cli:"opt --key-id"`
+	LocaleID      *string `json:"locale_id,omitempty"  cli:"opt --locale-id"`
+	PluralSuffix  *string `json:"plural_suffix,omitempty"  cli:"opt --plural-suffix"`
+	Unverified    *bool   `json:"unverified,omitempty"  cli:"opt --unverified"`
 }
 
 func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "autotranslate":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Autotranslate = &val
+
 		case "branch":
 			val, ok := v.(string)
 			if !ok {
@@ -2083,6 +2092,10 @@ func (params *TranslationParams) ApplyValuesFromMap(defaults map[string]interfac
 
 func (params *TranslationParams) QueryParams() map[string]string {
 	var queryParams = make(map[string]string, 0)
+
+	if params.Autotranslate != nil {
+		queryParams["autotranslate"] = strconv.FormatBool(*params.Autotranslate)
+	}
 
 	if params.Branch != nil && *params.Branch != "" {
 		queryParams["branch"] = *params.Branch
@@ -8290,6 +8303,201 @@ func (client *Client) TranslationCreate(project_id string, params *TranslationPa
 	return retVal, err
 }
 
+type TranslationExcludeParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationExcludeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+func (params *TranslationExcludeParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
+// Set exclude from export flag on an existing translation.
+func (client *Client) TranslationExclude(project_id, id string, params *TranslationExcludeParams) (*TranslationDetails, error) {
+	retVal := new(TranslationDetails)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/exclude", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type TranslationIncludeParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationIncludeParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+func (params *TranslationIncludeParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
+// Remove exclude from export flag from an existing translation.
+func (client *Client) TranslationInclude(project_id, id string, params *TranslationIncludeParams) (*TranslationDetails, error) {
+	retVal := new(TranslationDetails)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/include", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type TranslationReviewParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationReviewParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+func (params *TranslationReviewParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
+// Mark an existing translation as reviewed.
+func (client *Client) TranslationReview(project_id, id string, params *TranslationReviewParams) (*TranslationDetails, error) {
+	retVal := new(TranslationDetails)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/review", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 type TranslationShowParams struct {
 	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
 }
@@ -8349,17 +8557,90 @@ func (client *Client) TranslationShow(project_id, id string, params *Translation
 	return retVal, err
 }
 
+type TranslationUnverifyParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationUnverifyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+func (params *TranslationUnverifyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
+// Mark an existing translation as unverified.
+func (client *Client) TranslationUnverify(project_id, id string, params *TranslationUnverifyParams) (*TranslationDetails, error) {
+	retVal := new(TranslationDetails)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/unverify", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
 type TranslationUpdateParams struct {
-	Branch       *string `json:"branch,omitempty"  cli:"opt --branch"`
-	Content      *string `json:"content,omitempty"  cli:"opt --content"`
-	Excluded     *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
-	PluralSuffix *string `json:"plural_suffix,omitempty"  cli:"opt --plural-suffix"`
-	Unverified   *bool   `json:"unverified,omitempty"  cli:"opt --unverified"`
+	Autotranslate *bool   `json:"autotranslate,omitempty"  cli:"opt --autotranslate"`
+	Branch        *string `json:"branch,omitempty"  cli:"opt --branch"`
+	Content       *string `json:"content,omitempty"  cli:"opt --content"`
+	Excluded      *bool   `json:"excluded,omitempty"  cli:"opt --excluded"`
+	PluralSuffix  *string `json:"plural_suffix,omitempty"  cli:"opt --plural-suffix"`
+	Unverified    *bool   `json:"unverified,omitempty"  cli:"opt --unverified"`
 }
 
 func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
 	for k, v := range defaults {
 		switch k {
+		case "autotranslate":
+			val, ok := v.(bool)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Autotranslate = &val
+
 		case "branch":
 			val, ok := v.(string)
 			if !ok {
@@ -8406,6 +8687,10 @@ func (params *TranslationUpdateParams) ApplyValuesFromMap(defaults map[string]in
 func (params *TranslationUpdateParams) QueryParams() map[string]string {
 	var queryParams = make(map[string]string, 0)
 
+	if params.Autotranslate != nil {
+		queryParams["autotranslate"] = strconv.FormatBool(*params.Autotranslate)
+	}
+
 	if params.Branch != nil && *params.Branch != "" {
 		queryParams["branch"] = *params.Branch
 	}
@@ -8435,6 +8720,71 @@ func (client *Client) TranslationUpdate(project_id, id string, params *Translati
 	err := func() error {
 
 		url := fmt.Sprintf("/v2/projects/%s/translations/%s", url.QueryEscape(project_id), url.QueryEscape(id))
+
+		paramsBuf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(paramsBuf).Encode(&params)
+		if err != nil {
+			return err
+		}
+
+		rc, err := client.sendRequest("PATCH", url, "application/json", paramsBuf, 200)
+
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		var reader io.Reader
+		if client.debug {
+			reader = io.TeeReader(rc, os.Stderr)
+		} else {
+			reader = rc
+		}
+
+		return json.NewDecoder(reader).Decode(&retVal)
+
+	}()
+	return retVal, err
+}
+
+type TranslationVerifyParams struct {
+	Branch *string `json:"branch,omitempty"  cli:"opt --branch"`
+}
+
+func (params *TranslationVerifyParams) ApplyValuesFromMap(defaults map[string]interface{}) error {
+	for k, v := range defaults {
+		switch k {
+		case "branch":
+			val, ok := v.(string)
+			if !ok {
+				return fmt.Errorf(cfgValueErrStr, k, v)
+			}
+			params.Branch = &val
+
+		default:
+			return fmt.Errorf(cfgInvalidKeyErrStr, k)
+		}
+	}
+
+	return nil
+}
+
+func (params *TranslationVerifyParams) QueryParams() map[string]string {
+	var queryParams = make(map[string]string, 0)
+
+	if params.Branch != nil && *params.Branch != "" {
+		queryParams["branch"] = *params.Branch
+	}
+
+	return queryParams
+}
+
+// Verify an existing translation.
+func (client *Client) TranslationVerify(project_id, id string, params *TranslationVerifyParams) (*TranslationDetails, error) {
+	retVal := new(TranslationDetails)
+	err := func() error {
+
+		url := fmt.Sprintf("/v2/projects/%s/translations/%s/verify", url.QueryEscape(project_id), url.QueryEscape(id))
 
 		paramsBuf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(paramsBuf).Encode(&params)
