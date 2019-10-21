@@ -220,7 +220,7 @@ func (source *Source) LocaleFiles() (LocaleFiles, error) {
 
 	var localeFiles LocaleFiles
 	for _, path := range filePaths {
-		if paths.IsPhraseAppYmlConfig(path) {
+		if paths.IsPhraseYmlConfig(path) {
 			continue
 		}
 

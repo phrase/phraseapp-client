@@ -6,25 +6,25 @@
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{DC598D8E-8A9B-4CAD-AFD8-0324FDF4E0F1}
-AppName=PhraseApp Client
-AppVersion=1.16.0
-AppPublisher=PhraseApp GmbH
+AppName=Phrase Client
+AppVersion=1.17.0
+AppPublisher=Phrase GmbH
 AppPublisherURL=https://phrase.com/cli
 AppSupportURL=https://phrase.com/cli
 AppUpdatesURL=https://phrase.com/cli
-DefaultDirName={pf}\PhraseApp
-DefaultGroupName=PhraseApp-Client
+DefaultDirName={pf}\Phrase
+DefaultGroupName=Phrase-Client
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE
 InfoAfterFile=postinstall.rtf
-OutputBaseFilename=phraseapp_setup_386
+OutputBaseFilename=phrase_setup_386
 SetupIconFile=parrot.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 
 [Files]
-Source: "../../dist/phraseapp_windows_386.exe"; DestDir: "{app}"; DestName: "phraseapp.exe"; Flags: ignoreversion
+Source: "../../dist/phrase_windows_386.exe"; DestDir: "{app}"; DestName: "phrase.exe"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
@@ -35,5 +35,5 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 AlwaysRestart = yes
 
 [Icons]
-Name: "{group}\PhraseApp Client"; Filename: "{app}"
-Name: "{group}\{cm:UninstallProgram,PhraseApp Client}"; Filename: "{uninstallexe}"
+Name: "{group}\Phrase Client"; Filename: "{app}"
+Name: "{group}\{cm:UninstallProgram,Phrase Client}"; Filename: "{uninstallexe}"

@@ -25,7 +25,7 @@ func TestIsPhraseAppYamlConfig(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		was := IsPhraseAppYmlConfig(test.test)
+		was := IsPhraseYmlConfig(test.test)
 		if was != test.expect {
 			t.Fatalf("expected %q to yield %v, but was: %v", test.test, test.expect, was)
 		}

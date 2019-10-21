@@ -108,8 +108,7 @@ func (cmd *InitCommand) Run() error {
 }
 
 func (cmd *InitCommand) askForToken() error {
-	print.Parrot()
-	fmt.Println("phrase.com API Client Setup")
+	fmt.Println("Phrase CLI client setup")
 	fmt.Println()
 
 	token := ""
@@ -165,7 +164,7 @@ func (cmd *InitCommand) selectProject() error {
 	projects := <-taskResult
 	if err := <-taskErr; err != nil {
 		if strings.Contains(err.Error(), "401") {
-			return fmt.Errorf("%s is not a valid access token. It may be revoked or missing the read or write scope. Please create a new token and try again.", cmd.Credentials.Token)
+			return fmt.Errorf("%s is not a valid access token. It may be revoked or missing the read or write scope. Please create a new token and try again", cmd.Credentials.Token)
 		}
 		return err
 	}
@@ -222,7 +221,7 @@ func (cmd *InitCommand) newProject() error {
 	details, err := cmd.client.ProjectCreate(params)
 	if err != nil {
 		if strings.Contains(err.Error(), "401") {
-			return fmt.Errorf("Your access token %s is not valid for the 'write' scope. Please create a new Access Token with read and write scope.", cmd.Credentials.Token)
+			return fmt.Errorf("Your access token %s is not valid for the 'write' scope. Please create a new Access Token with read and write scope", cmd.Credentials.Token)
 		}
 		return err
 	}
@@ -252,7 +251,7 @@ func (cmd *InitCommand) selectFormat() error {
 		fmt.Printf("%2d: %s - %s, file extension: %s\n", i+1, format.ApiName, format.Name, format.Extension)
 	}
 
-	promptText := fmt.Sprintf("Select the format to use for language files you download from PhraseApp (%v-%v", 1, len(formats))
+	promptText := fmt.Sprintf("Select the format to use for language files you download from Phrase (%v-%v", 1, len(formats))
 	if cmd.FileFormat != nil && cmd.FileFormat.Name != "" {
 		promptText += fmt.Sprintf(" or leave blank to use the default, %s)", cmd.FileFormat.Name)
 	}
@@ -284,7 +283,7 @@ func (cmd *InitCommand) selectFormat() error {
 }
 
 func (cmd *InitCommand) configureSources() error {
-	fmt.Println("Enter the path to the language file you want to upload to PhraseApp.")
+	fmt.Println("Enter the path to the language file you want to upload to Phrase.")
 	fmt.Printf("For documentation, see %s#push\n", shared.DocsConfigUrl)
 
 	pushPath := ""
@@ -315,7 +314,7 @@ func (cmd *InitCommand) configureSources() error {
 }
 
 func (cmd *InitCommand) configureTargets() error {
-	fmt.Println("Enter the path to which to download language files from PhraseApp.")
+	fmt.Println("Enter the path to which to download language files from Phrase.")
 	fmt.Printf("For documentation, see %s#pull\n", shared.DocsConfigUrl)
 
 	pullPath := ""
@@ -347,7 +346,7 @@ func (cmd *InitCommand) configureTargets() error {
 
 func (cmd *InitCommand) writeConfig() error {
 	wrapper := struct {
-		Config ConfigYAML `yaml:"phraseapp"`
+		Config ConfigYAML `yaml:"phrase"`
 	}{
 		Config: cmd.YAML,
 	}
@@ -357,7 +356,7 @@ func (cmd *InitCommand) writeConfig() error {
 		return err
 	}
 
-	filename := ".phraseapp.yml"
+	filename := ".phrase.yml"
 	err = ioutil.WriteFile(filename, yamlBytes, 0655)
 	if err != nil {
 		return err
@@ -371,8 +370,8 @@ func (cmd *InitCommand) writeConfig() error {
 	print.Success("For advanced configuration options, take a look at the documentation: " + shared.DocsConfigUrl)
 	print.Success("You can now use the push & pull commands in your workflow:")
 	fmt.Println()
-	fmt.Println("$ phraseapp push")
-	fmt.Println("$ phraseapp pull")
+	fmt.Println("$ phrase push")
+	fmt.Println("$ phrase pull")
 	fmt.Println()
 
 	pushNow := ""

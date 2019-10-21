@@ -8,5 +8,5 @@ import (
 )
 
 func defaultConfigDir() string {
-	return filepath.Join(os.Getenv("HomePath"), configName)
+	return os.Getenv("HomePath")
 }

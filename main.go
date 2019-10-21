@@ -12,11 +12,11 @@ import (
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
-const phraseAppSupport = "support@phrase.com"
+const phraseSupport = "support@phrase.com"
 
 var updateChecker = updatechecker.New(
-	PHRASEAPP_CLIENT_VERSION,
-	filepath.Join(os.TempDir(), ".phraseapp.version"),
+	PHRASE_CLIENT_VERSION,
+	filepath.Join(os.TempDir(), ".phrase.version"),
 	"https://github.com/phrase/phraseapp-client/releases/latest",
 	os.Stderr,
 )
@@ -32,12 +32,12 @@ func Run() {
 			if Debug {
 				fmt.Fprintf(os.Stderr, "%v\n%s", recovered, debug.Stack())
 			}
-			print.Error(fmt.Errorf("This should not have happened: %s - Contact support: %s", recovered, phraseAppSupport))
+			print.Error(fmt.Errorf("This should not have happened: %s - Contact support: %s", recovered, phraseSupport))
 			os.Exit(1)
 		}
 	}()
 
-	phraseapp.ClientVersion = PHRASEAPP_CLIENT_VERSION
+	phraseapp.ClientVersion = PHRASE_CLIENT_VERSION
 	updateChecker.Check()
 
 	cfg, err := phraseapp.ReadConfig()

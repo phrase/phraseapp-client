@@ -41,7 +41,7 @@ func (uc *Checker) Check() {
 	}
 
 	if stringz.ContainsAnySub(strings.ToLower(uc.version), []string{"dev", "test"}) {
-		fmt.Fprintf(uc.output, "You're running a development version (%s) of the PhraseApp client! Latest version is %s.\n", uc.version, latestVersion)
+		fmt.Fprintf(uc.output, "You're running a development version (%s) of the Phrase client! Latest version is %s.\n", uc.version, latestVersion)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (uc *Checker) Check() {
 	}
 
 	if version.LessThan(*latestVersion) {
-		fmt.Fprintf(uc.output, "Please consider updating the PhraseApp CLI client (%s < %s)\nYou can get the latest version from %s.\n", version, latestVersion, downloadPageURL)
+		fmt.Fprintf(uc.output, "Please consider updating the Phrase CLI client (%s < %s)\nYou can get the latest version from %s.\n", version, latestVersion, downloadPageURL)
 	}
 }
 

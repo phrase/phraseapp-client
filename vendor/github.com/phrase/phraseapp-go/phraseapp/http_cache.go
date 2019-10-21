@@ -61,7 +61,7 @@ func newHTTPCacheClient(debug bool, config CacheConfig) (*httpCacheClient, error
 		config.CacheSizeMax = 1024 * 1024 * 100 // 100MB
 	}
 
-	cachePath := filepath.Join(config.CacheDir, "phraseapp")
+	cachePath := filepath.Join(config.CacheDir, "phrase")
 	err := os.MkdirAll(cachePath, 0755)
 	if err != nil {
 		return nil, err

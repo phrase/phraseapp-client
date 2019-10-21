@@ -9,7 +9,7 @@ import (
 	"github.com/phrase/phraseapp-client/internal/shared"
 )
 
-var YamlConfigName = ".phraseapp.yml"
+var yamlConfigNames = []string{".phrase.yml", ".phraseapp.yml"}
 
 func Validate(file, formatName, formatExtension string) error {
 	if strings.TrimSpace(file) == "" {
@@ -59,6 +59,11 @@ func Segments(s string) []string {
 	return strings.FieldsFunc(filepath.Clean(s), func(c rune) bool { return c == filepath.Separator })
 }
 
-func IsPhraseAppYmlConfig(path string) bool {
-	return strings.Contains(filepath.Base(path), YamlConfigName)
+func IsPhraseYmlConfig(path string) bool {
+	for _, config := range yamlConfigNames {
+		if strings.Contains(filepath.Base(path), config) {
+			return true
+		}
+	}
+	return false
 }
