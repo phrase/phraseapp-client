@@ -28,11 +28,9 @@ func (cmd *UploadCleanupCommand) Run() error {
 func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 	q := "unmentioned_in_upload:" + cmd.ID
 	params := &phraseapp.KeysListParams{Q: &q}
-
-	var err error
 	page := 1
 
-	keys, err := client.KeysList(cmd.Config.DefaultProjectID, page, 25, params)
+	keys, err := client.KeysList(cmd.Config.DefaultProjectID, page, 100, params)
 	if err != nil {
 		return err
 	}
@@ -43,8 +41,8 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 	}
 
 	for len(keys) != 0 {
-		ids := make([]string, len(keys), len(keys))
-		names := make([]string, len(keys), len(keys))
+		ids := make([]string, len(keys))
+		names := make([]string, len(keys))
 		for i, key := range keys {
 			ids[i] = key.ID
 			names[i] = key.Name
@@ -79,7 +77,7 @@ func UploadCleanup(client *phraseapp.Client, cmd *UploadCleanupCommand) error {
 		fmt.Printf("%d key(s) successfully deleted.\n", affected.RecordsAffected)
 
 		page++
-		keys, _ = client.KeysList(cmd.Config.DefaultProjectID, page, 25, params)
+		keys, _ = client.KeysList(cmd.Config.DefaultProjectID, page, 100, params)
 	}
 
 	return nil
