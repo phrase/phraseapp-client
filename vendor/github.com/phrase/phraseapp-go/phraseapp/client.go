@@ -1,4 +1,4 @@
-// Package phraseapp is a library for easier usage of the PhraseApp API
+// Package phraseapp is a library for easier usage of the Phrase API
 package phraseapp
 
 import (

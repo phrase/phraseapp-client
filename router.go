@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "597800251a7422fbb65ebb04abb824bd5c8d7b08"
-	RevisionGenerator = "HEAD/2019-05-27T101702/soenke"
+	RevisionDocs      = "5cc58168292cad8c2c804e39d521843bb8f467c0"
+	RevisionGenerator = "HEAD/2020-03-30T112659/soenke"
 )
 
 func router(cfg *phraseapp.Config) (*cli.Router, error) {
@@ -41,19 +41,19 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	if cmd, err := newBitbucketSyncExport(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("bitbucket_sync/export", cmd, "Export translations from PhraseApp to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.")
+		r.Register("bitbucket_sync/export", cmd, "Export translations from Phrase to Bitbucket according to the .phraseapp.yml file within the Bitbucket Repository.")
 	}
 
 	if cmd, err := newBitbucketSyncImport(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("bitbucket_sync/import", cmd, "Import translations from Bitbucket to PhraseApp according to the .phraseapp.yml file within the Bitbucket repository.")
+		r.Register("bitbucket_sync/import", cmd, "Import translations from Bitbucket to Phrase according to the .phraseapp.yml file within the Bitbucket repository.")
 	}
 
 	if cmd, err := newBitbucketSyncsList(cfg); err != nil {
 		return nil, err
 	} else {
-		r.Register("bitbucket_syncs/list", cmd, "List all Bitbucket repositories for which synchronisation with PhraseApp is activated.")
+		r.Register("bitbucket_syncs/list", cmd, "List all Bitbucket repositories for which synchronisation with Phrase is activated.")
 	}
 
 	if cmd, err := newBlacklistedKeyCreate(cfg); err != nil {
@@ -73,6 +73,12 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 	}
 
 	r.Register("blacklisted_keys/list", newBlacklistedKeysList(cfg), "List all rules for blacklisting keys for the given project.")
+
+	if cmd, err := newBranchCompare(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("branch/compare", cmd, "Compare branch with main branch.")
+	}
 
 	if cmd, err := newBranchCreate(cfg); err != nil {
 		return nil, err
@@ -164,7 +170,7 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("distributions/list", newDistributionsList(cfg), "List all distributions for the given account.")
 
-	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in PhraseApp.")
+	r.Register("formats/list", newFormatsList(cfg), "Get a handy list of all localization file formats supported in Phrase.")
 
 	r.Register("glossaries/list", newGlossariesList(cfg), "List all glossaries the current user has access to.")
 
@@ -428,7 +434,7 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("locales/list", cmd, "List all locales for the given project.")
 	}
 
-	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from PhraseApp. Access token scope must include <code>team.manage</code>.")
+	r.Register("member/delete", newMemberDelete(cfg), "Remove a user from the account. The user will be removed from the account but not deleted from Phrase. Access token scope must include <code>team.manage</code>.")
 
 	r.Register("member/show", newMemberShow(cfg), "Get details on a single user in the account. Access token scope must include <code>team.manage</code>.")
 
@@ -546,6 +552,34 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 
 	r.Register("show/user", newShowUser(cfg), "Show details for current User.")
 
+	if cmd, err := newSpaceCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("space/create", cmd, "Create a new Space.")
+	}
+
+	r.Register("space/delete", newSpaceDelete(cfg), "Delete the specified Space.")
+
+	r.Register("space/show", newSpaceShow(cfg), "Show the specified Space.")
+
+	if cmd, err := newSpaceUpdate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("space/update", cmd, "Update the specified Space.")
+	}
+
+	r.Register("spaces/list", newSpacesList(cfg), "List all Spaces for the given account.")
+
+	if cmd, err := newSpacesProjectsCreate(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("spaces/projects/create", cmd, "Adds an existing project to the space.")
+	}
+
+	r.Register("spaces/projects/delete", newSpacesProjectsDelete(cfg), "Removes a specified project from the specified space.")
+
+	r.Register("spaces/projects/list", newSpacesProjectsList(cfg), "List all projects for the specified Space.")
+
 	if cmd, err := newStyleguideCreate(cfg); err != nil {
 		return nil, err
 	} else {
@@ -594,16 +628,46 @@ func router(cfg *phraseapp.Config) (*cli.Router, error) {
 		r.Register("translation/create", cmd, "Create a translation.")
 	}
 
+	if cmd, err := newTranslationExclude(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/exclude", cmd, "Set exclude from export flag on an existing translation.")
+	}
+
+	if cmd, err := newTranslationInclude(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/include", cmd, "Remove exclude from export flag from an existing translation.")
+	}
+
+	if cmd, err := newTranslationReview(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/review", cmd, "Mark an existing translation as reviewed.")
+	}
+
 	if cmd, err := newTranslationShow(cfg); err != nil {
 		return nil, err
 	} else {
 		r.Register("translation/show", cmd, "Get details on a single translation.")
 	}
 
+	if cmd, err := newTranslationUnverify(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/unverify", cmd, "Mark an existing translation as unverified.")
+	}
+
 	if cmd, err := newTranslationUpdate(cfg); err != nil {
 		return nil, err
 	} else {
 		r.Register("translation/update", cmd, "Update an existing translation.")
+	}
+
+	if cmd, err := newTranslationVerify(cfg); err != nil {
+		return nil, err
+	} else {
+		r.Register("translation/verify", cmd, "Verify an existing translation.")
 	}
 
 	if cmd, err := newTranslationsByKey(cfg); err != nil {
@@ -1249,6 +1313,46 @@ func (cmd *BlacklistedKeysList) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
+type BranchCompare struct {
+	phraseapp.Config
+
+	phraseapp.BranchParams
+
+	ProjectID string `cli:"arg required"`
+	Name      string `cli:"arg required"`
+}
+
+func newBranchCompare(cfg *phraseapp.Config) (*BranchCompare, error) {
+
+	actionBranchCompare := &BranchCompare{Config: *cfg}
+	actionBranchCompare.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionBranchCompare.Config.Defaults["branch/compare"]
+	if defaultsPresent {
+		if err := actionBranchCompare.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionBranchCompare, nil
+}
+
+func (cmd *BranchCompare) Run() error {
+	params := &cmd.BranchParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.BranchCompare(cmd.ProjectID, cmd.Name, params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type BranchCreate struct {
 	phraseapp.Config
 
@@ -1292,7 +1396,7 @@ type BranchDelete struct {
 	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
+	Name      string `cli:"arg required"`
 }
 
 func newBranchDelete(cfg *phraseapp.Config) *BranchDelete {
@@ -1310,7 +1414,7 @@ func (cmd *BranchDelete) Run() error {
 		return err
 	}
 
-	err = client.BranchDelete(cmd.ProjectID, cmd.ID)
+	err = client.BranchDelete(cmd.ProjectID, cmd.Name)
 
 	if err != nil {
 		return err
@@ -1325,7 +1429,7 @@ type BranchMerge struct {
 	phraseapp.BranchMergeParams
 
 	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
+	Name      string `cli:"arg required"`
 }
 
 func newBranchMerge(cfg *phraseapp.Config) (*BranchMerge, error) {
@@ -1350,7 +1454,7 @@ func (cmd *BranchMerge) Run() error {
 		return err
 	}
 
-	err = client.BranchMerge(cmd.ProjectID, cmd.ID, params)
+	err = client.BranchMerge(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
@@ -1363,7 +1467,7 @@ type BranchShow struct {
 	phraseapp.Config
 
 	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
+	Name      string `cli:"arg required"`
 }
 
 func newBranchShow(cfg *phraseapp.Config) *BranchShow {
@@ -1381,7 +1485,7 @@ func (cmd *BranchShow) Run() error {
 		return err
 	}
 
-	res, err := client.BranchShow(cmd.ProjectID, cmd.ID)
+	res, err := client.BranchShow(cmd.ProjectID, cmd.Name)
 
 	if err != nil {
 		return err
@@ -1396,7 +1500,7 @@ type BranchUpdate struct {
 	phraseapp.BranchParams
 
 	ProjectID string `cli:"arg required"`
-	ID        string `cli:"arg required"`
+	Name      string `cli:"arg required"`
 }
 
 func newBranchUpdate(cfg *phraseapp.Config) (*BranchUpdate, error) {
@@ -1421,7 +1525,7 @@ func (cmd *BranchUpdate) Run() error {
 		return err
 	}
 
-	res, err := client.BranchUpdate(cmd.ProjectID, cmd.ID, params)
+	res, err := client.BranchUpdate(cmd.ProjectID, cmd.Name, params)
 
 	if err != nil {
 		return err
@@ -5125,6 +5229,290 @@ func (cmd *ShowUser) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
+type SpaceCreate struct {
+	phraseapp.Config
+
+	phraseapp.SpaceCreateParams
+
+	AccountID string `cli:"arg required"`
+}
+
+func newSpaceCreate(cfg *phraseapp.Config) (*SpaceCreate, error) {
+
+	actionSpaceCreate := &SpaceCreate{Config: *cfg}
+
+	val, defaultsPresent := actionSpaceCreate.Config.Defaults["space/create"]
+	if defaultsPresent {
+		if err := actionSpaceCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionSpaceCreate, nil
+}
+
+func (cmd *SpaceCreate) Run() error {
+	params := &cmd.SpaceCreateParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.SpaceCreate(cmd.AccountID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type SpaceDelete struct {
+	phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newSpaceDelete(cfg *phraseapp.Config) *SpaceDelete {
+
+	actionSpaceDelete := &SpaceDelete{Config: *cfg}
+
+	return actionSpaceDelete
+}
+
+func (cmd *SpaceDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.SpaceDelete(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SpaceShow struct {
+	phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newSpaceShow(cfg *phraseapp.Config) *SpaceShow {
+
+	actionSpaceShow := &SpaceShow{Config: *cfg}
+
+	return actionSpaceShow
+}
+
+func (cmd *SpaceShow) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.SpaceShow(cmd.AccountID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type SpaceUpdate struct {
+	phraseapp.Config
+
+	phraseapp.SpaceUpdateParams
+
+	AccountID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newSpaceUpdate(cfg *phraseapp.Config) (*SpaceUpdate, error) {
+
+	actionSpaceUpdate := &SpaceUpdate{Config: *cfg}
+
+	val, defaultsPresent := actionSpaceUpdate.Config.Defaults["space/update"]
+	if defaultsPresent {
+		if err := actionSpaceUpdate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionSpaceUpdate, nil
+}
+
+func (cmd *SpaceUpdate) Run() error {
+	params := &cmd.SpaceUpdateParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.SpaceUpdate(cmd.AccountID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type SpacesList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+}
+
+func newSpacesList(cfg *phraseapp.Config) *SpacesList {
+
+	actionSpacesList := &SpacesList{Config: *cfg}
+	if cfg.Page != nil {
+		actionSpacesList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionSpacesList.PerPage = *cfg.PerPage
+	}
+
+	return actionSpacesList
+}
+
+func (cmd *SpacesList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.SpacesList(cmd.AccountID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type SpacesProjectsCreate struct {
+	phraseapp.Config
+
+	phraseapp.SpacesProjectsCreateParams
+
+	AccountID string `cli:"arg required"`
+	SpaceID   string `cli:"arg required"`
+}
+
+func newSpacesProjectsCreate(cfg *phraseapp.Config) (*SpacesProjectsCreate, error) {
+
+	actionSpacesProjectsCreate := &SpacesProjectsCreate{Config: *cfg}
+
+	val, defaultsPresent := actionSpacesProjectsCreate.Config.Defaults["spaces/projects/create"]
+	if defaultsPresent {
+		if err := actionSpacesProjectsCreate.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionSpacesProjectsCreate, nil
+}
+
+func (cmd *SpacesProjectsCreate) Run() error {
+	params := &cmd.SpacesProjectsCreateParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.SpacesProjectsCreate(cmd.AccountID, cmd.SpaceID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SpacesProjectsDelete struct {
+	phraseapp.Config
+
+	AccountID string `cli:"arg required"`
+	SpaceID   string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newSpacesProjectsDelete(cfg *phraseapp.Config) *SpacesProjectsDelete {
+
+	actionSpacesProjectsDelete := &SpacesProjectsDelete{Config: *cfg}
+
+	return actionSpacesProjectsDelete
+}
+
+func (cmd *SpacesProjectsDelete) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	err = client.SpacesProjectsDelete(cmd.AccountID, cmd.SpaceID, cmd.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SpacesProjectsList struct {
+	phraseapp.Config
+
+	Page    int `cli:"opt --page default=1"`
+	PerPage int `cli:"opt --per-page default=25"`
+
+	AccountID string `cli:"arg required"`
+	SpaceID   string `cli:"arg required"`
+}
+
+func newSpacesProjectsList(cfg *phraseapp.Config) *SpacesProjectsList {
+
+	actionSpacesProjectsList := &SpacesProjectsList{Config: *cfg}
+	if cfg.Page != nil {
+		actionSpacesProjectsList.Page = *cfg.Page
+	}
+	if cfg.PerPage != nil {
+		actionSpacesProjectsList.PerPage = *cfg.PerPage
+	}
+
+	return actionSpacesProjectsList
+}
+
+func (cmd *SpacesProjectsList) Run() error {
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.SpacesProjectsList(cmd.AccountID, cmd.SpaceID, cmd.Page, cmd.PerPage)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
 type StyleguideCreate struct {
 	phraseapp.Config
 
@@ -5511,6 +5899,126 @@ func (cmd *TranslationCreate) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
+type TranslationExclude struct {
+	phraseapp.Config
+
+	phraseapp.TranslationExcludeParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newTranslationExclude(cfg *phraseapp.Config) (*TranslationExclude, error) {
+
+	actionTranslationExclude := &TranslationExclude{Config: *cfg}
+	actionTranslationExclude.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationExclude.Config.Defaults["translation/exclude"]
+	if defaultsPresent {
+		if err := actionTranslationExclude.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationExclude, nil
+}
+
+func (cmd *TranslationExclude) Run() error {
+	params := &cmd.TranslationExcludeParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationExclude(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type TranslationInclude struct {
+	phraseapp.Config
+
+	phraseapp.TranslationIncludeParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newTranslationInclude(cfg *phraseapp.Config) (*TranslationInclude, error) {
+
+	actionTranslationInclude := &TranslationInclude{Config: *cfg}
+	actionTranslationInclude.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationInclude.Config.Defaults["translation/include"]
+	if defaultsPresent {
+		if err := actionTranslationInclude.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationInclude, nil
+}
+
+func (cmd *TranslationInclude) Run() error {
+	params := &cmd.TranslationIncludeParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationInclude(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type TranslationReview struct {
+	phraseapp.Config
+
+	phraseapp.TranslationReviewParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newTranslationReview(cfg *phraseapp.Config) (*TranslationReview, error) {
+
+	actionTranslationReview := &TranslationReview{Config: *cfg}
+	actionTranslationReview.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationReview.Config.Defaults["translation/review"]
+	if defaultsPresent {
+		if err := actionTranslationReview.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationReview, nil
+}
+
+func (cmd *TranslationReview) Run() error {
+	params := &cmd.TranslationReviewParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationReview(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
 type TranslationShow struct {
 	phraseapp.Config
 
@@ -5551,6 +6059,46 @@ func (cmd *TranslationShow) Run() error {
 	return json.NewEncoder(os.Stdout).Encode(&res)
 }
 
+type TranslationUnverify struct {
+	phraseapp.Config
+
+	phraseapp.TranslationUnverifyParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newTranslationUnverify(cfg *phraseapp.Config) (*TranslationUnverify, error) {
+
+	actionTranslationUnverify := &TranslationUnverify{Config: *cfg}
+	actionTranslationUnverify.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationUnverify.Config.Defaults["translation/unverify"]
+	if defaultsPresent {
+		if err := actionTranslationUnverify.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationUnverify, nil
+}
+
+func (cmd *TranslationUnverify) Run() error {
+	params := &cmd.TranslationUnverifyParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationUnverify(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
 type TranslationUpdate struct {
 	phraseapp.Config
 
@@ -5583,6 +6131,46 @@ func (cmd *TranslationUpdate) Run() error {
 	}
 
 	res, err := client.TranslationUpdate(cmd.ProjectID, cmd.ID, params)
+
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(os.Stdout).Encode(&res)
+}
+
+type TranslationVerify struct {
+	phraseapp.Config
+
+	phraseapp.TranslationVerifyParams
+
+	ProjectID string `cli:"arg required"`
+	ID        string `cli:"arg required"`
+}
+
+func newTranslationVerify(cfg *phraseapp.Config) (*TranslationVerify, error) {
+
+	actionTranslationVerify := &TranslationVerify{Config: *cfg}
+	actionTranslationVerify.ProjectID = cfg.DefaultProjectID
+
+	val, defaultsPresent := actionTranslationVerify.Config.Defaults["translation/verify"]
+	if defaultsPresent {
+		if err := actionTranslationVerify.ApplyValuesFromMap(val); err != nil {
+			return nil, err
+		}
+	}
+	return actionTranslationVerify, nil
+}
+
+func (cmd *TranslationVerify) Run() error {
+	params := &cmd.TranslationVerifyParams
+
+	client, err := newClient(cmd.Config.Credentials, cmd.Config.Debug)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.TranslationVerify(cmd.ProjectID, cmd.ID, params)
 
 	if err != nil {
 		return err
