@@ -1,6 +1,7 @@
 package phraseapp
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -26,21 +27,31 @@ type Config struct {
 	Sources []byte
 }
 
-const configName = ".phraseapp.yml"
+var configNames = []string{".phrase.yml", ".phraseapp.yml"}
 
-// ReadConfig reads a .phraseapp.yml config file
+// ReadConfig reads a .phrase.yml config file
 func ReadConfig() (*Config, error) {
-	cfg := &Config{}
-	rawCfg := struct{ PhraseApp *Config }{PhraseApp: cfg}
-
+	rawCfg := map[string]*Config{}
 	content, err := configContent()
 	switch {
 	case err != nil:
 		return nil, err
 	case content == nil:
-		return cfg, nil
+		return &Config{}, nil
 	default:
-		return cfg, yaml.Unmarshal(content, rawCfg)
+		err := yaml.Unmarshal(content, rawCfg)
+		if err != nil {
+			return nil, err
+		}
+
+		if cfg, found := rawCfg["phrase"]; found {
+			return cfg, nil
+		}
+		if cfg, found := rawCfg["phraseapp"]; found {
+			return cfg, nil
+		}
+
+		return nil, errors.New("'phrase' key is missing in config")
 	}
 }
 
@@ -75,17 +86,21 @@ func configPath() (string, error) {
 		return "", nil
 	}
 
-	possiblePath := filepath.Join(workingDir, configName)
-	if _, err := os.Stat(possiblePath); err == nil {
-		return possiblePath, nil
+	for _, configName := range configNames {
+		possiblePath := filepath.Join(workingDir, configName)
+		if _, err := os.Stat(possiblePath); err == nil {
+			return possiblePath, nil
+		}
 	}
 
-	possiblePath = defaultConfigDir()
-	if _, err := os.Stat(possiblePath); err != nil {
-		return "", nil
+	for _, configName := range configNames {
+		possiblePath := filepath.Join(defaultConfigDir(), configName)
+		if _, err := os.Stat(possiblePath); err == nil {
+			return possiblePath, nil
+		}
 	}
 
-	return possiblePath, nil
+	return "", nil
 }
 
 func (cfg *Config) UnmarshalYAML(unmarshal func(i interface{}) error) error {

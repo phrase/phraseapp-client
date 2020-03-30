@@ -13,7 +13,7 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/phrase/phraseapp-go v3.0.1-0.20191007092208-14bf46b95f02+incompatible
+	github.com/phrase/phraseapp-go v1.0.1-0.20200330092623-4c858d5b0d0e
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.2.8
 )

@@ -13,7 +13,7 @@ github.com/google/btree
 github.com/jpillora/backoff
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
-# github.com/phrase/phraseapp-go v3.0.1-0.20191007092208-14bf46b95f02+incompatible
+# github.com/phrase/phraseapp-go v1.0.1-0.20200330092623-4c858d5b0d0e
 github.com/phrase/phraseapp-go/phraseapp
-# gopkg.in/yaml.v2 v2.2.1
+# gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2

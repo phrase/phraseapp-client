@@ -22,6 +22,8 @@ github.com/jtolds/gls v4.20.0+incompatible h1:xdiiI2gbIgH/gLH7ADydsJ1uDOEzR8yvV7
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/peterbourgon/diskv v2.0.1+incompatible h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
+github.com/phrase/phraseapp-go v1.0.1-0.20200330092623-4c858d5b0d0e h1:cc+4048HeYbTumao8JPJx8NabS/tNQ5uMuyWm6B3fcU=
+github.com/phrase/phraseapp-go v1.0.1-0.20200330092623-4c858d5b0d0e/go.mod h1:XS5CX+PgOJxPecE1WqQMjYxhEZpcS0Tihp+b0KZ2Ws0=
 github.com/phrase/phraseapp-go v3.0.1-0.20191007092208-14bf46b95f02+incompatible h1:pIfRi0yo+9RJsjC/+Cnc7c/5yjWbFPtSF7kgKVNeynM=
 github.com/phrase/phraseapp-go v3.0.1-0.20191007092208-14bf46b95f02+incompatible/go.mod h1:TOL+9xE9WvJONHUwDe12G3vKyeOd+FG5XCofz1jln2w=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d h1:zE9ykElWQ6/NYmHa3jpm/yHnI4xSofP+UP6SpjHcSeM=
@@ -37,3 +39,5 @@ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.1 h1:mUhvW9EsL+naU5Q3cakzfE91YhliOondGd6ZrsDBHQE=
 gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
+gopkg.in/yaml.v2 v2.2.8 h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=
+gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
