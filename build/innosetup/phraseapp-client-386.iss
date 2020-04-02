@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{DC598D8E-8A9B-4CAD-AFD8-0324FDF4E0F1}
 AppName=PhraseApp Client
-AppVersion=1.17.0
+AppVersion=1.17.1
 AppPublisher=PhraseApp GmbH
 AppPublisherURL=https://phrase.com/cli
 AppSupportURL=https://phrase.com/cli

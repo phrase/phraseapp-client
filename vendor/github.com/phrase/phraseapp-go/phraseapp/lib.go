@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RevisionDocs      = "5cc58168292cad8c2c804e39d521843bb8f467c0"
-	RevisionGenerator = "HEAD/2020-03-30T112018/soenke"
+	RevisionDocs      = "b33e5c3d0e590c6aed24f39a2c98731c6b2116d9"
+	RevisionGenerator = "HEAD/2020-04-02T172629/soenke"
 )
 
 type Account struct {
@@ -494,7 +494,7 @@ type Upload struct {
 	ID        string      `json:"id"`
 	State     string      `json:"state"`
 	Summary   SummaryType `json:"summary"`
-	Tag       *Tag        `json:"tag"`
+	Tag       string      `json:"tag"`
 	UpdatedAt *time.Time  `json:"updated_at"`
 }
 
