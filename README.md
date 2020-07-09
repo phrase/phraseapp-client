@@ -1,8 +1,10 @@
-# PhraseApp Client
+# PhraseApp Client (CLI v1)
 
 The PhraseApp Client is available for all major platforms and lets you access all API endpoints as well as easily sync your locale files between your source code and PhraseApp.
 
 Check out our [documentation for more information](https://help.phrase.com/phraseapp-for-developers/phraseapp-client/phraseapp-in-your-terminal).
+
+If you are looking for out newer CLI v2, please go to [https://github.com/phrase/phrase-cli](https://github.com/phrase/phrase-cli)
 
 ## Quick Start
 
