@@ -1,3 +1,7 @@
+# [Deprecated]
+This CLI is deprecated and has been replaced by [CLI v2](https://github.com/phrase/phrase-cli)
+
+
 # PhraseApp Client (CLI v1)
 
 The PhraseApp Client is available for all major platforms and lets you access all API endpoints as well as easily sync your locale files between your source code and PhraseApp.
