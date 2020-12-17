@@ -4,16 +4,25 @@ github.com/bgentry/speakeasy
 github.com/coreos/go-semver/semver
 # github.com/daviddengcn/go-colortext v0.0.0-20171126034257-17e75f6184bc
 github.com/daviddengcn/go-colortext
-# github.com/dynport/dgtk v0.0.0-20180530100300-3360a73d8ca9
-github.com/dynport/dgtk/cli
-github.com/dynport/dgtk/tagparse
 # github.com/google/btree v1.0.0
 github.com/google/btree
+# github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
+github.com/gopherjs/gopherjs/js
 # github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 github.com/jpillora/backoff
+# github.com/jtolds/gls v4.20.0+incompatible
+github.com/jtolds/gls
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
 # github.com/phrase/phraseapp-go v1.0.1-0.20200402153024-33adc4b3ef11
 github.com/phrase/phraseapp-go/phraseapp
+# github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
+github.com/smartystreets/assertions
+github.com/smartystreets/assertions/internal/go-render/render
+github.com/smartystreets/assertions/internal/oglematchers
+# github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337
+github.com/smartystreets/goconvey/convey
+github.com/smartystreets/goconvey/convey/gotest
+github.com/smartystreets/goconvey/convey/reporting
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2

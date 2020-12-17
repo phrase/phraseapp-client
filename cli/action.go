@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dynport/dgtk/tagparse"
+	"github.com/phrase/phraseapp-client/tagparse"
 )
 
 type action struct {

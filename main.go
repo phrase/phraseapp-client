@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/cli"
 	"github.com/phrase/phraseapp-client/internal/print"
 	"github.com/phrase/phraseapp-client/internal/updatechecker"
 	"github.com/phrase/phraseapp-go/phraseapp"

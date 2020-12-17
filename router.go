@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dynport/dgtk/cli"
+	"github.com/phrase/phraseapp-client/cli"
 	"github.com/phrase/phraseapp-go/phraseapp"
 )
 
